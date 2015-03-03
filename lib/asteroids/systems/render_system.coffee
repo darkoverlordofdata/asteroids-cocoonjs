@@ -9,7 +9,7 @@ class asteroids.systems.RenderSystem extends ash.core.System
   graphic   : null  # 2D Context
   nodes     : null  # NodeList
 
-  constructor: (@graphic) ->
+  constructor: (@ctx) ->
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(RenderNode)
@@ -33,10 +33,10 @@ class asteroids.systems.RenderSystem extends ash.core.System
 
   update: (time) =>
 
-    @graphic.save()
-    @graphic.translate 0, 0
-    @graphic.rotate 0
-    @graphic.clearRect 0, 0, @graphic.canvas.width, @graphic.canvas.height
+    @ctx.save()
+    @ctx.translate 0, 0
+    @ctx.rotate 0
+    @ctx.clearRect 0, 0, @ctx.canvas.width, @ctx.canvas.height
     node = @nodes.head
 
     while node
@@ -47,8 +47,8 @@ class asteroids.systems.RenderSystem extends ash.core.System
       graphic.x = position.position.x
       graphic.y = position.position.y
       graphic.rotation = position.rotation
-      graphic.draw()
+      graphic.draw(@ctx)
       node = node.next
 
-    @graphic.restore()
+    @ctx.restore()
     return # Void

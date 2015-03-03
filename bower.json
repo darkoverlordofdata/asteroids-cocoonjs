@@ -18,15 +18,15 @@
     "tests"
   ],
   "dependencies": {
-    "stats": "git://github.com/mrdoob/stats.js",
     "ash": "git://github.com/darkoverlordofdata/ash.coffee",
     "cocoonjs": "git://github.com/ludei/cocoonjs-plugins#~3.0.4",
-    "box2d": "git://github.com/darkoverlordofdata/Box2dWeb"
+    "box2d": "git://github.com/darkoverlordofdata/Box2dWeb",
+    "stats.js": "*"
   },
   "packages": {
-    "stats": "stats/build/*.js",
     "ash": "ash/dist/*.js",
     "cocoonjs": "cocoonjs/build/cocoon.min.js",
-    "box2d": "box2d/lib/*.js"
+    "box2d": "box2d/lib/*.js",
+    "stats.js": "stats.js/build/*.js"
   }
 }

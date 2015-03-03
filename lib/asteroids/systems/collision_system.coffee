@@ -25,14 +25,6 @@ Position              = asteroids.components.Position
 Spaceship             = asteroids.components.Spaceship
 WaitForStart          = asteroids.components.WaitForStart
 
-AsteroidDeathView     = asteroids.graphics.AsteroidDeathView
-AsteroidView          = asteroids.graphics.AsteroidView
-BulletView            = asteroids.graphics.BulletView
-HudView               = asteroids.graphics.HudView
-SpaceshipDeathView    = asteroids.graphics.SpaceshipDeathView
-SpaceshipView         = asteroids.graphics.SpaceshipView
-
-
 class asteroids.systems.CollisionSystem extends ash.core.System
 
   creator       : null #  EntityCreator

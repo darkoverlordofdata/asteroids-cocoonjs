@@ -17,7 +17,7 @@
 #ash = require('../../lib')
 asteroids = require('../../lib')
 
-WaitForStartView      = asteroids.graphics.WaitForStartView
+WaitForStartView      = asteroids.sprites.WaitForStartView
 Entity                = ash.core.Entity
 EntityStateMachine    = ash.fsm.EntityStateMachine
 ###
@@ -43,12 +43,12 @@ WaitForStart          = asteroids.components.WaitForStart
 ###
  * Drawable Components
 ###
-AsteroidDeathView     = asteroids.graphics.AsteroidDeathView
-AsteroidView          = asteroids.graphics.AsteroidView
-BulletView            = asteroids.graphics.BulletView
-HudView               = asteroids.graphics.HudView
-SpaceshipDeathView    = asteroids.graphics.SpaceshipDeathView
-SpaceshipView         = asteroids.graphics.SpaceshipView
+AsteroidDeathView     = asteroids.sprites.AsteroidDeathView
+AsteroidView          = asteroids.sprites.AsteroidView
+BulletView            = asteroids.sprites.BulletView
+HudView               = asteroids.sprites.HudView
+SpaceshipDeathView    = asteroids.sprites.SpaceshipDeathView
+SpaceshipView         = asteroids.sprites.SpaceshipView
 
 class asteroids.EntityCreator
 
@@ -62,7 +62,7 @@ class asteroids.EntityCreator
   waitEntity: null
   graphic: null
 
-  constructor: (@engine, @graphic, @world) ->
+  constructor: (@engine) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -72,7 +72,7 @@ class asteroids.EntityCreator
    * Game State
   ###
   createGame: () ->
-    hud = new HudView(@graphic)
+    hud = new HudView()
     gameEntity = new Entity('game')
     .add(new GameState())
     .add(new Hud(hud))
@@ -86,7 +86,7 @@ class asteroids.EntityCreator
   ###
   createWaitForClick: () ->
     if not @waitEntity
-      waitView = new WaitForStartView(@graphic)
+      waitView = new WaitForStartView()
       @waitEntity = new Entity('wait')
       .add(new WaitForStart(waitView))
       .add(new Display(waitView))
@@ -107,9 +107,9 @@ class asteroids.EntityCreator
     fsm.createState('alive')
     .add(Motion).withInstance(new Motion((Math.random() - 0.5) * 4 * (50 - radius), (Math.random() - 0.5) * 4 * (50 - radius), Math.random() * 2 - 1, 0))
     .add(Collision).withInstance(new Collision(radius))
-    .add(Display).withInstance(new Display(new AsteroidView(@graphic, radius)))
+    .add(Display).withInstance(new Display(new AsteroidView(radius)))
 
-    deathView = new AsteroidDeathView(@graphic, radius)
+    deathView = new AsteroidDeathView(radius)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(3))
     .add(Display).withInstance(new Display(deathView))
@@ -138,9 +138,9 @@ class asteroids.EntityCreator
     .add(Gun).withInstance(new Gun(8, 0, 0.3, 2 ))
     .add(GunControls).withInstance(new GunControls(KEY_Z))
     .add(Collision).withInstance(new Collision(9))
-    .add(Display).withInstance(new Display(new SpaceshipView(@graphic)))
+    .add(Display).withInstance(new Display(new SpaceshipView()))
 
-    deathView = new SpaceshipDeathView(@graphic)
+    deathView = new SpaceshipDeathView()
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(5))
     .add(Display).withInstance(new Display(deathView))
@@ -172,7 +172,7 @@ class asteroids.EntityCreator
     .add(new Position(x, y, 0))
     .add(new Collision(0))
     .add(new Motion(cos * 150, sin * 150, 0, 0))
-    .add(new Display(new BulletView(@graphic)))
+    .add(new Display(new BulletView()))
     @engine.addEntity(bullet)
     return bullet
 

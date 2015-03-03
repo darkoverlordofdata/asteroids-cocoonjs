@@ -15,4 +15,4 @@ class asteroids.ui.Container
 
   draw: () ->
     for child in children
-      child.draw()
+      child.draw(@graphic)

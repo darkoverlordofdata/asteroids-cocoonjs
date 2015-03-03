@@ -3,14 +3,11 @@ asteroids = require('../../../lib')
 
 Point = asteroids.ui.Point
 
-class asteroids.graphics.SpaceshipDeathView
+class asteroids.sprites.SpaceshipDeathView
 
   x: 0
   y: 0
-  width: 20
-  height: 20
   rotation: 0
-  graphic: null
 
   vel1: null
   vel2: null
@@ -21,9 +18,6 @@ class asteroids.graphics.SpaceshipDeathView
   y1: 0
   y2: 0
   first: true
-
-
-  constructor: (@graphic) ->
 
 
   animate: (time) ->
@@ -45,37 +39,37 @@ class asteroids.graphics.SpaceshipDeathView
     @x2 += @vel2.x * time
     @y2 += @vel2.y * time
     @r2 += @rot2 * time
-    @draw()
+
+    return
 
 
-  draw: ->
-    graphic = @graphic
+  draw: (ctx) =>
 
     # shape1
-    graphic.save()
-    graphic.beginPath()
-    graphic.translate @x+@x1, @y+@y1
-    graphic.rotate @r1
-    graphic.fillStyle = "#FFFFFF"
-    graphic.moveTo 10, 0
-    graphic.lineTo -7, 7
-    graphic.lineTo -4, 0
-    graphic.lineTo 10, 0
-    graphic.fill()
-    graphic.restore()
+    ctx.save()
+    ctx.beginPath()
+    ctx.translate @x+@x1, @y+@y1
+    ctx.rotate @r1
+    ctx.fillStyle = "#FFFFFF"
+    ctx.moveTo 10, 0
+    ctx.lineTo -7, 7
+    ctx.lineTo -4, 0
+    ctx.lineTo 10, 0
+    ctx.fill()
+    ctx.restore()
 
     # shape2
-    graphic.save()
-    graphic.beginPath()
-    graphic.translate @x+@x2, @y+@y2
-    graphic.rotate @r2
-    graphic.fillStyle = "#FFFFFF"
-    graphic.moveTo 10, 0
-    graphic.lineTo -7, 7
-    graphic.lineTo -4, 0
-    graphic.lineTo 10, 0
-    graphic.fill()
-    graphic.restore()
+    ctx.save()
+    ctx.beginPath()
+    ctx.translate @x+@x2, @y+@y2
+    ctx.rotate @r2
+    ctx.fillStyle = "#FFFFFF"
+    ctx.moveTo 10, 0
+    ctx.lineTo -7, 7
+    ctx.lineTo -4, 0
+    ctx.lineTo 10, 0
+    ctx.fill()
+    ctx.restore()
 
     return
 

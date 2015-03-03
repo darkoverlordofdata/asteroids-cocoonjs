@@ -1,7 +1,7 @@
 'use strict'
 asteroids = require('../../../lib')
 
-class asteroids.input.KeyPoll
+class asteroids.ui.KeyPoll
 
   states = null
   displayObj = null

@@ -1,20 +1,16 @@
 'use strict'
 asteroids = require('../../../lib')
 
-class asteroids.graphics.AsteroidView
+class asteroids.sprites.AsteroidView
 
   x: 0
   y: 0
-  width: 0
-  height: 0
   rotation: 0
-  graphic: null
   radius: 0
   points: null
-  count: 0
 
 
-  constructor: (@graphic, @radius) ->
+  constructor: (@radius) ->
     @width = @radius
     @height = @radius
     @points = []
@@ -29,22 +25,21 @@ class asteroids.graphics.AsteroidView
 
       angle += Math.random() * 0.5
 
-  draw: ->
-    graphic = @graphic
-    graphic.save()
-    graphic.beginPath()
-    graphic.translate @x, @y
-    graphic.rotate @rotation
-    graphic.fillStyle = "#FFFFFF"
-    graphic.moveTo @radius, 0
+  draw: (ctx) =>
+    ctx.save()
+    ctx.beginPath()
+    ctx.translate @x, @y
+    ctx.rotate @rotation
+    ctx.fillStyle = "#FFFFFF"
+    ctx.moveTo @radius, 0
     i = 0
 
     while i < @points.length
-      graphic.lineTo @points[i].x, @points[i].y
+      ctx.lineTo @points[i].x, @points[i].y
       ++i
-    graphic.lineTo @radius, 0
-    graphic.fill()
-    graphic.restore()
+    ctx.lineTo @radius, 0
+    ctx.fill()
+    ctx.restore()
     return
 
 

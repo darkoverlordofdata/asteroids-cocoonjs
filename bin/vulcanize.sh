@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#   Publish gh-pages
+#   Release version
 #
 cd ./build/web
 vulcanize --output example.html --strip --inline --csp example.html
