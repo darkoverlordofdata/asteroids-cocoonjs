@@ -80,14 +80,6 @@ module.exports = ->
     Package up tmp
     ###
     browserify:
-      dist:
-        options:
-          browserifyOptions:
-            debug: true
-            standalone: $libName
-        cwd: __dirname
-        src: ["tmp/lib/index.js"]
-        dest: "dist/#{$packageName}.js"
       web:
         options:
           browserifyOptions:
@@ -96,31 +88,15 @@ module.exports = ->
         cwd: __dirname
         src: ["tmp/lib/index.js"]
         dest: "web/packages/#{$packageName}/#{$packageName}.js"
-      example:
-        options:
-          browserifyOptions:
-            debug: true
-            standalone: 'Example'
-        cwd: __dirname
-        src: ["tmp/example/index.js"]
-        dest: "web/packages/example/example.js"
 
     ###
     Minify
     ###
     uglify:
-      dist:
-        cwd: __dirname
-        src: ["dist/#{$packageName}.js"]
-        dest: "dist/#{$packageName}.min.js"
       web:
         cwd: __dirname
         src: ["web/packages/#{$packageName}/#{$packageName}.js"]
         dest: "web/packages/#{$packageName}/#{$packageName}.min.js"
-      example:
-        cwd: __dirname
-        src: ["web/packages/example/example.js"]
-        dest: "web/packages/example/example.min.js"
 
     ###
     Copy Resources

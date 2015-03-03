@@ -1,10 +1,10 @@
 {
-  "name": "ash",
+  "name": "asteroids",
   "version": "0.0.1",
   "authors": [
     "darkoverlordofdata <darkoverlordofdata@gmail.com>"
   ],
-  "description": "Ash port to coffeescript",
+  "description": "asteroids",
   "license": "MIT",
   "private": true,
   "ignore": [
@@ -18,10 +18,14 @@
     "tests"
   ],
   "dependencies": {
+    "stats": "git://github.com/mrdoob/stats.js",
+    "ash": "git://github.com/darkoverlordofdata/ash.coffee",
     "cocoonjs": "git://github.com/ludei/cocoonjs-plugins#~3.0.4",
     "box2d": "git://github.com/darkoverlordofdata/Box2dWeb"
   },
   "packages": {
+    "stats": "stats/build/*.js",
+    "ash": "ash/dist/*.js",
     "cocoonjs": "cocoonjs/build/cocoon.min.js",
     "box2d": "box2d/lib/*.js"
   }

@@ -1,89 +1,91 @@
-###
-
-   _       _
-  /_\  ___| |__
- //_\\/ __| '_ \
-/  _  \__ \ | | |
-\_/ \_/___/_| |_|
-
-              __  __
-    ___ ___  / _|/ _| ___  ___
-   / __/ _ \| |_| |_ / _ \/ _ \
-  | (_| (_) |  _|  _|  __/  __/
- (_)___\___/|_| |_|  \___|\___|
-
-
-Copyright (c) 2015 Bruce Davidson &lt;darkoverlordofdata@gmail.com&gt;
-
-Author: Richard Lord
-Copyright (c) Richard Lord 2011-2012
-http://www.richardlord.net
-
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-###
+#+--------------------------------------------------------------------+
+#| index.coffee
+#+--------------------------------------------------------------------+
+#| Copyright DarkOverlordOfData (c) 2015
+#+--------------------------------------------------------------------+
+#|
+#| This file is a part of ash.coffee
+#|
+#| ash.coffee is free software; you can copy, modify, and distribute
+#| it under the terms of the MIT License
+#|
+#+--------------------------------------------------------------------+
+#
+# Example
+#
 'use strict'
-module.exports = class ash
+module.exports =
+class asteroids
 
-class ash.signals
+class asteroids.input
+require './src/input/key_poll'
 
-require './ash/signals/listener_node'
-require './ash/signals/listener_node_pool'
-require './ash/signals/signal_base'
-require './ash/signals/signal0'
-require './ash/signals/signal1'
-require './ash/signals/signal2'
-require './ash/signals/signal3'
+class asteroids.ui
+require './src/ui/point'
 
-class ash.core
+class asteroids.graphics
+require './src/graphics/asteroid_view'
+require './src/graphics/asteroid_death_view'
+require './src/graphics/bullet_view'
+require './src/graphics/hud_view'
+require './src/graphics/spaceship_death_view'
+require './src/graphics/spaceship_view'
+require './src/graphics/wait_for_start_view'
 
-require './ash/core/entity'
-require './ash/core/entity_list'
-require './ash/core/node'
-require './ash/core/node_list'
-require './ash/core/node_pool'
-require './ash/core/system'
-require './ash/core/system_list'
-require './ash/core/family'
-require './ash/core/component_matching_family'
-require './ash/core/engine'
+class asteroids.components
+require './src/components/animation'
+require './src/components/asteroid'
+require './src/components/audio'
+require './src/components/bullet'
+require './src/components/collision'
+require './src/components/death_throes'
+require './src/components/display'
+require './src/components/game_state'
+require './src/components/gun'
+require './src/components/gun_controls'
+require './src/components/hud'
+require './src/components/motion'
+require './src/components/motion_controls'
+require './src/components/position'
+require './src/components/spaceship'
+require './src/components/wait_for_start'
 
-class ash.fsm
-require './ash/fsm/component_instance_provider'
-require './ash/fsm/component_singleton_provider'
-require './ash/fsm/component_type_provider'
-require './ash/fsm/dynamic_component_provider'
-require './ash/fsm/dynamic_system_provider'
-require './ash/fsm/engine_state'
-require './ash/fsm/state_component_mapping'
-require './ash/fsm/engine_state_machine'
-require './ash/fsm/entity_state'
-require './ash/fsm/entity_state_machine'
-require './ash/fsm/state_system_mapping'
-require './ash/fsm/system_instance_provider'
-require './ash/fsm/system_singleton_provider'
+class asteroids.nodes
+require './src/nodes/animation_node'
+require './src/nodes/asteroid_collision_node'
+require './src/nodes/audio_node'
+require './src/nodes/bullet_age_node'
+require './src/nodes/bullet_collision_node'
+require './src/nodes/death_throes_node'
+require './src/nodes/game_node'
+require './src/nodes/gun_control_node'
+require './src/nodes/hud_node'
+require './src/nodes/motion_control_node'
+require './src/nodes/movement_node'
+require './src/nodes/render_node'
+require './src/nodes/spaceship_collision_node'
+require './src/nodes/spaceship_node'
+require './src/nodes/wait_for_start_node'
 
-class ash.tick
-require './ash/tick/frame_tick_provider'
 
-class ash.tools
-require './ash/tools/component_pool'
-require './ash/tools/list_iterating_system'
+class asteroids.systems
+require './src/systems/animation_system'
+require './src/systems/audio_system'
+require './src/systems/bullet_age_system'
+require './src/systems/collision_system'
+require './src/systems/death_throes_system'
+require './src/systems/game_manager'
+require './src/systems/gun_control_system'
+require './src/systems/hud_system'
+require './src/systems/motion_control_system'
+require './src/systems/movement_system'
+require './src/systems/render_system'
+require './src/systems/system_priorities'
+require './src/systems/wait_for_start_system'
+
+
+require './src/entity_creator'
+require './src/game_config'
+require './src/asteroids'
+require './src/main'
+

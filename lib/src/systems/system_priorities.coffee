@@ -1,0 +1,13 @@
+'use strict'
+asteroids = require('../../../lib')
+
+class asteroids.systems.SystemPriorities
+
+  @preUpdate            : 1
+  @update               : 2
+  @move                 : 3
+  @resolveCollisions    : 4
+  @stateMachines        : 5
+  @animate              : 6
+  @render               : 7
+

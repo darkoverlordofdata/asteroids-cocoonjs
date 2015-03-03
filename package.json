@@ -1,7 +1,7 @@
 {
-  "name": "ash.coffee",
+  "name": "asteroids",
   "version": "0.0.1",
-  "description": "Ash port to Coffeescript",
+  "description": "Asteroids",
   "main": "index.js",
   "scripts": {},
   "author": "darkoverlordofdata",

@@ -1,1 +1,1 @@
-new Example.Main()
+new asteroids.Main()
