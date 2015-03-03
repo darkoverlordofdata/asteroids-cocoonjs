@@ -14,7 +14,7 @@
 # Main
 #
 'use strict'
-asteroids = require('../../lib')
+asteroids = require('../index')
 
 
 class asteroids.Main

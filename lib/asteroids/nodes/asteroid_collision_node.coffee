@@ -1,6 +1,6 @@
 'use strict'
-#ash = require('../../../lib')
-asteroids = require('../../../lib')
+ash = require('ash.coffee')
+asteroids = require('../../index')
 
 class asteroids.nodes.AsteroidCollisionNode extends ash.core.Node
 

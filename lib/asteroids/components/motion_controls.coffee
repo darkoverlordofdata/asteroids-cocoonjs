@@ -1,5 +1,5 @@
 'use strict'
-asteroids = require('../../../lib')
+asteroids = require('../../index')
 
 class asteroids.components.MotionControls
 

@@ -1,6 +1,6 @@
 'use strict'
-#ash = require('../../../lib')
-asteroids = require('../../../lib')
+ash = require('ash.coffee')
+asteroids = require('../../index')
 
 SpaceshipCollisionNode    = asteroids.nodes.SpaceshipCollisionNode
 AsteroidCollisionNode     = asteroids.nodes.AsteroidCollisionNode
@@ -9,11 +9,11 @@ GameNode                  = asteroids.nodes.GameNode
 
 class asteroids.systems.CollisionSystem extends ash.core.System
 
-  creator       : null #  EntityCreator
-  games         : null #  NodeList
-  spaceships    : null #  NodeList
-  asteroids     : null #  NodeList
-  bullets       : null #  NodeList
+  creator         : null #  EntityCreator
+  games           : null #  NodeList
+  spaceships      : null #  NodeList
+  asteroids       : null #  NodeList
+  bullets         : null #  NodeList
 
   constructor: (@creator) ->
 
@@ -30,8 +30,6 @@ class asteroids.systems.CollisionSystem extends ash.core.System
     @asteroids    = null
     @bullets      = null
     return # Void
-
-  # todo: Audio.play
 
   update: (time) =>
 

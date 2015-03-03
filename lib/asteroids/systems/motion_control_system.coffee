@@ -1,9 +1,8 @@
 'use strict'
-#ash = require('../../../lib')
-asteroids = require('../../../lib')
+ash = require('ash.coffee')
+asteroids = require('../../index')
 
 MotionControlNode     = asteroids.nodes.MotionControlNode
-b2Vec2                = Box2D.Common.Math.b2Vec2
 
 class asteroids.systems.MotionControlSystem extends ash.tools.ListIteratingSystem
 

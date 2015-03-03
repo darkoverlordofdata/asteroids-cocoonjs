@@ -1,5 +1,5 @@
 'use strict'
-asteroids = require('../../../lib')
+asteroids = require('../../index')
 
 class asteroids.sprites.HudView
 
@@ -36,7 +36,7 @@ class asteroids.sprites.HudView
 
     ctx.save()
     ctx.beginPath()
-    ctx.font = 'bold 18px opendyslexic'
+    ctx.font = 'bold 18px opendyslexictml5 sprite'
     ctx.fillStyle = '#00FFFF'
     ctx.textAlign = 'center'
     s = "SCORE: #{@score}"

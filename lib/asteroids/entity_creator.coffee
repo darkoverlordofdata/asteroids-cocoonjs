@@ -14,8 +14,8 @@
 # EntityCreator
 #
 'use strict'
-#ash = require('../../lib')
-asteroids = require('../../lib')
+ash = require('ash.coffee')
+asteroids = require('../index')
 
 WaitForStartView      = asteroids.sprites.WaitForStartView
 Entity                = ash.core.Entity

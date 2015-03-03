@@ -1,6 +1,6 @@
 'use strict'
-asteroids = require('../../../lib')
-#ash = require('../../../lib')
+asteroids = require('../../index')
+ash = require('ash.coffee')
 
 Signal0 = ash.signals.Signal0
 

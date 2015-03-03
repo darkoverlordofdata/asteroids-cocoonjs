@@ -14,8 +14,8 @@
 # Asteroids
 #
 'use strict'
-#ash = require('../../lib')
-asteroids = require('../../lib')
+ash = require('ash.coffee')
+asteroids = require('../index')
 
 AnimationSystem       = asteroids.systems.AnimationSystem
 AudioSystem           = asteroids.systems.AudioSystem
@@ -36,6 +36,7 @@ GameState             = asteroids.components.GameState
 EntityCreator         = asteroids.EntityCreator
 GameConfig            = asteroids.GameConfig
 KeyPoll               = asteroids.ui.KeyPoll
+
 
 ###
  * Minimal Box2D interface supported in cocoon
