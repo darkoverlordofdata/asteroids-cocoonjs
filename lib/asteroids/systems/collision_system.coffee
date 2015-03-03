@@ -7,24 +7,6 @@ AsteroidCollisionNode     = asteroids.nodes.AsteroidCollisionNode
 BulletCollisionNode       = asteroids.nodes.BulletCollisionNode
 GameNode                  = asteroids.nodes.GameNode
 
-Animation             = asteroids.components.Animation
-Asteroid              = asteroids.components.Asteroid
-Audio                 = asteroids.components.Audio
-Bullet                = asteroids.components.Bullet
-Collision             = asteroids.components.Collision
-DeathThroes           = asteroids.components.DeathThroes
-Display               = asteroids.components.Display
-GameState             = asteroids.components.GameState
-Gun                   = asteroids.components.Gun
-GunControls           = asteroids.components.GunControls
-Hud                   = asteroids.components.Hud
-Motion                = asteroids.components.Motion
-MotionControls        = asteroids.components.MotionControls
-Physics               = asteroids.components.Physics
-Position              = asteroids.components.Position
-Spaceship             = asteroids.components.Spaceship
-WaitForStart          = asteroids.components.WaitForStart
-
 class asteroids.systems.CollisionSystem extends ash.core.System
 
   creator       : null #  EntityCreator
@@ -85,7 +67,7 @@ class asteroids.systems.CollisionSystem extends ash.core.System
           spaceship.spaceship.fsm.changeState('destroyed')
           #asteroid.audio.play(ExplodeShip)
           if (@games.head)
-            @games.head.state.lives++
+            @games.head.state.lives--
           break
 
         asteroid = asteroid.next
