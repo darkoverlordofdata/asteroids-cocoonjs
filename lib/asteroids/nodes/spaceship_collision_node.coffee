@@ -9,9 +9,10 @@ class asteroids.nodes.SpaceshipCollisionNode extends ash.core.Node
     position    : asteroids.components.Position
     collision   : asteroids.components.Collision
     audio       : asteroids.components.Audio
+    physics     : asteroids.components.Physics
 
-  spaceship   : 0
-  position    : 0
+  spaceship   : null
+  position    : null
   collision   : null
   audio       : null
-
+  physics     : null

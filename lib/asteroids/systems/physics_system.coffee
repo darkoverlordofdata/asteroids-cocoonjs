@@ -8,12 +8,12 @@ b2Vec2                = Box2D.Common.Math.b2Vec2
 
 class asteroids.systems.PhysicsSystem extends ash.core.System
 
-  config  : null  # GameConfig
-  world   : null  # Box2D World
-  nodes   : null  # PhysicsNode
+  config      : null  # GameConfig
+  world       : null  # Box2D World
+  nodes       : null  # PhysicsNode
+  @deadPool   : []    # dead bodies waiting to recycle
 
   constructor: (@config, @world) ->
-
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(PhysicsNode)
@@ -31,17 +31,27 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
       @updateNode node, time
       node = node.next
 
+    ###
+     * Clean up the dead bodies
+    ###
+    while (body = PhysicsSystem.deadPool.pop())
+      @world.DestroyBody(body)
+#      ud = body.GetUserData()
+#      console.log "DeadPool: #{ud.type}"
+
     return # Void
 
   ###
-   * Update the position component from Box2D model
+   * Process the physics for this node
   ###
   updateNode: (node, time) =>
 
     position = node.position
-    body = node.physics.body
+    physics = node.physics
+    body = physics.body
 
     ###
+     * Update the position component from Box2D model
      * Asteroids uses wraparound space coordinates
     ###
     {x, y} = body.GetPosition()

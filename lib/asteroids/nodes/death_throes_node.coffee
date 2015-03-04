@@ -5,6 +5,6 @@ asteroids = require('../../index')
 class asteroids.nodes.DeathThroesNode extends ash.core.Node
 
   @components:
-    death : asteroids.components.DeathThroes
+    dead     : asteroids.components.DeathThroes
 
-  death : null
+  dead     : null

@@ -68,6 +68,7 @@ require './asteroids/nodes/wait_for_start_node'
 
 
 class asteroids.systems
+require './asteroids/systems/physics_system'
 require './asteroids/systems/animation_system'
 require './asteroids/systems/audio_system'
 require './asteroids/systems/bullet_age_system'
@@ -78,7 +79,6 @@ require './asteroids/systems/gun_control_system'
 require './asteroids/systems/hud_system'
 require './asteroids/systems/movement_system'
 require './asteroids/systems/physics_control_system'
-require './asteroids/systems/physics_system'
 require './asteroids/systems/render_system'
 require './asteroids/systems/system_priorities'
 require './asteroids/systems/wait_for_start_system'

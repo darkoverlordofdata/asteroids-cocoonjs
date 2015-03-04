@@ -8,7 +8,9 @@ class asteroids.nodes.BulletCollisionNode extends ash.core.Node
     bullet    : asteroids.components.Bullet
     position  : asteroids.components.Position
     collision : asteroids.components.Collision
+    physics   : asteroids.components.Physics
 
   bullet    : null
   position  : null
   collision : null
+  physics   : null

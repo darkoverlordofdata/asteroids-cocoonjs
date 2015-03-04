@@ -49,26 +49,14 @@ HudView               = asteroids.sprites.HudView
 SpaceshipDeathView    = asteroids.sprites.SpaceshipDeathView
 SpaceshipView         = asteroids.sprites.SpaceshipView
 ###
- * Minimal Box2D interface supported in cocoon
+ * Box2D classes
 ###
-b2CircleShape         = Box2D.Collision.Shapes.b2CircleShape
-b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
-b2Mat22               = Box2D.Common.Math.b2Mat22
-b2Math                = Box2D.Common.Math.b2Math
-b2Transform           = Box2D.Common.Math.b2Transform
-b2Vec2                = Box2D.Common.Math.b2Vec2
 b2Body                = Box2D.Dynamics.b2Body
 b2BodyDef             = Box2D.Dynamics.b2BodyDef
-b2Contact             = Box2D.Dynamics.b2Contact
-b2ContactFilter       = Box2D.Dynamics.b2ContactFilter
-b2ContactListener     = Box2D.Dynamics.b2ContactListener
-b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
-b2Fixture             = Box2D.Dynamics.b2Fixture
+b2CircleShape         = Box2D.Collision.Shapes.b2CircleShape
 b2FixtureDef          = Box2D.Dynamics.b2FixtureDef
-b2World               = Box2D.Dynamics.b2World
-b2DistanceJointDef    = Box2D.Dynamics.Joints.b2DistanceJointDef
-b2Joint               = Box2D.Dynamics.Joints.b2Joint
-b2RevoluteJointDef    = Box2D.Dynamics.Joints.b2RevoluteJointDef
+b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
+b2Vec2                = Box2D.Common.Math.b2Vec2
 
 class asteroids.EntityCreator
 
