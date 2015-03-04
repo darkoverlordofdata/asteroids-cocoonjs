@@ -34,7 +34,6 @@ GameState             = asteroids.components.GameState
 Gun                   = asteroids.components.Gun
 GunControls           = asteroids.components.GunControls
 Hud                   = asteroids.components.Hud
-Motion                = asteroids.components.Motion
 MotionControls        = asteroids.components.MotionControls
 Physics               = asteroids.components.Physics
 Position              = asteroids.components.Position

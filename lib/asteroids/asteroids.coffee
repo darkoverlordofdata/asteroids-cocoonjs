@@ -25,7 +25,6 @@ DeathThroesSystem     = asteroids.systems.DeathThroesSystem
 GameManager           = asteroids.systems.GameManager
 GunControlSystem      = asteroids.systems.GunControlSystem
 HudSystem             = asteroids.systems.HudSystem
-MotionControlSystem   = asteroids.systems.MotionControlSystem
 MovementSystem        = asteroids.systems.MovementSystem
 RenderSystem          = asteroids.systems.RenderSystem
 SystemPriorities      = asteroids.systems.SystemPriorities
@@ -67,7 +66,6 @@ class asteroids.Asteroids
 
     @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate );
     @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
-    @engine.addSystem(new MotionControlSystem(@keyPoll), SystemPriorities.update)
     @engine.addSystem(new PhysicsControlSystem(@keyPoll), SystemPriorities.update)
     @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
     @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
