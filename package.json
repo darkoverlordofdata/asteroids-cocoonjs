@@ -25,6 +25,6 @@
     "grunt-shell": "~1.1.2"
   },
   "dependencies": {
-    "ash.coffee": "0.0.1"
+    "ash.coffee": "0.0.2"
   }
 }

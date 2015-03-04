@@ -49,6 +49,27 @@ BulletView            = asteroids.sprites.BulletView
 HudView               = asteroids.sprites.HudView
 SpaceshipDeathView    = asteroids.sprites.SpaceshipDeathView
 SpaceshipView         = asteroids.sprites.SpaceshipView
+###
+ * Minimal Box2D interface supported in cocoon
+###
+b2CircleShape         = Box2D.Collision.Shapes.b2CircleShape
+b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
+b2Mat22               = Box2D.Common.Math.b2Mat22
+b2Math                = Box2D.Common.Math.b2Math
+b2Transform           = Box2D.Common.Math.b2Transform
+b2Vec2                = Box2D.Common.Math.b2Vec2
+b2Body                = Box2D.Dynamics.b2Body
+b2BodyDef             = Box2D.Dynamics.b2BodyDef
+b2Contact             = Box2D.Dynamics.b2Contact
+b2ContactFilter       = Box2D.Dynamics.b2ContactFilter
+b2ContactListener     = Box2D.Dynamics.b2ContactListener
+b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
+b2Fixture             = Box2D.Dynamics.b2Fixture
+b2FixtureDef          = Box2D.Dynamics.b2FixtureDef
+b2World               = Box2D.Dynamics.b2World
+b2DistanceJointDef    = Box2D.Dynamics.Joints.b2DistanceJointDef
+b2Joint               = Box2D.Dynamics.Joints.b2Joint
+b2RevoluteJointDef    = Box2D.Dynamics.Joints.b2RevoluteJointDef
 
 class asteroids.EntityCreator
 
@@ -58,11 +79,11 @@ class asteroids.EntityCreator
   KEY_RIGHT   = 39
   KEY_Z       = 90
 
-  engine: null
-  waitEntity: null
-  graphic: null
+  engine      : null  # Ash Engine
+  world       : null  # Box2D World
+  waitEntity  : null
 
-  constructor: (@engine) ->
+  constructor: (@engine, @world) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -167,11 +188,29 @@ class asteroids.EntityCreator
     x = cos * gun.offsetFromParent.x - sin * gun.offsetFromParent.y + parentPosition.position.x
     y = sin * gun.offsetFromParent.x + cos * gun.offsetFromParent.y + parentPosition.position.y
 
+    bodyDef = new b2BodyDef()
+    bodyDef.type = b2Body.b2_dynamicBody
+    bodyDef.fixedRotation = true
+    bodyDef.position.x = x
+    bodyDef.position.y = y
+    bodyDef.linearVelocity.Set(cos * 150, sin * 150)
+    bodyDef.angularVelocity = 0
+
+    fixDef = new b2FixtureDef()
+    fixDef.density = 1.0
+    fixDef.friction = 0.5
+    fixDef.restitution = 0.2
+    fixDef.shape = new b2CircleShape()
+
+    body = @world.CreateBody(bodyDef)
+    body.CreateFixture(fixDef)
+
     bullet = new Entity()
     .add(new Bullet(gun.bulletLifetime))
     .add(new Position(x, y, 0))
     .add(new Collision(0))
-    .add(new Motion(cos * 150, sin * 150, 0, 0))
+    .add(new Physics(body))
+#    .add(new Motion(cos * 150, sin * 150, 0, 0))
     .add(new Display(new BulletView()))
     @engine.addEntity(bullet)
     return bullet

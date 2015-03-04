@@ -23,7 +23,7 @@
     "stats.js": "*"
   },
   "packages": {
-    "cocoonjs": "cocoonjs/build/cocoon.min.js",
+    "cocoonjs": "cocoonjs/build/cocoon*.min.js",
     "box2d": "box2d/lib/*.js",
     "stats.js": "stats.js/build/*.js"
   }

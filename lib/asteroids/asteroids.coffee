@@ -37,29 +37,8 @@ EntityCreator         = asteroids.EntityCreator
 GameConfig            = asteroids.GameConfig
 KeyPoll               = asteroids.ui.KeyPoll
 
-
-###
- * Minimal Box2D interface supported in cocoon
-###
-#b2CircleShape         = Box2D.Collision.Shapes.b2CircleShape
-#b2PolygonShape        = Box2D.CollisionShapes.b2PolygonShape
-#b2Mat22               = Box2D.Common.Math.b2Mat22
-#b2Math                = Box2D.Common.Math.b2Math
-#b2Transform           = Box2D.Common.Math.b2Transform
-#b2Vec2                = Box2D.Common.Math.b2Vec2
-#b2Body                = Box2D.Dynamics.b2Body
-#b2BodyDef             = Box2D.Dynamics.b2BodyDef
-#b2Contact             = Box2D.Dynamics.b2Contact
-#b2ContactFilter       = Box2D.Dynamics.b2ContactFilter
-#b2ContactListener     = Box2D.Dynamics.b2ContactListener
-#b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
-#b2Fixture             = Box2D.Dynamics.b2Fixture
-#b2FixtureDef          = Box2D.Dynamics.b2FixtureDef
-#b2World               = Box2D.Dynamics.b2World
-#b2DistanceJointDef    = Box2D.Dynamics.Joints.b2DistanceJointDef
-#b2Joint               = Box2D.Dynamics.Joints.b2Joint
-#b2RevoluteJointDef    = Box2D.Dynamics.Joints.b2RevoluteJointDef
-
+b2Vec2                = Box2D.Common.Math.b2Vec2
+b2World               = Box2D.Dynamics.b2World
 
 class asteroids.Asteroids
 
@@ -69,6 +48,7 @@ class asteroids.Asteroids
   creator         : null #  EntityCreator
   keyPoll         : null #  KeyPoll
   config          : null #  GameConfig
+  world           : null #  B2World
 
   constructor: (@container, width, height) ->
 
@@ -76,8 +56,9 @@ class asteroids.Asteroids
 
   prepare: (width, height) ->
 
+    @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G
     @engine = new ash.core.Engine()
-    @creator = new EntityCreator(@engine)
+    @creator = new EntityCreator(@engine, @world)
     @keyPoll = new KeyPoll(window)
     @config = new GameConfig()
     @config.height = height
@@ -89,6 +70,7 @@ class asteroids.Asteroids
     @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
     @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
     @engine.addSystem(new DeathThroesSystem(@creator), SystemPriorities.update)
+    @engine.addSystem(new PhysicsSystem(@config, @world), SystemPriorities.move)
     @engine.addSystem(new MovementSystem(@config), SystemPriorities.move)
     @engine.addSystem(new CollisionSystem(@creator), SystemPriorities.resolveCollisions)
     @engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
