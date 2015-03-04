@@ -188,6 +188,13 @@ class asteroids.EntityCreator
     x = cos * gun.offsetFromParent.x - sin * gun.offsetFromParent.y + parentPosition.position.x
     y = sin * gun.offsetFromParent.x + cos * gun.offsetFromParent.y + parentPosition.position.y
 
+    ###
+     * Model the physics in Box2D
+
+        Replaces component:
+          .add(new Motion(cos * 150, sin * 150, 0, 0))
+
+    ###
     bodyDef = new b2BodyDef()
     bodyDef.type = b2Body.b2_dynamicBody
     bodyDef.fixedRotation = true
@@ -198,7 +205,7 @@ class asteroids.EntityCreator
 
     fixDef = new b2FixtureDef()
     fixDef.density = 1.0
-    fixDef.friction = 0.5
+    fixDef.friction = 0.0
     fixDef.restitution = 0.2
     fixDef.shape = new b2CircleShape()
 
@@ -210,7 +217,6 @@ class asteroids.EntityCreator
     .add(new Position(x, y, 0))
     .add(new Collision(0))
     .add(new Physics(body))
-#    .add(new Motion(cos * 150, sin * 150, 0, 0))
     .add(new Display(new BulletView()))
     @engine.addEntity(bullet)
     return bullet

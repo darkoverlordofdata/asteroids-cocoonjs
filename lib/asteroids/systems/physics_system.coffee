@@ -33,33 +33,24 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
 
     return # Void
 
-
+  ###
+   * Update the position component from Box2D model
+  ###
   updateNode: (node, time) =>
 
-    position = node.position
     body = node.physics.body
+    position = node.position
 
     return if body is null
     ###
-     Wraparound space coordinates
+     * Asteroids uses wraparound space coordinates
     ###
     {x, y} = body.GetPosition()
-    wrap = false
-    if x > @config.width
-      x = 0
-      wrap = true
-    if x < 0
-      x = @config.width
-      wrap = true
-    if y > @config.height
-      y = 0
-      wrap = true
-    if y < 0
-      y = @config.height
-      wrap = true
-    if wrap then body.SetPosition(new b2Vec2(x,y))
 
-    position.position.x = x
-    position.position.y = y
+    x1 = if x > @config.width then 0 else if x < 0 then @config.width else x
+    y1 = if y > @config.height then 0 else if y < 0 then @config.height else y
+    body.SetPosition(new b2Vec2(x1,y1)) if x1 isnt x or y1 isnt y
+    position.position.x = x1
+    position.position.y = y1
     return # Void
 
