@@ -17,13 +17,13 @@ class asteroids.systems.PhysicsControlSystem extends ash.tools.ListIteratingSyst
     control = node.control
     body = node.physics.body
 
-    rotation = body.GetAngularVelocity()/1000
+    rotation = body.GetAngularVelocity()
 
     if @keyPoll.isDown(control.left)
-      body.ApplyTorque(rotation -= control.rotationRate / Math.PI * time)
+      body.ApplyTorque(rotation/1000 - control.rotationRate / Math.PI * time)
 
     if @keyPoll.isDown(control.right)
-      body.ApplyTorque(rotation += control.rotationRate / Math.PI * time)
+      body.ApplyTorque(rotation/1000 + control.rotationRate / Math.PI * time)
 
     if @keyPoll.isDown(control.accelerate)
       {x, y} = body.GetLinearVelocity()

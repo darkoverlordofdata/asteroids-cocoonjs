@@ -57,7 +57,7 @@ class asteroids.Asteroids
 
   prepare: (width, height) ->
 
-    @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G
+    @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @engine = new ash.core.Engine()
     @creator = new EntityCreator(@engine, @world)
     @keyPoll = new KeyPoll(window)
@@ -73,7 +73,6 @@ class asteroids.Asteroids
     @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
     @engine.addSystem(new DeathThroesSystem(@creator), SystemPriorities.update)
     @engine.addSystem(new PhysicsSystem(@config, @world), SystemPriorities.move)
-    @engine.addSystem(new MovementSystem(@config), SystemPriorities.move)
     @engine.addSystem(new CollisionSystem(@creator), SystemPriorities.resolveCollisions)
     @engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
     @engine.addSystem(new HudSystem(), SystemPriorities.animate);

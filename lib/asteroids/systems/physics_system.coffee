@@ -38,12 +38,9 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
   ###
   updateNode: (node, time) =>
 
-    body = node.physics.body
-#    ud = body.GetUserData()
-#    console.log "Physics #{ud.type}"
     position = node.position
+    body = node.physics.body
 
-    return if body is null
     ###
      * Asteroids uses wraparound space coordinates
     ###

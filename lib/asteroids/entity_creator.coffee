@@ -122,11 +122,33 @@ class asteroids.EntityCreator
   ###
   createAsteroid: (radius, x, y) ->
 
+    ###
+     * Model the physics using Box2D
+    ###
+    bodyDef = new b2BodyDef()
+    bodyDef.type = b2Body.b2_dynamicBody
+    bodyDef.fixedRotation = true
+    bodyDef.position.x = x
+    bodyDef.position.y = y
+    bodyDef.linearVelocity.Set((Math.random() - 0.5) * 4 * (50 - radius), (Math.random() - 0.5) * 4 * (50 - radius))
+    bodyDef.angularVelocity = Math.random() * 2 - 1
+
+    fixDef = new b2FixtureDef()
+    fixDef.density = 1.0
+    fixDef.friction = 0.0
+    fixDef.restitution = 0.2
+    fixDef.shape = new b2CircleShape()
+
+    body = @world.CreateBody(bodyDef)
+    body.CreateFixture(fixDef)
+    body.SetUserData(type: 'Asteroid')
+
+
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
     fsm.createState('alive')
-    .add(Motion).withInstance(new Motion((Math.random() - 0.5) * 4 * (50 - radius), (Math.random() - 0.5) * 4 * (50 - radius), Math.random() * 2 - 1, 0))
+    .add(Physics).withInstance(new Physics(body))
     .add(Collision).withInstance(new Collision(radius))
     .add(Display).withInstance(new Display(new AsteroidView(radius)))
 
