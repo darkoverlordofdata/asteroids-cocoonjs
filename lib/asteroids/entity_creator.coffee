@@ -150,11 +150,37 @@ class asteroids.EntityCreator
   ###
   createSpaceship: ->
 
+    ###
+     * Model the physics using Box2D
+    ###
+    bodyDef = new b2BodyDef()
+    bodyDef.type = b2Body.b2_dynamicBody
+    bodyDef.fixedRotation = false
+    bodyDef.position.x = 300
+    bodyDef.position.y = 225
+    bodyDef.linearVelocity.Set(0, 0)
+    bodyDef.angularVelocity = 0
+
+    fixDef = new b2FixtureDef()
+    fixDef.density = 1.0
+    fixDef.friction = 0.5
+    fixDef.restitution = 0.2
+    fixDef.shape = new b2PolygonShape()
+    fixDef.shape.SetAsArray([
+      new b2Vec2(.45, 0)
+      new b2Vec2(-.25, .25)
+      new b2Vec2(-.25, -.25)
+    ], 3)
+
+    body = @world.CreateBody(bodyDef)
+    body.CreateFixture(fixDef)
+    body.SetUserData(type: 'Spaceship')
+
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
     fsm.createState('playing')
-    .add(Motion).withInstance(new Motion(0, 0, 0, 15))
+    .add(Physics).withInstance(new Physics(body))
     .add(MotionControls).withInstance(new MotionControls(KEY_LEFT, KEY_RIGHT, KEY_UP, 100, 3))
     .add(Gun).withInstance(new Gun(8, 0, 0.3, 2 ))
     .add(GunControls).withInstance(new GunControls(KEY_Z))
@@ -189,11 +215,7 @@ class asteroids.EntityCreator
     y = sin * gun.offsetFromParent.x + cos * gun.offsetFromParent.y + parentPosition.position.y
 
     ###
-     * Model the physics in Box2D
-
-        Replaces component:
-          .add(new Motion(cos * 150, sin * 150, 0, 0))
-
+     * Model the physics using Box2D
     ###
     bodyDef = new b2BodyDef()
     bodyDef.type = b2Body.b2_dynamicBody
@@ -211,6 +233,7 @@ class asteroids.EntityCreator
 
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
+    body.SetUserData(type: 'Bullet')
 
     bullet = new Entity()
     .add(new Bullet(gun.bulletLifetime))

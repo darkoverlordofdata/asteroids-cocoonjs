@@ -39,6 +39,8 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
   updateNode: (node, time) =>
 
     body = node.physics.body
+#    ud = body.GetUserData()
+#    console.log "Physics #{ud.type}"
     position = node.position
 
     return if body is null
@@ -52,5 +54,6 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
     body.SetPosition(new b2Vec2(x1,y1)) if x1 isnt x or y1 isnt y
     position.position.x = x1
     position.position.y = y1
+    position.rotation = body.GetAngularVelocity()
     return # Void
 
