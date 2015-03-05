@@ -40,6 +40,9 @@ KeyPoll               = asteroids.ui.KeyPoll
 b2Vec2                = Box2D.Common.Math.b2Vec2
 b2World               = Box2D.Dynamics.b2World
 
+Engine                = ash.core.Engine
+FrameTickProvider     = ash.tick.FrameTickProvider
+
 class asteroids.Asteroids
 
   container       : null #  DisplayObjectContainer
@@ -57,8 +60,7 @@ class asteroids.Asteroids
   prepare: (width, height) ->
 
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
-    @world.SetContinuousPhysics(true)
-    @engine = new ash.core.Engine()
+    @engine = new Engine()
     @creator = new EntityCreator(@engine, @world)
     @keyPoll = new KeyPoll(window)
     @config = new GameConfig()
@@ -96,7 +98,7 @@ class asteroids.Asteroids
       stats.domElement.style.top = "#{y}px"
       document.body.appendChild stats.domElement
 
-    @tickProvider = new ash.tick.FrameTickProvider(stats)
+    @tickProvider = new FrameTickProvider(stats)
     @tickProvider.add(@engine.update)
     @tickProvider.start()
     return

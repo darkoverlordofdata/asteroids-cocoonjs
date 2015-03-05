@@ -31,39 +31,35 @@ class asteroids.systems.CollisionSystem extends System #implements b2ContactList
 
   update:(time) =>
     while @collisions.length
-      contact = @collisions.pop()
-      switch (contact.type)
-        when BulletHitAsteroid
-          do (bullet=contact.a, asteroid=contact.b) =>
-            if (bullet.get(Physics)?) # already been killed?
-              @creator.destroyEntity bullet
-              PhysicsSystem.deadPool.push(bullet.get(Physics).body)
+      {type, a, b} = @collisions.pop()
 
-            if (asteroid.get(Physics)?) # already been killed?
-              radius = asteroid.get(Collision).radius
-              position = asteroid.get(Position).position
-              if (radius > 10)
-                @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
-                @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
-              body = asteroid.get(Physics).body
-              asteroid.get(Asteroid).fsm.changeState('destroyed')
-              asteroid.get(DeathThroes).body = body
-              #asteroid.get(Audio).play(ExplodeAsteroid)
-              if (@games.head)
-                @games.head.state.hits++
-            return
+      if (type is BulletHitAsteroid)
 
-        when AsteroidHitShip
-          do (asteroid=contact.a, spaceship=contact.b) =>
-            if (spaceship.get(Physics)?) # already been killed?
-              body = spaceship.get(Physics).body
-              spaceship.get(Spaceship).fsm.changeState('destroyed')
-              spaceship.get(DeathThroes).body = body
-              #asteroid.get(Audio).play(ExplodeShip)
-              if (@games.head)
-                @games.head.state.lives--
+        if (a.get(Physics)?) # already been killed?
+          @creator.destroyEntity a
+          PhysicsSystem.deadPool.push(a.get(Physics).body)
 
-            return
+        if (b.get(Physics)?) # already been killed?
+          radius = b.get(Collision).radius
+          position = b.get(Position).position
+          if (radius > 10)
+            @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
+            @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
+          body = b.get(Physics).body
+          b.get(Asteroid).fsm.changeState('destroyed')
+          b.get(DeathThroes).body = body
+          if (@games.head)
+            @games.head.state.hits++
+
+      else if (type is AsteroidHitShip)
+
+        if (b.get(Physics)?) # already been killed?
+          body = b.get(Physics).body
+          b.get(Spaceship).fsm.changeState('destroyed')
+          b.get(DeathThroes).body = body
+          if (@games.head)
+            @games.head.state.lives--
+
     return
 
   addToEngine: (engine) ->
@@ -77,7 +73,7 @@ class asteroids.systems.CollisionSystem extends System #implements b2ContactList
   ###
    * b2ContactListener Interface
    *
-   * filter the event and collisions up valid combinations
+   * filter/reduce the events and que them up
   ###
   BeginContact: (contact) =>
 
