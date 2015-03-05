@@ -10,6 +10,7 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
 
   config      : null  # GameConfig
   world       : null  # Box2D World
+  creator     : null  # EntityCreator
   nodes       : null  # PhysicsNode
   @deadPool   : []    # dead bodies waiting to recycle
 
@@ -35,6 +36,9 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
      * Clean up the dead bodies
     ###
     while (body = PhysicsSystem.deadPool.pop())
+      ud = body.GetUserData()
+      delete ud.entity if ud.entity?
+      body.SetUserData(ud)
       @world.DestroyBody(body)
 #      ud = body.GetUserData()
 #      console.log "DeadPool: #{ud.type}"

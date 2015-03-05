@@ -2,84 +2,120 @@
 ash = require('ash.coffee')
 asteroids = require('../../index')
 
-SpaceshipCollisionNode    = asteroids.nodes.SpaceshipCollisionNode
-AsteroidCollisionNode     = asteroids.nodes.AsteroidCollisionNode
-BulletCollisionNode       = asteroids.nodes.BulletCollisionNode
 GameNode                  = asteroids.nodes.GameNode
 PhysicsSystem             = asteroids.systems.PhysicsSystem
+Asteroid                  = asteroids.components.Asteroid
+Spaceship                 = asteroids.components.Spaceship
 DeathThroes               = asteroids.components.DeathThroes
+Physics                   = asteroids.components.Physics
+Collision                 = asteroids.components.Collision
+Position                  = asteroids.components.Position
 Point                     = asteroids.ui.Point
+System                    = ash.core.System
+b2ContactListener         = Box2D.Dynamics.b2ContactListener
 
-class asteroids.systems.CollisionSystem extends ash.core.System
+class asteroids.systems.CollisionSystem extends System #implements b2ContactListener
 
+  world           : null #  b2World
   creator         : null #  EntityCreator
   games           : null #  NodeList
-  spaceships      : null #  NodeList
-  asteroids       : null #  NodeList
-  bullets         : null #  NodeList
+  que             : null #  collision que
 
-  constructor: (@creator) ->
+  constructor: (@world, @creator) ->
+    @que = []
+    @world.SetContactListener(this)
+
+  update:(time) =>
+    while @que.length
+      contact = @que.pop()
+      switch (contact.type)
+        when 1 then @BulletHitAsteroid(contact.a, contact.b)
+        when 2 then @AsteroidHitShip(contact.a, contact.b)
+    return
 
   addToEngine: (engine) ->
-    @games        = engine.getNodeList(GameNode)
-    @spaceships   = engine.getNodeList(SpaceshipCollisionNode)
-    @asteroids    = engine.getNodeList(AsteroidCollisionNode)
-    @bullets      = engine.getNodeList(BulletCollisionNode)
+    @games = engine.getNodeList(GameNode)
     return # Void
 
   removeFromEngine: (engine) ->
-    @games        = null
-    @spaceships   = null
-    @asteroids    = null
-    @bullets      = null
+    @games = null
     return # Void
 
-  update: (time) =>
+  # asteroid.Collision
+  # asteroid.Position
 
-    bullet = @bullets.head
-    while bullet
-      asteroid = @asteroids.head
-      while asteroid
-        if (Point.distance(asteroid.position.position, bullet.position.position ) <= asteroid.collision.radius)
-#        if asteroid.position.position.distanceTo(bullet.position.position) <= asteroid.collision.radius
-          ###
-           You hit an asteroid
-          ###
-          @creator.destroyEntity bullet.entity
-          PhysicsSystem.deadPool.push(bullet.physics.body)
-          if (asteroid.collision.radius > 10)
-            @creator.createAsteroid(asteroid.collision.radius - 10, asteroid.position.position.x + Math.random() * 10 - 5, asteroid.position.position.y + Math.random() * 10 - 5)
-            @creator.createAsteroid(asteroid.collision.radius - 10, asteroid.position.position.x + Math.random() * 10 - 5, asteroid.position.position.y + Math.random() * 10 - 5)
-          body = asteroid.physics.body
-          asteroid.asteroid.fsm.changeState('destroyed')
-          asteroid.entity.get(DeathThroes).body = body
-          #asteroid.audio.play(ExplodeAsteroid)
-          if (@games.head)
-            @games.head.state.hits++
-          break
+  # asteroid.Asteroid
+  # asteroid.Physics
+  # asteroid.DeathThroes
+  BulletHitAsteroid: (bullet, asteroid) =>
+    if (asteroid.get(Collision)?)
+      @creator.destroyEntity bullet
+      PhysicsSystem.deadPool.push(bullet.get(Physics).body)
+      radius = asteroid.get(Collision).radius
+      position = asteroid.get(Position).position
+      if (radius > 10)
+        @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
+        @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
+      body = asteroid.get(Physics).body
+      asteroid.get(Asteroid).fsm.changeState('destroyed')
+      asteroid.get(DeathThroes).body = body
+      #asteroid.get(Audio).play(ExplodeAsteroid)
+      if (@games.head)
+        @games.head.state.hits++
+    return
 
-        asteroid = asteroid.next
-      bullet = bullet.next
+  # spaceship.Spaceship
+  # spaceship.Physics
+  # spaceship.DeathThroes
+  AsteroidHitShip: (asteroid, spaceship) =>
+    if (spaceship.get(Physics)?)
+      body = spaceship.get(Physics).body
+      spaceship.get(Spaceship).fsm.changeState('destroyed')
+      spaceship.get(DeathThroes).body = body
+      #asteroid.get(Audio).play(ExplodeShip)
+      if (@games.head)
+        @games.head.state.lives--
 
-    spaceship = @spaceships.head
-    while spaceship
-      asteroid = @asteroids.head
-      while asteroid
-        if (Point.distance(asteroid.position.position, spaceship.position.position ) <= asteroid.collision.radius + spaceship.collision.radius)
-#        if asteroid.position.position.distanceTo(spaceship.position.position) <= asteroid.collision.radius + spaceship.collision.radius
-          ###
-           You were hit
-          ###
-          body = spaceship.physics.body
-          spaceship.spaceship.fsm.changeState('destroyed')
-          spaceship.entity.get(DeathThroes).body = body
+    return
 
-          #asteroid.audio.play(ExplodeShip)
-          if (@games.head)
-            @games.head.state.lives--
-          break
+  ###
+   * b2ContactListener Interface
+  ###
+  BeginContact: (contact) =>
 
-        asteroid = asteroid.next
-      spaceship = spaceship.next
+    a = contact.GetFixtureA().GetBody().GetUserData()
+    b = contact.GetFixtureB().GetBody().GetUserData()
 
-    return # Void
+    switch (a.type)
+      when 'asteroid'
+        switch(b.type)
+          when 'asteroid'   then return
+          when 'bullet'     then return @que.push(type: 1, a: b.entity, b: a.entity)
+          when 'spaceship'  then return @que.push(type: 2, a: a.entity, b: b.entity)
+      when 'bullet'
+        switch(b.type)
+          when 'asteroid'   then return @que.push(type: 1, a: a.entity, b: b.entity)
+          when 'bullet'     then return
+          when 'spaceship'  then return
+
+      when 'spaceship'
+        switch(b.type)
+          when 'asteroid'   then return @que.push(type: 2, a: b.entity, b: a.entity)
+          when 'bullet'     then return
+          when 'spaceship'  then return
+    return
+    ###
+     * type:
+     * 1 - bullet hits asteroid
+     * 2 - asteroid hits spaceship
+    ###
+
+  EndContact: (contact) =>
+    return
+
+  PreSolve: (contact, oldManifold) =>
+    return
+
+  PostSolve: (contact, impulse) =>
+    return
+

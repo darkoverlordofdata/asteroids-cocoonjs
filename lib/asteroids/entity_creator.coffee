@@ -61,14 +61,17 @@ b2Vec2                = Box2D.Common.Math.b2Vec2
 class asteroids.EntityCreator
 
 
-  KEY_LEFT    = 37
-  KEY_UP      = 38
-  KEY_RIGHT   = 39
-  KEY_Z       = 90
+  KEY_LEFT        = 37
+  KEY_UP          = 38
+  KEY_RIGHT       = 39
+  KEY_Z           = 90
 
-  engine      : null  # Ash Engine
-  world       : null  # Box2D World
-  waitEntity  : null
+  engine          : null  # Ash Engine
+  world           : null  # Box2D World
+  waitEntity      : null
+  bulletId        : 0
+  asteroidId      : 0
+  spaceshipId     : 0
 
   constructor: (@engine, @world) ->
 
@@ -122,14 +125,12 @@ class asteroids.EntityCreator
 
     fixDef = new b2FixtureDef()
     fixDef.density = 1.0
-    fixDef.friction = 0.0
+    fixDef.friction = 1.0
     fixDef.restitution = 0.2
-    fixDef.shape = new b2CircleShape()
+    fixDef.shape = new b2CircleShape(radius)
 
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
-    body.SetUserData(type: 'Asteroid')
-
 
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
@@ -150,6 +151,7 @@ class asteroids.EntityCreator
     .add(new Position(x, y, 0))
     .add(new Audio())
 
+    body.SetUserData(type: 'asteroid', id: ++@asteroidId, entity: asteroid)
     fsm.changeState('alive')
     @engine.addEntity asteroid
     return asteroid
@@ -158,7 +160,6 @@ class asteroids.EntityCreator
    * Create Player Spaceship with FSM Animation
   ###
   createSpaceship: ->
-
     ###
      * Model the physics using Box2D
     ###
@@ -169,10 +170,10 @@ class asteroids.EntityCreator
     bodyDef.position.y = 225
     bodyDef.linearVelocity.Set(0, 0)
     bodyDef.angularVelocity = 0
-
+    bodyDef.linearDamping = 0.75
     fixDef = new b2FixtureDef()
     fixDef.density = 1.0
-    fixDef.friction = 0.5
+    fixDef.friction = 1.0
     fixDef.restitution = 0.2
     fixDef.shape = new b2PolygonShape()
     fixDef.shape.SetAsArray([
@@ -183,7 +184,6 @@ class asteroids.EntityCreator
 
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
-    body.SetUserData(type: 'Spaceship')
 
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
@@ -207,8 +207,10 @@ class asteroids.EntityCreator
     .add(new Position(300, 225, 0))
     .add(new Audio())
 
+    body.SetUserData(type: 'spaceship', id: ++@spaceshipId, entity: spaceship)
     fsm.changeState('playing')
     @engine.addEntity spaceship
+
     return spaceship
 
 
@@ -238,11 +240,10 @@ class asteroids.EntityCreator
     fixDef.density = 1.0
     fixDef.friction = 0.0
     fixDef.restitution = 0.2
-    fixDef.shape = new b2CircleShape()
+    fixDef.shape = new b2CircleShape(0)
 
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
-    body.SetUserData(type: 'Bullet')
 
     bullet = new Entity()
     .add(new Bullet(gun.bulletLifetime))
@@ -250,7 +251,10 @@ class asteroids.EntityCreator
     .add(new Collision(0))
     .add(new Physics(body))
     .add(new Display(new BulletView()))
+
+    body.SetUserData(type: 'bullet', id: ++@bulletId, entity: bullet)
     @engine.addEntity(bullet)
+
     return bullet
 
 
