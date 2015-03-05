@@ -151,7 +151,7 @@ class asteroids.EntityCreator
     .add(new Position(x, y, 0))
     .add(new Audio())
 
-    body.SetUserData(type: 'asteroid', id: ++@asteroidId, entity: asteroid)
+    body.SetUserData(type: 'asteroid', entity: asteroid)
     fsm.changeState('alive')
     @engine.addEntity asteroid
     return asteroid
@@ -207,7 +207,7 @@ class asteroids.EntityCreator
     .add(new Position(300, 225, 0))
     .add(new Audio())
 
-    body.SetUserData(type: 'spaceship', id: ++@spaceshipId, entity: spaceship)
+    body.SetUserData(type: 'spaceship', entity: spaceship)
     fsm.changeState('playing')
     @engine.addEntity spaceship
 
@@ -252,7 +252,7 @@ class asteroids.EntityCreator
     .add(new Physics(body))
     .add(new Display(new BulletView()))
 
-    body.SetUserData(type: 'bullet', id: ++@bulletId, entity: bullet)
+    body.SetUserData(type: 'bullet', entity: bullet)
     @engine.addEntity(bullet)
 
     return bullet

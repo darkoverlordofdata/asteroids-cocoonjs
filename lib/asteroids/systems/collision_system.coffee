@@ -41,16 +41,15 @@ class asteroids.systems.CollisionSystem extends System #implements b2ContactList
     @games = null
     return # Void
 
-  # asteroid.Collision
-  # asteroid.Position
-
-  # asteroid.Asteroid
-  # asteroid.Physics
-  # asteroid.DeathThroes
+  ###
+   * player hit asteroid
+  ###
   BulletHitAsteroid: (bullet, asteroid) =>
-    if (asteroid.get(Collision)?)
+    if (bullet.get(Physics)?) # already been killed?
       @creator.destroyEntity bullet
       PhysicsSystem.deadPool.push(bullet.get(Physics).body)
+
+    if (asteroid.get(Physics)?) # already been killed?
       radius = asteroid.get(Collision).radius
       position = asteroid.get(Position).position
       if (radius > 10)
@@ -64,11 +63,11 @@ class asteroids.systems.CollisionSystem extends System #implements b2ContactList
         @games.head.state.hits++
     return
 
-  # spaceship.Spaceship
-  # spaceship.Physics
-  # spaceship.DeathThroes
+  ###
+   * asteroid hit spaceship
+  ###
   AsteroidHitShip: (asteroid, spaceship) =>
-    if (spaceship.get(Physics)?)
+    if (spaceship.get(Physics)?) # already been killed?
       body = spaceship.get(Physics).body
       spaceship.get(Spaceship).fsm.changeState('destroyed')
       spaceship.get(DeathThroes).body = body

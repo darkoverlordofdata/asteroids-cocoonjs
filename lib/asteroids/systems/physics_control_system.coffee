@@ -19,10 +19,10 @@ class asteroids.systems.PhysicsControlSystem extends ash.tools.ListIteratingSyst
 
     rotation = body.GetAngularVelocity()
 
-    if @keyPoll.isDown(control.left)
+    if @keyPoll.isDown(control.left) and rotation < 10
       body.ApplyTorque(rotation/1000 - control.rotationRate / Math.PI * time)
 
-    if @keyPoll.isDown(control.right)
+    if @keyPoll.isDown(control.right) and rotation < 10
       body.ApplyTorque(rotation/1000 + control.rotationRate / Math.PI * time)
 
     if @keyPoll.isDown(control.accelerate)
