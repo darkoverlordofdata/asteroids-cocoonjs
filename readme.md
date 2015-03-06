@@ -13,6 +13,15 @@ Using [ash.coffee](https://github.com/darkoverlordofdata/ash.coffee)
 
 and Box2D
 
+# Install
+
+```bash
+$ git clone https://github.com/darkoverlordofdata/asteroids.git
+$ cd asteroids
+$ npm install
+$ grunt get
+$ grunt build
+```
 
 # MIT License
 
