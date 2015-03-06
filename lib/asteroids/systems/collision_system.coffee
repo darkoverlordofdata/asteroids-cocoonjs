@@ -43,8 +43,8 @@ class asteroids.systems.CollisionSystem extends System #implements b2ContactList
           radius = b.get(Collision).radius
           position = b.get(Position).position
           if (radius > 10)
-            @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
-            @creator.createAsteroid(radius - 10, position.x + Math.random() * 10 - 5, position.y + Math.random() * 10 - 5)
+            @creator.createAsteroid(radius - 10, position.x + rnd.nextDouble() * 10 - 5, position.y + rnd.nextDouble() * 10 - 5)
+            @creator.createAsteroid(radius - 10, position.x + rnd.nextDouble() * 10 - 5, position.y + rnd.nextDouble() * 10 - 5)
           body = b.get(Physics).body
           b.get(Asteroid).fsm.changeState('destroyed')
           b.get(DeathThroes).body = body

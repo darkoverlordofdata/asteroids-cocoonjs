@@ -60,7 +60,6 @@ b2Vec2                = Box2D.Common.Math.b2Vec2
 
 class asteroids.EntityCreator
 
-
   KEY_LEFT        = 37
   KEY_UP          = 38
   KEY_RIGHT       = 39
@@ -73,7 +72,7 @@ class asteroids.EntityCreator
   asteroidId      : 0
   spaceshipId     : 0
 
-  constructor: (@engine, @world) ->
+  constructor: (@engine, @world, @config) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -113,15 +112,15 @@ class asteroids.EntityCreator
   createAsteroid: (radius, x, y) ->
 
     ###
-     * Model the physics using Box2D
+     * Asteroid simulation - box2d
     ###
     bodyDef = new b2BodyDef()
     bodyDef.type = b2Body.b2_dynamicBody
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set((Math.random() - 0.5) * 4 * (50 - radius), (Math.random() - 0.5) * 4 * (50 - radius))
-    bodyDef.angularVelocity = Math.random() * 2 - 1
+    bodyDef.linearVelocity.Set((rnd.nextDouble() - 0.5) * 4 * (50 - radius), (rnd.nextDouble() - 0.5) * 4 * (50 - radius))
+    bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1
 
     fixDef = new b2FixtureDef()
     fixDef.density = 1.0
@@ -132,6 +131,9 @@ class asteroids.EntityCreator
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
 
+    ###
+     * Asteroid entity
+    ###
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
@@ -160,31 +162,38 @@ class asteroids.EntityCreator
    * Create Player Spaceship with FSM Animation
   ###
   createSpaceship: ->
+
+    x = rnd.nextInt(@config.width)
+    y = rnd.nextInt(@config.height)
     ###
-     * Model the physics using Box2D
+     * Spaceship simulation
     ###
     bodyDef = new b2BodyDef()
     bodyDef.type = b2Body.b2_dynamicBody
     bodyDef.fixedRotation = false
-    bodyDef.position.x = 300
-    bodyDef.position.y = 225
+    bodyDef.position.x = x
+    bodyDef.position.y = y
     bodyDef.linearVelocity.Set(0, 0)
     bodyDef.angularVelocity = 0
     bodyDef.linearDamping = 0.75
+
     fixDef = new b2FixtureDef()
     fixDef.density = 1.0
     fixDef.friction = 1.0
     fixDef.restitution = 0.2
     fixDef.shape = new b2PolygonShape()
     fixDef.shape.SetAsArray([
-      new b2Vec2(.45, 0)
-      new b2Vec2(-.25, .25)
-      new b2Vec2(-.25, -.25)
+      new b2Vec2(0.45, 0)
+      new b2Vec2(-0.25, 0.25)
+      new b2Vec2(-0.25, -0.25)
     ], 3)
 
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
 
+    ###
+     * Spaceship entity
+    ###
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
@@ -204,7 +213,7 @@ class asteroids.EntityCreator
 
     spaceship
     .add(new Spaceship(fsm))
-    .add(new Position(300, 225, 0))
+    .add(new Position(x, y, 0))
     .add(new Audio())
 
     body.SetUserData(type: 'spaceship', entity: spaceship)
@@ -226,7 +235,7 @@ class asteroids.EntityCreator
     y = sin * gun.offsetFromParent.x + cos * gun.offsetFromParent.y + parentPosition.position.y
 
     ###
-     * Model the physics using Box2D
+     * Bullet simulation
     ###
     bodyDef = new b2BodyDef()
     bodyDef.type = b2Body.b2_dynamicBody
@@ -245,6 +254,9 @@ class asteroids.EntityCreator
     body = @world.CreateBody(bodyDef)
     body.CreateFixture(fixDef)
 
+    ###
+     * Bullet entity
+    ###
     bullet = new Entity()
     .add(new Bullet(gun.bulletLifetime))
     .add(new Position(x, y, 0))

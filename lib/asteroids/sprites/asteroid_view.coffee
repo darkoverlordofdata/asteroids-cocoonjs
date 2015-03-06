@@ -16,14 +16,14 @@ class asteroids.sprites.AsteroidView
     @points = []
     angle = 0
     while angle < Math.PI * 2
-      length = (0.75 + Math.random() * 0.25) * @radius
+      length = (0.75 + rnd.nextDouble() * 0.25) * @radius
       posX = Math.cos(angle) * length
       posY = Math.sin(angle) * length
       @points.push
         x: posX
         y: posY
 
-      angle += Math.random() * 0.5
+      angle += rnd.nextDouble() * 0.5
 
   draw: (ctx) =>
     ctx.save()

@@ -17,6 +17,9 @@
 module.exports =
 class asteroids
 
+class asteroids.util
+require './asteroids/util/mersenne_twister'
+
 class asteroids.ui
 require './asteroids/ui/point'
 require './asteroids/ui/key_poll'
@@ -62,7 +65,7 @@ require './asteroids/nodes/movement_node'
 require './asteroids/nodes/physics_control_node'
 require './asteroids/nodes/physics_node'
 require './asteroids/nodes/render_node'
-require './asteroids/nodes/spaceship_collision_node'
+#require './asteroids/nodes/spaceship_collision_node'
 require './asteroids/nodes/spaceship_node'
 require './asteroids/nodes/wait_for_start_node'
 
@@ -87,5 +90,4 @@ require './asteroids/systems/wait_for_start_system'
 require './asteroids/entity_creator'
 require './asteroids/game_config'
 require './asteroids/asteroids'
-require './asteroids/main'
 

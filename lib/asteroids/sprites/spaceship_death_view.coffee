@@ -24,10 +24,10 @@ class asteroids.sprites.SpaceshipDeathView
 
     if @first
       @first = false
-      @vel1 = new Point(Math.random() * 10 - 5, Math.random() * 10 + 10)
-      @vel2 = new Point(Math.random() * 10 - 5, - ( Math.random() * 10 + 10 ))
-      @rot1 = Math.random() * 300 - 150
-      @rot2 = Math.random() * 300 - 150
+      @vel1 = new Point(rnd.nextDouble() * 10 - 5, rnd.nextDouble() * 10 + 10)
+      @vel2 = new Point(rnd.nextDouble() * 10 - 5, - ( rnd.nextDouble() * 10 + 10 ))
+      @rot1 = rnd.nextDouble() * 300 - 150
+      @rot2 = rnd.nextDouble() * 300 - 150
       @x1 = @x2 = @x
       @y1 = @y2 = @y
       @r1 = @r2 = @rotation

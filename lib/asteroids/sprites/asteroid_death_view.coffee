@@ -39,11 +39,11 @@ class Dot
 
   constructor: (maxDistance) ->
 
-    angle = Math.random() * 2 * Math.PI
-    distance = Math.random() * maxDistance
+    angle = rnd.nextDouble() * 2 * Math.PI
+    distance = rnd.nextDouble() * maxDistance
     @x = Math.cos( angle ) * distance
     @y = Math.sin( angle ) * distance
-    speed = Math.random() * 10 + 10
+    speed = rnd.nextDouble() * 10 + 10
     @velocity = new Point(Math.cos(angle)*speed, Math.sin(angle)*speed)
 
   draw:(ctx, x, y) ->

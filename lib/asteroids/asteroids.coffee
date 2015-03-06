@@ -39,6 +39,7 @@ KeyPoll               = asteroids.ui.KeyPoll
 
 b2Vec2                = Box2D.Common.Math.b2Vec2
 b2World               = Box2D.Dynamics.b2World
+b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
 
 Engine                = ash.core.Engine
 FrameTickProvider     = ash.tick.FrameTickProvider
@@ -59,13 +60,14 @@ class asteroids.Asteroids
 
   prepare: (width, height) ->
 
-    @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
-    @engine = new Engine()
-    @creator = new EntityCreator(@engine, @world)
-    @keyPoll = new KeyPoll(window)
     @config = new GameConfig()
     @config.height = height
     @config.width = width
+
+    @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
+    @engine = new Engine()
+    @creator = new EntityCreator(@engine, @world, @config)
+    @keyPoll = new KeyPoll(window)
 
     @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate );
     @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
@@ -103,3 +105,16 @@ class asteroids.Asteroids
     @tickProvider.start()
     return
 
+
+  @main: ->
+    window.rnd = new asteroids.util.MersenneTwister
+    canvas = document.createElement(if navigator.isCocoonJS then 'screencanvas' else 'canvas')
+    canvas.width  = window.innerWidth*window.devicePixelRatio
+    canvas.height = window.innerHeight*window.devicePixelRatio
+    canvas.style.width = '100%'
+    canvas.style.height = '100%'
+    canvas.style.backgroundColor = '#6A5ACD'
+    document.body.appendChild(canvas)
+    asteroids = new asteroids.Asteroids(canvas.getContext('2d'), canvas.width, canvas.height)
+    asteroids.start()
+    return

@@ -8,11 +8,11 @@ class asteroids.nodes.AsteroidCollisionNode extends ash.core.Node
     asteroid  : asteroids.components.Asteroid
     position  : asteroids.components.Position
     collision : asteroids.components.Collision
-    audio     : asteroids.components.Audio
+#    audio     : asteroids.components.Audio
     physics   : asteroids.components.Physics
 
   asteroid  : null
-  position  : null
-  collision : null
-  audio     : null
+#  position  : null
+#  collision : null
+#  audio     : null
   physics   : null

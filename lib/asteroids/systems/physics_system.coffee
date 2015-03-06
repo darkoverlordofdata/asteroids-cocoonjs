@@ -27,6 +27,7 @@ class asteroids.systems.PhysicsSystem extends ash.core.System
   update: (time) =>
     @world.Step(time, 10, 10)
     @world.ClearForces()
+
     node = @nodes.head
     while node
       @updateNode node, time

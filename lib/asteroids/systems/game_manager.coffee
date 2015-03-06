@@ -58,7 +58,7 @@ class asteroids.systems.GameManager extends ash.core.System
   
           # check not on top of spaceship
           loop
-            position = new Point(Math.random() * @config.width, Math.random() * @config.height)
+            position = new Point(rnd.nextDouble() * @config.width, rnd.nextDouble() * @config.height)
             break unless Point.distance(position, spaceship.position.position) <= 80
 
           @creator.createAsteroid 30, position.x, position.y
