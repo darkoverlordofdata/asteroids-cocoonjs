@@ -1,1 +1,1 @@
-new asteroids.Main()
+Asteroids.main()
