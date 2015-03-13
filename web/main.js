@@ -1,1 +1,1 @@
-asteroids.Asteroids.main()
+Asteroids.main()
