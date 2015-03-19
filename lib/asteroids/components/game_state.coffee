@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.GameState
+class GameState
 
   lives: 3
   level: 0

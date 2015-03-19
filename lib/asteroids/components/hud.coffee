@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.Hud
+class Hud
 
   view: null
 

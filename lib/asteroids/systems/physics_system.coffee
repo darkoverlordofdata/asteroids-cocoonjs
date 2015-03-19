@@ -1,12 +1,8 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
 
-PhysicsNode           = asteroids.nodes.PhysicsNode
-b2Body                = Box2D.Dynamics.b2Body
-b2Vec2                = Box2D.Common.Math.b2Vec2
+class PhysicsSystem extends ash.core.System
 
-class asteroids.systems.PhysicsSystem extends ash.core.System
+  b2Body                = Box2D.Dynamics.b2Body
+  b2Vec2                = Box2D.Common.Math.b2Vec2
 
   config      : null  # GameConfig
   world       : null  # Box2D World

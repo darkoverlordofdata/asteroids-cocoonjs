@@ -1,12 +1,4 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-DeathThroesNode = asteroids.nodes.DeathThroesNode
-PhysicsSystem   = asteroids.systems.PhysicsSystem
-
-
-class asteroids.systems.DeathThroesSystem extends ash.tools.ListIteratingSystem
+class DeathThroesSystem extends ash.tools.ListIteratingSystem
 
   creator: null
 

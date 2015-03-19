@@ -1,14 +1,4 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-GameNode                  = asteroids.nodes.GameNode
-SpaceshipNode             = asteroids.nodes.SpaceshipNode
-AsteroidCollisionNode     = asteroids.nodes.AsteroidCollisionNode
-BulletCollisionNode       = asteroids.nodes.BulletCollisionNode
-Point                     = asteroids.ui.Point
-
-class asteroids.systems.GameManager extends ash.core.System
+class GameManager extends ash.core.System
 
   config        : null  # GameConfig
   creator       : null  # EntityCreator

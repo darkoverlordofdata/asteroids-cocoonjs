@@ -1,10 +1,4 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-GunControlNode = asteroids.nodes.GunControlNode
-
-class asteroids.systems.GunControlSystem extends ash.tools.ListIteratingSystem
+class GunControlSystem extends ash.tools.ListIteratingSystem
 
   keyPoll     : null  # KeyPoll
   creator     : null  # EntityCreator

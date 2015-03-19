@@ -1,20 +1,7 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
 
-GameNode                  = asteroids.nodes.GameNode
-PhysicsSystem             = asteroids.systems.PhysicsSystem
-Asteroid                  = asteroids.components.Asteroid
-Spaceship                 = asteroids.components.Spaceship
-DeathThroes               = asteroids.components.DeathThroes
-Physics                   = asteroids.components.Physics
-Collision                 = asteroids.components.Collision
-Position                  = asteroids.components.Position
-Point                     = asteroids.ui.Point
-System                    = ash.core.System
-b2ContactListener         = Box2D.Dynamics.b2ContactListener
+class CollisionSystem extends ash.core.System #implements b2ContactListener
 
-class asteroids.systems.CollisionSystem extends System #implements b2ContactListener
+  b2ContactListener         = Box2D.Dynamics.b2ContactListener
 
   BulletHitAsteroid = 1
   AsteroidHitShip = 2

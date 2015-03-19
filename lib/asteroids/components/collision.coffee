@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.Collision
+class Collision
 
   radius: 0
 

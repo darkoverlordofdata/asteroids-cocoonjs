@@ -1,6 +1,3 @@
-'use strict'
-asteroids = require('../../index')
-
 ###
    A C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.
@@ -44,7 +41,7 @@ asteroids = require('../../index')
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 
 ###
-class asteroids.util.MersenneTwister
+class MersenneTwister
 
   # Period parameters
   N = 624
@@ -81,7 +78,8 @@ class asteroids.util.MersenneTwister
    * Generates a random int value from 0, inclusive, to max, exclusive.
   ###
   nextInt: (max) ->
-    return Math.floor(@genrand_res53() * max)
+    #return Math.floor(@genrand_res53() * max)
+    return ~~(@genrand_res53() * max)
 
 
   ###

@@ -1,10 +1,4 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-HudNode = asteroids.nodes.HudNode
-
-class asteroids.systems.HudSystem extends ash.tools.ListIteratingSystem
+class HudSystem extends ash.tools.ListIteratingSystem
 
   constructor: () ->
 

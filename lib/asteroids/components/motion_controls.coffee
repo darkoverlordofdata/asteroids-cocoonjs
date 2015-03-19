@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.MotionControls
+class MotionControls
 
   left: 0
   right: 0

@@ -1,10 +1,6 @@
-'use strict'
-asteroids = require('../../index')
-ash = require('ash.coffee')
+class WaitForStartView
 
-Signal0 = ash.signals.Signal0
-
-class asteroids.sprites.WaitForStartView
+  Signal0 = ash.signals.Signal0
 
   x: 0
   y: 0

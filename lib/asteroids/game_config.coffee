@@ -13,10 +13,7 @@
 #
 # GameConfig
 #
-'use strict'
-asteroids = require('../index')
-
-class asteroids.GameConfig
+class GameConfig
 
   width: 0
   height: 0

@@ -13,38 +13,14 @@
 #
 # Asteroids
 #
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../index')
+class Asteroids
 
-AnimationSystem       = asteroids.systems.AnimationSystem
-AudioSystem           = asteroids.systems.AudioSystem
-BulletAgeSystem       = asteroids.systems.BulletAgeSystem
-CollisionSystem       = asteroids.systems.CollisionSystem
-DeathThroesSystem     = asteroids.systems.DeathThroesSystem
-GameManager           = asteroids.systems.GameManager
-GunControlSystem      = asteroids.systems.GunControlSystem
-HudSystem             = asteroids.systems.HudSystem
-MovementSystem        = asteroids.systems.MovementSystem
-RenderSystem          = asteroids.systems.RenderSystem
-SystemPriorities      = asteroids.systems.SystemPriorities
-WaitForStartSystem    = asteroids.systems.WaitForStartSystem
-PhysicsSystem         = asteroids.systems.PhysicsSystem
-PhysicsControlSystem  = asteroids.systems.PhysicsControlSystem
+  b2Vec2                = Box2D.Common.Math.b2Vec2
+  b2World               = Box2D.Dynamics.b2World
+  b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
 
-GameState             = asteroids.components.GameState
-EntityCreator         = asteroids.EntityCreator
-GameConfig            = asteroids.GameConfig
-KeyPoll               = asteroids.ui.KeyPoll
-
-b2Vec2                = Box2D.Common.Math.b2Vec2
-b2World               = Box2D.Dynamics.b2World
-b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
-
-Engine                = ash.core.Engine
-FrameTickProvider     = ash.tick.FrameTickProvider
-
-class asteroids.Asteroids
+  Engine                = ash.core.Engine
+  FrameTickProvider     = ash.tick.FrameTickProvider
 
   container       : null #  DisplayObjectContainer
   engine          : null #  Engine
@@ -107,7 +83,7 @@ class asteroids.Asteroids
 
 
   @main: ->
-    window.rnd = new asteroids.util.MersenneTwister
+    window.rnd = new MersenneTwister
     canvas = document.createElement(if navigator.isCocoonJS then 'screencanvas' else 'canvas')
     canvas.width  = window.innerWidth*window.devicePixelRatio
     canvas.height = window.innerHeight*window.devicePixelRatio
@@ -115,6 +91,6 @@ class asteroids.Asteroids
     canvas.style.height = '100%'
     canvas.style.backgroundColor = '#6A5ACD'
     document.body.appendChild(canvas)
-    asteroids = new asteroids.Asteroids(canvas.getContext('2d'), canvas.width, canvas.height)
+    asteroids = new Asteroids(canvas.getContext('2d'), canvas.width, canvas.height)
     asteroids.start()
     return

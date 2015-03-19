@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.Spaceship
+class Spaceship
 
   fsm: null
 

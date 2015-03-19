@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.Audio
+class Audio
 
   toPlay: null
 

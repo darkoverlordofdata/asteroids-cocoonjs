@@ -1,13 +1,9 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-class asteroids.nodes.MovementNode extends ash.core.Node
+class MovementNode extends ash.core.Node
 
   @components:
-    position : asteroids.components.Position
-    motion : asteroids.components.Motion
+    position : Position
+    #motion : Motion
 
 
   position : null
-  motion : null
+  #motion : null

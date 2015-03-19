@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.ui.KeyPoll
+class KeyPoll
 
   states = null
   displayObj = null

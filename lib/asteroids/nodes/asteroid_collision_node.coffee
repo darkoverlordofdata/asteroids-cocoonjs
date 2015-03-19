@@ -1,15 +1,11 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-class asteroids.nodes.AsteroidCollisionNode extends ash.core.Node
+class AsteroidCollisionNode extends ash.core.Node
 
   @components:
-    asteroid  : asteroids.components.Asteroid
-    position  : asteroids.components.Position
-    collision : asteroids.components.Collision
+    asteroid  : Asteroid
+    position  : Position
+    collision : Collision
 #    audio     : asteroids.components.Audio
-    physics   : asteroids.components.Physics
+    physics   : Physics
 
   asteroid  : null
 #  position  : null

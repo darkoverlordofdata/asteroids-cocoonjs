@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.ui.Point
+class Point
 
   x: 0
   y: 0

@@ -1,11 +1,7 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
 
-PhysicsControlNode    = asteroids.nodes.PhysicsControlNode
-b2Vec2                = Box2D.Common.Math.b2Vec2
+class PhysicsControlSystem extends ash.tools.ListIteratingSystem
 
-class asteroids.systems.PhysicsControlSystem extends ash.tools.ListIteratingSystem
+  b2Vec2                = Box2D.Common.Math.b2Vec2
 
   keyPoll: null # KeyPoll
 

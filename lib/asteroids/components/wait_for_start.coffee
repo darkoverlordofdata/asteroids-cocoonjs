@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.WaitForStart
+class WaitForStart
 
   waitForStart: null
   startGame: false

@@ -1,9 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-Point = asteroids.ui.Point
-
-class asteroids.sprites.AsteroidDeathView
+class AsteroidDeathView
 
   x           : 0
   y           : 0

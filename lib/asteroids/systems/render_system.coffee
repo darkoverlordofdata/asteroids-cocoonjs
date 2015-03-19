@@ -1,10 +1,4 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-RenderNode = asteroids.nodes.RenderNode
-
-class asteroids.systems.RenderSystem extends ash.core.System
+class RenderSystem extends ash.core.System
 
   graphic   : null  # 2D Context
   nodes     : null  # NodeList

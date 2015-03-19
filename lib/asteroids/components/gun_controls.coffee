@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.GunControls
+class GunControls
 
   trigger: 0
 

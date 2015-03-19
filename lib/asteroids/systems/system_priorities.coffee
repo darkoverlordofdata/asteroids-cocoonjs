@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.systems.SystemPriorities
+class SystemPriorities
 
   @preUpdate            : 1
   @update               : 2

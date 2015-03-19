@@ -1,10 +1,6 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-class asteroids.nodes.WaitForStartNode extends ash.core.Node
+class WaitForStartNode extends ash.core.Node
 
   @components:
-    wait : asteroids.components.WaitForStart
+    wait : WaitForStart
 
   wait : null

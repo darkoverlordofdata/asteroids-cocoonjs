@@ -1,8 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-Point = asteroids.ui.Point
-
-class asteroids.components.Gun
+class Gun
 
   shooting: false
   offsetFromParent: null

@@ -13,52 +13,22 @@
 #
 # EntityCreator
 #
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../index')
+class EntityCreator
 
-WaitForStartView      = asteroids.sprites.WaitForStartView
-Entity                = ash.core.Entity
-EntityStateMachine    = ash.fsm.EntityStateMachine
-###
- * Asteroid Game Components
-###
-Animation             = asteroids.components.Animation
-Asteroid              = asteroids.components.Asteroid
-Audio                 = asteroids.components.Audio
-Bullet                = asteroids.components.Bullet
-Collision             = asteroids.components.Collision
-DeathThroes           = asteroids.components.DeathThroes
-Display               = asteroids.components.Display
-GameState             = asteroids.components.GameState
-Gun                   = asteroids.components.Gun
-GunControls           = asteroids.components.GunControls
-Hud                   = asteroids.components.Hud
-MotionControls        = asteroids.components.MotionControls
-Physics               = asteroids.components.Physics
-Position              = asteroids.components.Position
-Spaceship             = asteroids.components.Spaceship
-WaitForStart          = asteroids.components.WaitForStart
-###
- * Drawable Components
-###
-AsteroidDeathView     = asteroids.sprites.AsteroidDeathView
-AsteroidView          = asteroids.sprites.AsteroidView
-BulletView            = asteroids.sprites.BulletView
-HudView               = asteroids.sprites.HudView
-SpaceshipDeathView    = asteroids.sprites.SpaceshipDeathView
-SpaceshipView         = asteroids.sprites.SpaceshipView
-###
- * Box2D classes
-###
-b2Body                = Box2D.Dynamics.b2Body
-b2BodyDef             = Box2D.Dynamics.b2BodyDef
-b2CircleShape         = Box2D.Collision.Shapes.b2CircleShape
-b2FixtureDef          = Box2D.Dynamics.b2FixtureDef
-b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
-b2Vec2                = Box2D.Common.Math.b2Vec2
+  Entity                = ash.core.Entity
+  EntityStateMachine    = ash.fsm.EntityStateMachine
 
-class asteroids.EntityCreator
+  ###
+   * Box2D classes
+  ###
+  b2Body                = Box2D.Dynamics.b2Body
+  b2BodyDef             = Box2D.Dynamics.b2BodyDef
+  b2CircleShape         = Box2D.Collision.Shapes.b2CircleShape
+  b2FixtureDef          = Box2D.Dynamics.b2FixtureDef
+  b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
+  b2Vec2                = Box2D.Common.Math.b2Vec2
+
+
 
   KEY_LEFT        = 37
   KEY_UP          = 38

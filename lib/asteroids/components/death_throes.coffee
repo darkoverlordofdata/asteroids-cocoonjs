@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.components.DeathThroes
+class DeathThroes
 
   countdown: 0
   body: null

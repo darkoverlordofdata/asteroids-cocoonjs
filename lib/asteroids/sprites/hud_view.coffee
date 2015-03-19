@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.sprites.HudView
+class HudView
 
   x: 0
   y: 0

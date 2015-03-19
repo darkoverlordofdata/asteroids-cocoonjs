@@ -1,7 +1,4 @@
-'use strict'
-asteroids = require('../../index')
-
-class asteroids.sprites.SpaceshipView
+class SpaceshipView
 
   x: 0
   y: 0

@@ -1,12 +1,4 @@
-'use strict'
-ash = require('ash.coffee')
-asteroids = require('../../index')
-
-WaitForStartNode        = asteroids.nodes.WaitForStartNode
-AsteroidCollisionNode   = asteroids.nodes.AsteroidCollisionNode
-GameNode                = asteroids.nodes.GameNode
-
-class asteroids.systems.WaitForStartSystem extends ash.core.System
+class WaitForStartSystem extends ash.core.System
 
   engine      : null  # Engine
   creator     : null  # EntityCreator
