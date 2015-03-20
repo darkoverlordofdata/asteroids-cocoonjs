@@ -1,3 +1,6 @@
+###
+ * Provide user input
+###
 class KeyPoll
 
   states = null

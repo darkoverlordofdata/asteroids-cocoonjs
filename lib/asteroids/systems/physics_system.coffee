@@ -6,11 +6,12 @@ class PhysicsSystem extends ash.core.System
 
   config      : null  # GameConfig
   world       : null  # Box2D World
+  stage       : null  # Displayables
   creator     : null  # EntityCreator
   nodes       : null  # PhysicsNode
   @deadPool   : []    # dead bodies waiting to recycle
 
-  constructor: (@config, @world) ->
+  constructor: (@config, @world, @stage) ->
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(PhysicsNode)

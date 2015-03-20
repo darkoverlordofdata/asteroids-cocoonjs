@@ -4,7 +4,7 @@
 #| Copyright DarkOverlordOfData (c) 2015
 #+--------------------------------------------------------------------+
 #|
-#| This file is a part of ash.coffee
+#| This file is a part of asteroids.coffee
 #|
 #| ash.coffee is free software; you can copy, modify, and distribute
 #| it under the terms of the MIT License
@@ -22,19 +22,29 @@ class Asteroids
   Engine                = ash.core.Engine
   FrameTickProvider     = ash.tick.FrameTickProvider
 
-  container       : null #  DisplayObjectContainer
   engine          : null #  Engine
   tickProvider    : null #  FrameTickProvider
   creator         : null #  EntityCreator
   keyPoll         : null #  KeyPoll
   config          : null #  GameConfig
   world           : null #  B2World
+  stage           : null #  Display container
+  renderer        : null #
 
-  constructor: (@container, width, height) ->
+  assets: ['res/starfield.png', 'res/+.png', 'res/-.png']
 
-    @prepare(width, height)
 
-  prepare: (width, height) ->
+  start: (canvas, stats) ->
+
+    width = canvas.width
+    height = canvas.height
+    @stage = new PIXI.Stage(0x6A5ACD)
+    @renderer = new PIXI.CanvasRenderer(width, height, view:canvas)
+
+    bgd = PIXI.Sprite.fromImage('res/starfield.png')
+    bgd.width = window.innerWidth * window.devicePixelRatio
+    bgd.height = window.innerHeight * window.devicePixelRatio
+    @stage.addChild(bgd)
 
     @config = new GameConfig()
     @config.height = height
@@ -42,55 +52,27 @@ class Asteroids
 
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @engine = new Engine()
-    @creator = new EntityCreator(@engine, @world, @config)
+    @creator = new EntityCreator(@engine, @world, @config, @stage)
     @keyPoll = new KeyPoll(window)
 
-    @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate );
+    @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate)
     @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
     @engine.addSystem(new PhysicsControlSystem(@keyPoll), SystemPriorities.update)
     @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
     @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
     @engine.addSystem(new DeathThroesSystem(@creator), SystemPriorities.update)
-    @engine.addSystem(new PhysicsSystem(@config, @world), SystemPriorities.move)
+    @engine.addSystem(new PhysicsSystem(@config, @world, @stage), SystemPriorities.move)
     @engine.addSystem(new CollisionSystem(@world, @creator), SystemPriorities.resolveCollisions)
-    @engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
-    @engine.addSystem(new HudSystem(), SystemPriorities.animate);
-    @engine.addSystem(new RenderSystem(@container), SystemPriorities.render)
-    @engine.addSystem(new AudioSystem(), SystemPriorities.render);
+    @engine.addSystem(new AnimationSystem(), SystemPriorities.animate)
+    @engine.addSystem(new HudSystem(), SystemPriorities.animate)
+    @engine.addSystem(new RenderSystem(@stage, @renderer), SystemPriorities.render)
+    @engine.addSystem(new AudioSystem(), SystemPriorities.render)
 
     @creator.createWaitForClick()
     @creator.createGame()
-    return
-
-  start: ->
-
-    if navigator.isCocoonJS
-      stats = null
-    else
-      x = Math.floor(@config.width/2)-40
-      y = 0
-      stats = new Stats()
-      stats.setMode 0
-      stats.domElement.style.position = "absolute"
-      stats.domElement.style.left = "#{x}px"
-      stats.domElement.style.top = "#{y}px"
-      document.body.appendChild stats.domElement
 
     @tickProvider = new FrameTickProvider(stats)
     @tickProvider.add(@engine.update)
     @tickProvider.start()
-    return
 
 
-  @main: ->
-    window.rnd = new MersenneTwister
-    canvas = document.createElement(if navigator.isCocoonJS then 'screencanvas' else 'canvas')
-    canvas.width  = window.innerWidth*window.devicePixelRatio
-    canvas.height = window.innerHeight*window.devicePixelRatio
-    canvas.style.width = '100%'
-    canvas.style.height = '100%'
-    canvas.style.backgroundColor = '#6A5ACD'
-    document.body.appendChild(canvas)
-    asteroids = new Asteroids(canvas.getContext('2d'), canvas.width, canvas.height)
-    asteroids.start()
-    return

@@ -8,7 +8,7 @@ class AsteroidCollisionNode extends ash.core.Node
     physics   : Physics
 
   asteroid  : null
-#  position  : null
-#  collision : null
+  position  : null
+  collision : null
 #  audio     : null
   physics   : null

@@ -42,7 +42,7 @@ class EntityCreator
   asteroidId      : 0
   spaceshipId     : 0
 
-  constructor: (@engine, @world, @config) ->
+  constructor: (@engine, @world, @config, @stage) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -52,7 +52,7 @@ class EntityCreator
    * Game State
   ###
   createGame: () ->
-    hud = new HudView()
+    hud = new HudView(@stage)
     gameEntity = new Entity('game')
     .add(new GameState())
     .add(new Hud(hud))
@@ -66,7 +66,7 @@ class EntityCreator
   ###
   createWaitForClick: () ->
     if not @waitEntity
-      waitView = new WaitForStartView()
+      waitView = new WaitForStartView(@stage)
       @waitEntity = new Entity('wait')
       .add(new WaitForStart(waitView))
       .add(new Display(waitView))
@@ -81,6 +81,8 @@ class EntityCreator
   ###
   createAsteroid: (radius, x, y) ->
 
+#    radius = radius * window.devicePixelRatio
+
     ###
      * Asteroid simulation - box2d
     ###
@@ -89,7 +91,10 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set((rnd.nextDouble() - 0.5) * 4 * (50 - radius), (rnd.nextDouble() - 0.5) * 4 * (50 - radius))
+    v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2
+    v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2
+
+    bodyDef.linearVelocity.Set(v1, v2)
     bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1
 
     fixDef = new b2FixtureDef()
@@ -107,12 +112,13 @@ class EntityCreator
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
+    liveView = new AsteroidView(@stage, radius)
     fsm.createState('alive')
     .add(Physics).withInstance(new Physics(body))
     .add(Collision).withInstance(new Collision(radius))
-    .add(Display).withInstance(new Display(new AsteroidView(radius)))
+    .add(Display).withInstance(new Display(liveView))
 
-    deathView = new AsteroidDeathView(radius)
+    deathView = new AsteroidDeathView(@stage, radius)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(3))
     .add(Display).withInstance(new Display(deathView))
@@ -167,15 +173,16 @@ class EntityCreator
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
+    liveView = new SpaceshipView(@stage)
     fsm.createState('playing')
     .add(Physics).withInstance(new Physics(body))
     .add(MotionControls).withInstance(new MotionControls(KEY_LEFT, KEY_RIGHT, KEY_UP, 100, 3))
     .add(Gun).withInstance(new Gun(8, 0, 0.3, 2 ))
     .add(GunControls).withInstance(new GunControls(KEY_Z))
     .add(Collision).withInstance(new Collision(9))
-    .add(Display).withInstance(new Display(new SpaceshipView()))
+    .add(Display).withInstance(new Display(liveView))
 
-    deathView = new SpaceshipDeathView()
+    deathView = new SpaceshipDeathView(@stage)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(5))
     .add(Display).withInstance(new Display(deathView))
@@ -227,12 +234,13 @@ class EntityCreator
     ###
      * Bullet entity
     ###
+    bulletView = new BulletView(@stage)
     bullet = new Entity()
     .add(new Bullet(gun.bulletLifetime))
     .add(new Position(x, y, 0))
     .add(new Collision(0))
     .add(new Physics(body))
-    .add(new Display(new BulletView()))
+    .add(new Display(bulletView))
 
     body.SetUserData(type: 'bullet', entity: bullet)
     @engine.addEntity(bullet)

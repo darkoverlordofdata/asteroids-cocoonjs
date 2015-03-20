@@ -25,6 +25,8 @@ class WaitForStartSystem extends ash.core.System
     game = @gameNodes.head
 
     if (node and node.wait.startGame and game)
+
+
       asteroid = @asteroids.head
       while asteroid
         @creator.destroyEntity(asteroid.entity)

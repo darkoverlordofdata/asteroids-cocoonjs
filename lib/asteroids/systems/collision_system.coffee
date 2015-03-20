@@ -24,6 +24,7 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
 
         if (a.get(Physics)?) # already been killed?
           @creator.destroyEntity a
+          a.get(Display).graphic.dispose()
           PhysicsSystem.deadPool.push(a.get(Physics).body)
 
         if (b.get(Physics)?) # already been killed?
@@ -33,6 +34,7 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
             @creator.createAsteroid(radius - 10, position.x + rnd.nextDouble() * 10 - 5, position.y + rnd.nextDouble() * 10 - 5)
             @creator.createAsteroid(radius - 10, position.x + rnd.nextDouble() * 10 - 5, position.y + rnd.nextDouble() * 10 - 5)
           body = b.get(Physics).body
+          b.get(Display).graphic.dispose()
           b.get(Asteroid).fsm.changeState('destroyed')
           b.get(DeathThroes).body = body
           if (@games.head)
@@ -42,6 +44,7 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
 
         if (b.get(Physics)?) # already been killed?
           body = b.get(Physics).body
+          b.get(Display).graphic.dispose()
           b.get(Spaceship).fsm.changeState('destroyed')
           b.get(DeathThroes).body = body
           if (@games.head)

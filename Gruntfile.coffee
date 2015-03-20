@@ -70,7 +70,7 @@ module.exports = ->
     coffee:
       alt:
         options:
-          bare: true
+          bare: false
           sourceMap: true
         expand: true
         flatten: false

@@ -5,6 +5,6 @@ class SystemPriorities
   @move                 : 3
   @resolveCollisions    : 4
   @stateMachines        : 5
-  @animate              : 6
-  @render               : 7
+  @render               : 6
+  @animate              : 7
 
