@@ -1,6 +1,7 @@
 ###
  * Boot the game
 ###
+
 do ->
   window.rnd = new MersenneTwister
   ###
@@ -27,7 +28,7 @@ do ->
       document.body.appendChild container
       container.appendChild stats.domElement
       stats.domElement.style.position = 'absolute'
-      x = Math.floor(window.innerWidth * window.devicePixelRatio/2)-40
+      x = 0 #Math.floor(window.innerWidth * window.devicePixelRatio/2)
       y = 0
       stats.setMode 0
       stats.domElement.style.position = "absolute"
@@ -48,7 +49,7 @@ do ->
     ###
      * load assets and start the game
     ###
-    game = new Asteroids()
+    window.game = new Asteroids()
     loader = new PIXI.AssetLoader(game.assets)
     loader.onComplete = -> game.start(canvas, stats)
     loader.load()

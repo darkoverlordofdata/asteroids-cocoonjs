@@ -24,7 +24,7 @@
     "pixi.js": "~2.2.8"
   },
   "packages": {
-    "cocoonjs": "cocoonjs/build/cocoon*.min.js",
+    "cocoonjs": "cocoonjs/build/*.*",
     "box2d": "box2d/lib/*.js",
     "stats.js": "stats.js/build/*.js",
     "pixi.js": "pixi.js/bin/*.*"

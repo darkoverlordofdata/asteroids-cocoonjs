@@ -9,6 +9,7 @@ class PhysicsSystem extends ash.core.System
   stage       : null  # Displayables
   creator     : null  # EntityCreator
   nodes       : null  # PhysicsNode
+  enabled     : true
   @deadPool   : []    # dead bodies waiting to recycle
 
   constructor: (@config, @world, @stage) ->
@@ -22,6 +23,7 @@ class PhysicsSystem extends ash.core.System
     return # Void
 
   update: (time) =>
+    return unless @enabled
     @world.Step(time, 10, 10)
     @world.ClearForces()
 

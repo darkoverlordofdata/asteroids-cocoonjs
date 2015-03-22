@@ -17,7 +17,7 @@ class BulletView
 
     @graphics = new PIXI.Graphics()
     @graphics.beginFill(0xffffff)
-    @graphics.drawCircle(0, 0, 2)
+    @graphics.drawCircle(0, 0, 2 * window.devicePixelRatio)
     @graphics.endFill()
     @stage.addChild(@graphics)
 

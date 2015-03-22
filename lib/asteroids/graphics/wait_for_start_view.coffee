@@ -13,12 +13,9 @@ class WaitForStartView
   
   constructor: (@stage) ->
     @click = new Signal0()
-    document.addEventListener 'click', (event) =>
-      @stage.removeChild(@text1)
-      @stage.removeChild(@text2)
-      @stage.removeChild(@text3)
-      @click.dispatch()
+    #    document.addEventListener 'click', (event) =>
     @createText()
+
 
   createText: ->
     @text1 = new PIXI.Text('ASTEROIDS', font: 'bold 120px opendyslexic', fill: 'white', stroke: "black", strokeThickness: 60)
@@ -33,10 +30,22 @@ class WaitForStartView
     @text2.position.x = Math.floor(window.innerWidth*window.devicePixelRatio/2)
     @text2.position.y = 335
 
-    @text3.position.x = 10
+    @text3.anchor.x = 0.5
+    @text3.position.x = Math.floor(window.innerWidth*window.devicePixelRatio/2)
     @text3.position.y = window.innerHeight*window.devicePixelRatio-40
+
+    @text1.interactive = true
+    @text2.interactive = true
+    @text1.mousedown = @text1.touchstart = @text2.mousedown = @text2.touchstart = @start
+
 
     @stage.addChild(@text1)
     @stage.addChild(@text2)
     @stage.addChild(@text3)
 
+
+  start: (data) =>
+    @stage.removeChild(@text1)
+    @stage.removeChild(@text2)
+    @stage.removeChild(@text3)
+    @click.dispatch()
