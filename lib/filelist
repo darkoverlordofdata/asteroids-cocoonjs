@@ -2,6 +2,10 @@ lib/prolog.coffee
 lib/asteroids/util/mersenne_twister.coffee
 lib/asteroids/ui/point.coffee
 lib/asteroids/ui/key_poll.coffee
+lib/asteroids/ui/sound.coffee
+lib/asteroids/sounds/explode_asteroid.coffee
+lib/asteroids/sounds/explode_ship.coffee
+lib/asteroids/sounds/shoot_gun.coffee
 lib/asteroids/graphics/asteroid_view.coffee
 lib/asteroids/graphics/asteroid_death_view.coffee
 lib/asteroids/graphics/bullet_view.coffee

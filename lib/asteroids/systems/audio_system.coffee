@@ -10,5 +10,5 @@ class AudioSystem extends ash.tools.ListIteratingSystem
       sound = new type()
       sound.play(0, 1)
 
-    node.audio.toPlay.length = 0
+    node.audio.toPlay = []
     return # Void

@@ -64,9 +64,9 @@ class Asteroids
     @renderer = new PIXI.CanvasRenderer(width, height, view:canvas)
 
     @background = PIXI.Sprite.fromImage('res/starfield.png')
-    @background.width = window.innerHeight * window.devicePixelRatio
+    @background.width = window.innerWidth * window.devicePixelRatio
     @background.height = window.innerHeight * window.devicePixelRatio
-    @background.x = (window.innerWidth - window.innerHeight)/2
+    @background.x = 0
     @background.y = 0
     @background.alpha = 0.0 if @optBgd is 'blue'
     @stage.addChild(@background)

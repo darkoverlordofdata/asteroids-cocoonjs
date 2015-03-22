@@ -202,6 +202,9 @@ module.exports = ->
       gh:
         cwd: __dirname
         command: "./bin/publish.sh  #{$authorName} #{$projectName}"
+      release:
+        cwd: __dirname
+        command: "./bin/vulcanize.sh"
 
   ###
    * Load grunt plugins
@@ -220,6 +223,7 @@ module.exports = ->
     @registerTask 'build', ['clean', 'concat:build', 'coffee:alt', 'uglify', 'copy:res', 'copy:build']
   @registerTask 'get', 'bowercopy'
   @registerTask 'gh', 'shell:gh'
+  @registerTask 'release', 'shell:release'
   @registerTask 'deps', ->
 
     rep = (c, n) -> Array(n).join(c)

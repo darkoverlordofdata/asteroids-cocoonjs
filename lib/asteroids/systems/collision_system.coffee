@@ -37,6 +37,7 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
           b.get(Display).graphic.dispose()
           b.get(Asteroid).fsm.changeState('destroyed')
           b.get(DeathThroes).body = body
+          b.get(Audio).play(ExplodeAsteroid)
           if (@games.head)
             @games.head.state.hits++
 
@@ -47,6 +48,8 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
           b.get(Display).graphic.dispose()
           b.get(Spaceship).fsm.changeState('destroyed')
           b.get(DeathThroes).body = body
+          # todo: ExplodeShip
+          b.get(Audio).play(ExplodeShip)
           if (@games.head)
             @games.head.state.lives--
 
