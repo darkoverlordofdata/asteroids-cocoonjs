@@ -18,6 +18,7 @@ class WaitForStartSystem extends ash.core.System
   removeFromEngine: (engine) ->
     @waitNodes = null
     @gameNodes = null
+    @asteroids = null
     return # Void
 
   update: (time) =>
@@ -26,10 +27,13 @@ class WaitForStartSystem extends ash.core.System
 
     if (node and node.wait.startGame and game)
 
-
       asteroid = @asteroids.head
       while asteroid
+
+        # todo: graphics undefined
+        graphic = asteroid.entity.get(Display).graphic
         @creator.destroyEntity(asteroid.entity)
+        graphic.dispose()
         asteroid = asteroid.next
 
       game.state.setForStart()

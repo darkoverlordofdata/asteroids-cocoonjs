@@ -1,5 +1,7 @@
 class WaitForStartView
 
+  @count = 0
+
   Signal0 = ash.signals.Signal0
 
   x: 0
@@ -13,12 +15,15 @@ class WaitForStartView
   
   constructor: (@stage) ->
     @click = new Signal0()
-    #    document.addEventListener 'click', (event) =>
-    @createText()
+    @createText(WaitForStartView.count++)
 
 
-  createText: ->
-    @text1 = new PIXI.Text('ASTEROIDS', font: 'bold 120px opendyslexic', fill: 'white', stroke: "black", strokeThickness: 60)
+  createText: (first) ->
+    if first is 1
+      @text1 = new PIXI.Text('GAME OVER', font: 'bold 120px opendyslexic', fill: 'white', stroke: "black", strokeThickness: 60)
+    else
+      @text1 = new PIXI.Text('ASTEROIDS', font: 'bold 120px opendyslexic', fill: 'white', stroke: "black", strokeThickness: 60)
+
     @text2 = new PIXI.Text('CLICK TO START', font: 'bold 24px opendyslexic', fill: 'white')
     @text3 = new PIXI.Text('Z to Fire  ~  Arrow Keys to Move', font: 'bold 18px opendyslexic', fill: 'white')
 

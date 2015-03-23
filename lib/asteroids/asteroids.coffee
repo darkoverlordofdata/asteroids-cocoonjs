@@ -32,8 +32,8 @@ class Asteroids
   renderer        : null #
   background      : null
   physics         : null
-  playMusic       : Boolean(localStorage.playMusic)
-  playSfx         : Boolean(localStorage.playSfx)
+  playMusic       : localStorage.playMusic
+  playSfx         : localStorage.playSfx
   optBgd          : localStorage.background || 'blue'
   bgdColor        : 0x6A5ACD
 
@@ -41,11 +41,12 @@ class Asteroids
    * Assets for pre-loader
   ###
   assets: [
-    'res/starfield.png'     # alternate background
-    'res/b_Parameters.png'  # options button
-    'res/b_Leaderboard.png' # leaderboard button
-    'res/b_round.png'       # gameboard button1
-    'res/b_square.png'      # gameboard button2
+    'res/starfield.png'           # alternate background
+    'res/b_Leaderboard.png'       # leaderboard button
+    'res/b_More1.png'             # more... button
+    'res/b_Parameters.png'        # options button
+    'res/round.png'               # gameboard button1
+    'res/square.png'              # gameboard button2
   ]
 
   ###
@@ -59,7 +60,7 @@ class Asteroids
 
     width = canvas.width
     height = canvas.height
-    @bgdColor = 0x000000 unless @optBgd is 'blue'
+    @bgdColor = 0x6A5ACD unless @optBgd is 'blue'
     @stage = new PIXI.Stage(@bgdColor)
     @renderer = new PIXI.CanvasRenderer(width, height, view:canvas)
 
@@ -108,6 +109,7 @@ class Asteroids
   User Settings
   ============================================================> ###
   options: ->
+
     options = PIXI.Sprite.fromImage('res/b_Parameters.png')
     options.interactive = true
     options.mousedown = options.touchstart = (data) ->
@@ -125,8 +127,18 @@ class Asteroids
     leaders.anchor.x = 0.5
     leaders.anchor.y = 0.5
     leaders.position.x = @config.width - options.width
-    leaders.position.y = leaders.height*3
+    leaders.position.y = leaders.height*3+40
     @stage.addChild(leaders)
+
+    more = PIXI.Sprite.fromImage('res/b_More1.png')
+    more.interactive = true
+    more.mousedown = more.touchstart = (data) ->
+      Cocoon.App.loadInTheWebView("more.html")
+    more.anchor.x = 0.5
+    more.anchor.y = 0.5
+    more.position.x = @config.width - options.width
+    more.position.y = leaders.height*4+80
+    @stage.addChild(more)
 
     Cocoon.App.WebView.on "load",
       success : () =>
@@ -161,5 +173,6 @@ class Asteroids
 
   setPlaySfx: (value) =>
     @playSfx = value
+    Sound.volume = value/100
     localStorage.playSfx = value
     return

@@ -18,13 +18,11 @@ class PhysicsControlSystem extends ash.tools.ListIteratingSystem
     # Rotate Left
     if @keyPoll.isDown(control.left)
       rotation = body.GetAngularVelocity()
-      console.log rotation
       body.SetAngularVelocity(rotation - control.rotationRate * time)
 
     # Rotate Right
     if @keyPoll.isDown(control.right)
       rotation = rotation || body.GetAngularVelocity()
-      console.log rotation
       body.SetAngularVelocity(rotation + control.rotationRate * time)
 
     # Speed up

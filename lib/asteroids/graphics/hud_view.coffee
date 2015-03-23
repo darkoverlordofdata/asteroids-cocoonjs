@@ -10,25 +10,43 @@ class HudView
 
   constructor: (stage) ->
 
+    @graphics = new PIXI.Graphics()
+    @graphics.x = 0
+    @graphics.y = 200
+    @graphics.beginFill(0xc0c0c0)
+    @graphics.drawRect(0, 0, 60, 80)
+    @graphics.endFill()
+    @graphics.alpha = 0.5
+    stage.addChild(@graphics)
+
     @score = @createTextField()
-    @score.x = 20
+    @score.x = window.innerWidth*window.devicePixelRatio-130
     @score.y = 20
     stage.addChild(@score)
-
-    @lives = @createTextField()
-    @lives.x = window.innerWidth*window.devicePixelRatio-110
-    @lives.y = 20
-    stage.addChild(@lives)
 
     @setScore(0)
     @setLives(3)
 
   dispose: ->
+    @stage.removeChild(@graphics)
     @stage.removeChild(@score)
-    @stage.removeChild(@lives)
 
   setLives: (lives) =>
-    @lives.setText("LIVES: #{lives}")
+    @graphics.clear()
+    @graphics.beginFill(0xc0c0c0)
+    @graphics.drawRect(0, 0, 60, 80)
+    @graphics.endFill()
+    @graphics.beginFill( 0x000000 )
+    for i in [0...lives]
+      c = i*20+20
+      @graphics.moveTo( 10 * window.devicePixelRatio + 20, 0 + c)
+      @graphics.lineTo( -7 * window.devicePixelRatio + 20, 7 * window.devicePixelRatio + c)
+      @graphics.lineTo( -4 * window.devicePixelRatio + 20, 0 + c)
+      @graphics.lineTo( -7 * window.devicePixelRatio + 20, -7 * window.devicePixelRatio + c)
+      @graphics.lineTo( 10 * window.devicePixelRatio + 20, 0 + c)
+
+    @graphics.endFill()
+    @graphics.alpha = 0.5
     return
 
   setScore: (score) =>

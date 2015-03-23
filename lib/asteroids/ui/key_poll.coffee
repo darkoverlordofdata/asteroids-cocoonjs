@@ -40,8 +40,8 @@ class KeyPoll
    * Build a virtual game pad
   ###
   gamePad: (config) ->
-    tmp1 = PIXI.Texture.fromImage('res/b_round.png')
-    tmp2 = PIXI.Texture.fromImage('res/b_square.png')
+    tmp1 = PIXI.Texture.fromImage('res/round.png')
+    tmp2 = PIXI.Texture.fromImage('res/square.png')
 
     @btn0 = new PIXI.Sprite(tmp1)
     @btn0.interactive = true

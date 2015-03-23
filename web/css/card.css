@@ -1,0 +1,55 @@
+.card h1 {
+    text-align: center;
+}
+
+.card li {
+    font:700 20px/1em opendyslexic, sans-serif;
+    background-color:#dfdfdf;
+    border:1px solid #a7abae;
+    border-width:0 0 1px 0;
+}
+
+.card li:first-child {
+    border-width:1px 0 1px 0;
+}
+
+.card li p {
+    display:block;
+    padding:11px 23px 12px 11px;
+    /*color:#000;*/
+    text-decoration:none;
+}
+
+.card.cells {
+    margin:10px;
+}
+
+.card.cells li {
+    border-width:0 1px 1px 1px;
+}
+
+.card.cells li:first-child {
+    border-width:1px;
+    -moz-border-radius-topleft:12px;
+    -moz-border-radius-topright:12px;
+    -webkit-border-top-left-radius:12px;
+    -webkit-border-top-right-radius:12px;
+    border-top-left-radius:12px;
+    border-top-right-radius:12px;
+}
+
+.card.cells li:last-child {
+    -moz-border-radius-bottomleft:12px;
+    -moz-border-radius-bottomright:12px;
+    -webkit-border-bottom-left-radius:12px;
+    -webkit-border-bottom-right-radius:12px;
+    border-bottom-left-radius:12px;
+    border-bottom-right-radius:12px;
+}
+
+.table_title {
+    font:700 22px/1em opendyslexic, sans-serif;
+    padding:5px 10px 0px 30px;
+    color: #fff;
+
+}

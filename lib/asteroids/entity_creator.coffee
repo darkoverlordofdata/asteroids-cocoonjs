@@ -58,12 +58,12 @@ class EntityCreator
    * Start...
   ###
   createWaitForClick: () ->
-    if not @waitEntity
-      waitView = new WaitForStartView(@stage)
-      @waitEntity = new Entity('wait')
-      .add(new WaitForStart(waitView))
-      .add(new Display(waitView))
-      .add(new Position(0, 0, 0, 0))
+#    if not @waitEntity
+    waitView = new WaitForStartView(@stage)
+    @waitEntity = new Entity('wait')
+    .add(new WaitForStart(waitView))
+    .add(new Display(waitView))
+    .add(new Position(0, 0, 0, 0))
 
     @waitEntity.get(WaitForStart).startGame = false
     @engine.addEntity(@waitEntity)
