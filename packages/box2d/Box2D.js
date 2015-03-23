@@ -18275,6 +18275,3 @@ var ClipVertex, Features, b2AABB, b2Body, b2BodyDef, b2Bound, b2BoundValues,
 
     return Box2D;
 }).call(this);
-if (module !== void 0) {
-    module.exports = Box2D;
-}
