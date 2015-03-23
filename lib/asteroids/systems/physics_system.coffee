@@ -6,11 +6,13 @@ class PhysicsSystem extends ash.core.System
 
   config      : null  # GameConfig
   world       : null  # Box2D World
+  stage       : null  # Displayables
   creator     : null  # EntityCreator
   nodes       : null  # PhysicsNode
+  enabled     : true
   @deadPool   : []    # dead bodies waiting to recycle
 
-  constructor: (@config, @world) ->
+  constructor: (@config, @world, @stage) ->
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(PhysicsNode)
@@ -21,6 +23,7 @@ class PhysicsSystem extends ash.core.System
     return # Void
 
   update: (time) =>
+    return unless @enabled
     @world.Step(time, 10, 10)
     @world.ClearForces()
 

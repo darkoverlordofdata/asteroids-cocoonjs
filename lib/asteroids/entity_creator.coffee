@@ -28,13 +28,6 @@ class EntityCreator
   b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
-
-
-  KEY_LEFT        = 37
-  KEY_UP          = 38
-  KEY_RIGHT       = 39
-  KEY_Z           = 90
-
   engine          : null  # Ash Engine
   world           : null  # Box2D World
   waitEntity      : null
@@ -42,7 +35,7 @@ class EntityCreator
   asteroidId      : 0
   spaceshipId     : 0
 
-  constructor: (@engine, @world, @config) ->
+  constructor: (@engine, @world, @config, @stage) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -52,7 +45,7 @@ class EntityCreator
    * Game State
   ###
   createGame: () ->
-    hud = new HudView()
+    hud = new HudView(@stage)
     gameEntity = new Entity('game')
     .add(new GameState())
     .add(new Hud(hud))
@@ -65,12 +58,12 @@ class EntityCreator
    * Start...
   ###
   createWaitForClick: () ->
-    if not @waitEntity
-      waitView = new WaitForStartView()
-      @waitEntity = new Entity('wait')
-      .add(new WaitForStart(waitView))
-      .add(new Display(waitView))
-      .add(new Position(0, 0, 0, 0))
+#    if not @waitEntity
+    waitView = new WaitForStartView(@stage)
+    @waitEntity = new Entity('wait')
+    .add(new WaitForStart(waitView))
+    .add(new Display(waitView))
+    .add(new Position(0, 0, 0, 0))
 
     @waitEntity.get(WaitForStart).startGame = false
     @engine.addEntity(@waitEntity)
@@ -89,7 +82,10 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set((rnd.nextDouble() - 0.5) * 4 * (50 - radius), (rnd.nextDouble() - 0.5) * 4 * (50 - radius))
+    v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2 * window.devicePixelRatio
+    v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2 * window.devicePixelRatio
+
+    bodyDef.linearVelocity.Set(v1, v2)
     bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1
 
     fixDef = new b2FixtureDef()
@@ -107,12 +103,13 @@ class EntityCreator
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
+    liveView = new AsteroidView(@stage, radius)
     fsm.createState('alive')
     .add(Physics).withInstance(new Physics(body))
     .add(Collision).withInstance(new Collision(radius))
-    .add(Display).withInstance(new Display(new AsteroidView(radius)))
+    .add(Display).withInstance(new Display(liveView))
 
-    deathView = new AsteroidDeathView(radius)
+    deathView = new AsteroidDeathView(@stage, radius)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(3))
     .add(Display).withInstance(new Display(deathView))
@@ -153,9 +150,9 @@ class EntityCreator
     fixDef.restitution = 0.2
     fixDef.shape = new b2PolygonShape()
     fixDef.shape.SetAsArray([
-      new b2Vec2(0.45, 0)
-      new b2Vec2(-0.25, 0.25)
-      new b2Vec2(-0.25, -0.25)
+      new b2Vec2(0.45 * window.devicePixelRatio, 0)
+      new b2Vec2(-0.25 * window.devicePixelRatio, 0.25 * window.devicePixelRatio)
+      new b2Vec2(-0.25 * window.devicePixelRatio, -0.25 * window.devicePixelRatio)
     ], 3)
 
     body = @world.CreateBody(bodyDef)
@@ -167,15 +164,16 @@ class EntityCreator
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
+    liveView = new SpaceshipView(@stage)
     fsm.createState('playing')
     .add(Physics).withInstance(new Physics(body))
-    .add(MotionControls).withInstance(new MotionControls(KEY_LEFT, KEY_RIGHT, KEY_UP, 100, 3))
+    .add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3))
     .add(Gun).withInstance(new Gun(8, 0, 0.3, 2 ))
-    .add(GunControls).withInstance(new GunControls(KEY_Z))
-    .add(Collision).withInstance(new Collision(9))
-    .add(Display).withInstance(new Display(new SpaceshipView()))
+    .add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z))
+    .add(Collision).withInstance(new Collision(9 * window.devicePixelRatio))
+    .add(Display).withInstance(new Display(liveView))
 
-    deathView = new SpaceshipDeathView()
+    deathView = new SpaceshipDeathView(@stage)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(5))
     .add(Display).withInstance(new Display(deathView))
@@ -212,7 +210,7 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set(cos * 150, sin * 150)
+    bodyDef.linearVelocity.Set(cos * 150 * window.devicePixelRatio, sin * 150 * window.devicePixelRatio)
     bodyDef.angularVelocity = 0
 
     fixDef = new b2FixtureDef()
@@ -227,12 +225,13 @@ class EntityCreator
     ###
      * Bullet entity
     ###
+    bulletView = new BulletView(@stage)
     bullet = new Entity()
-    .add(new Bullet(gun.bulletLifetime))
+    .add(new Bullet(gun.bulletLifetime * window.devicePixelRatio))
     .add(new Position(x, y, 0))
     .add(new Collision(0))
     .add(new Physics(body))
-    .add(new Display(new BulletView()))
+    .add(new Display(bulletView))
 
     body.SetUserData(type: 'bullet', entity: bullet)
     @engine.addEntity(bullet)

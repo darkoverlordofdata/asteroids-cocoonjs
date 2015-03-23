@@ -20,11 +20,14 @@
   "dependencies": {
     "cocoonjs": "git://github.com/ludei/cocoonjs-plugins#~3.0.4",
     "box2d": "git://github.com/darkoverlordofdata/Box2dWeb",
-    "stats.js": "*"
+    "stats.js": "*",
+    "pixi.js": "~2.2.8"
   },
   "packages": {
-    "cocoonjs": "cocoonjs/build/cocoon*.min.js",
+    "cocoonjs": "cocoonjs/build/*.*",
     "box2d": "box2d/lib/*.js",
-    "stats.js": "stats.js/build/*.js"
+    "stats.js": "stats.js/build/*.js",
+    "pixi.js": "pixi.js/bin/*.*"
+
   }
 }

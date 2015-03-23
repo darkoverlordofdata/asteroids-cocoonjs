@@ -1,7 +1,9 @@
 
 class PhysicsControlSystem extends ash.tools.ListIteratingSystem
 
-  b2Vec2                = Box2D.Common.Math.b2Vec2
+  R = window.devicePixelRatio
+  IDTK = window.ext?.IDTK_SRV_BOX2D?
+  b2Vec2 = Box2D.Common.Math.b2Vec2
 
   keyPoll: null # KeyPoll
 
@@ -13,19 +15,24 @@ class PhysicsControlSystem extends ash.tools.ListIteratingSystem
     control = node.control
     body = node.physics.body
 
-    rotation = body.GetAngularVelocity()
+    # Rotate Left
+    if @keyPoll.isDown(control.left)
+      rotation = body.GetAngularVelocity()
+      body.SetAngularVelocity(rotation - control.rotationRate * time)
 
-    if @keyPoll.isDown(control.left) and rotation < 10
-      body.ApplyTorque(rotation/1000 - control.rotationRate / Math.PI * time)
+    # Rotate Right
+    if @keyPoll.isDown(control.right)
+      rotation = rotation || body.GetAngularVelocity()
+      body.SetAngularVelocity(rotation + control.rotationRate * time)
 
-    if @keyPoll.isDown(control.right) and rotation < 10
-      body.ApplyTorque(rotation/1000 + control.rotationRate / Math.PI * time)
-
+    # Speed up
     if @keyPoll.isDown(control.accelerate)
-      {x, y} = body.GetLinearVelocity()
-      x += Math.cos(rotation) * control.accelerationRate * time
-      y += Math.sin(rotation) * control.accelerationRate * time
-      body.ApplyForce(new b2Vec2(x, y), body.GetWorldCenter())
+      rotation = rotation || body.GetAngularVelocity()
+      v = body.GetLinearVelocity()
+      v.x += (Math.cos(rotation) * control.accelerationRate * time * R)
+      v.y += (Math.sin(rotation) * control.accelerationRate * time * R)
+      body.SetAwake(true) unless IDTK # Cocoon Box2d
+      body.SetLinearVelocity(v)
 
     return # Void
 

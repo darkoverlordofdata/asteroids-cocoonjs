@@ -1,6 +1,8 @@
 class DeathThroesNode extends ash.core.Node
 
   @components:
-    dead     : DeathThroes
+    dead      : DeathThroes
+    display   : Display
 
-  dead     : null
+  dead      : null
+  display   : null
