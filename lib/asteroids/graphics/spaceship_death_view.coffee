@@ -12,7 +12,7 @@ class SpaceshipDeathView
   rotation: 0
   check: true
 
-  constructor: () ->
+  constructor: (game) ->
 
     @shape1 = game.add.graphics(0, 0)
     @shape1.clear()

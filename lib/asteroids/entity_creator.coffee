@@ -28,6 +28,7 @@ class EntityCreator
   b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
+  game            : null  # Phaser.io
   engine          : null  # Ash Engine
   world           : null  # Box2D World
   waitEntity      : null
@@ -35,7 +36,7 @@ class EntityCreator
   asteroidId      : 0
   spaceshipId     : 0
 
-  constructor: (@engine, @world, @config) ->
+  constructor: (@game, @engine, @world, @config) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -45,7 +46,7 @@ class EntityCreator
    * Game State
   ###
   createGame: () ->
-    hud = new HudView()
+    hud = new HudView(@game)
     gameEntity = new Entity('game')
     .add(new GameState())
     .add(new Hud(hud))
@@ -59,7 +60,7 @@ class EntityCreator
   ###
   createWaitForClick: () ->
 #    if not @waitEntity
-    waitView = new WaitForStartView()
+    waitView = new WaitForStartView(@game)
     @waitEntity = new Entity('wait')
     .add(new WaitForStart(waitView))
     .add(new Display(waitView))
@@ -103,13 +104,13 @@ class EntityCreator
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
-    liveView = new AsteroidView(radius)
+    liveView = new AsteroidView(@game, radius)
     fsm.createState('alive')
     .add(Physics).withInstance(new Physics(body))
     .add(Collision).withInstance(new Collision(radius))
     .add(Display).withInstance(new Display(liveView))
 
-    deathView = new AsteroidDeathView(radius)
+    deathView = new AsteroidDeathView(@game, radius)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(3))
     .add(Display).withInstance(new Display(deathView))
@@ -164,7 +165,7 @@ class EntityCreator
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
-    liveView = new SpaceshipView()
+    liveView = new SpaceshipView(@game)
     fsm.createState('playing')
     .add(Physics).withInstance(new Physics(body))
     .add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3))
@@ -173,7 +174,7 @@ class EntityCreator
     .add(Collision).withInstance(new Collision(9))
     .add(Display).withInstance(new Display(liveView))
 
-    deathView = new SpaceshipDeathView()
+    deathView = new SpaceshipDeathView(@game)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(5))
     .add(Display).withInstance(new Display(deathView))
@@ -225,7 +226,7 @@ class EntityCreator
     ###
      * Bullet entity
     ###
-    bulletView = new BulletView()
+    bulletView = new BulletView(@game)
     bullet = new Entity()
     .add(new Bullet(gun.bulletLifetime))
     .add(new Position(x, y, 0))

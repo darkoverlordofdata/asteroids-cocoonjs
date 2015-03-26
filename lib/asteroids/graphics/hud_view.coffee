@@ -8,7 +8,7 @@ class HudView
   rotation: 0
 
 
-  constructor: (stage) ->
+  constructor: (game, stage) ->
 
     @graphics = game.add.graphics(0, 100)
     @graphics.beginFill(0xc0c0c0)

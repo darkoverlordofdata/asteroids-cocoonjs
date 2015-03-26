@@ -7,10 +7,10 @@ class AsteroidDeathView
   stage: null
   first: true
 
-  constructor: (radius) ->
+  constructor: (game, radius) ->
     @dots = []
     for i in [0...8]
-      dot = new Dot(radius)
+      dot = new Dot(game, radius)
       @dots.push(dot)
 
   animate: (time) =>
@@ -35,7 +35,7 @@ class Dot
   x: 0
   y: 0
 
-  constructor: (maxDistance) ->
+  constructor: (game, maxDistance) ->
     @graphics = game.add.graphics(0, 0)
     @graphics.beginFill(0xffffff)
     @graphics.drawCircle(0, 0, 1)

@@ -13,7 +13,7 @@ class SpaceshipView
       get: -> @graphics.rotation
       set: (rotation) -> @graphics.rotation = rotation
 
-  constructor: () ->
+  constructor: (game) ->
     @graphics = game.add.graphics(0, 0)
     @graphics.clear()
     @graphics.beginFill( 0xFFFFFF )

@@ -13,7 +13,7 @@ class AsteroidView
       get: -> @graphics.rotation
       set: (rotation) -> @graphics.rotation = rotation
 
-  constructor: (radius) ->
+  constructor: (game, radius) ->
 
     @graphics = game.add.graphics(0, 0)
     @graphics.clear()

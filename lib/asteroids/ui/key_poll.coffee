@@ -11,11 +11,11 @@ class KeyPoll
   states: null
   keys: [@KEY_LEFT, @KEY_RIGHT, @KEY_Z, @KEY_UP]
 
-  constructor:(config) ->
+  constructor:(game, config) ->
     @states = {}
     window.addEventListener 'keydown', @keyDownListener
     window.addEventListener 'keyup', @keyUpListener
-    @gamePad(config)
+    @gamePad(game, config)
 
   keyDownListener: (event) =>
     @states[event.keyCode] = true
@@ -34,7 +34,7 @@ class KeyPoll
   ###
    * Build a virtual game pad
   ###
-  gamePad: (config) ->
+  gamePad: (game, config) ->
 
     btn0 = game.add.button(0, config.height-80, 'round')
     btn0.onInputDown.add =>

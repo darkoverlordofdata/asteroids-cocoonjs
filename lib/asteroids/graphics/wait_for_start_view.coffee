@@ -13,12 +13,12 @@ class WaitForStartView
 
   click: null
   
-  constructor: (@stage) ->
+  constructor: (game) ->
     @click = new Signal0()
-    @createText(WaitForStartView.count++)
+    @createText(game, WaitForStartView.count++)
 
 
-  createText: (first) ->
+  createText: (game, first) ->
 
     x = Math.floor(window.innerWidth/2)
     y = window.innerHeight-40

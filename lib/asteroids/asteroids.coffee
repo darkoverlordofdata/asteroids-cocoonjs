@@ -26,6 +26,7 @@ class Asteroids
   Engine                = ash.core.Engine
   FrameTickProvider     = ash.tick.FrameTickProvider
 
+  game            : null #  Phaser.io
   engine          : null #  Engine
   tickProvider    : null #  FrameTickProvider
   creator         : null #  EntityCreator
@@ -40,49 +41,49 @@ class Asteroids
   bgdColor        : 0x6A5ACD
 
   constructor: (@stats) ->
-    window.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '',
+    @game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '',
       init: @init, preload: @preload, create: @create, update: @update)
 
   ###
    * Configure Phaser
   ###
   init: =>
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
-    game.scale.minWidth = width * scale
-    game.scale.minHeight = height * scale
-    game.scale.maxWidth = width * scale
-    game.scale.maxHeight = height * scale
-    game.scale.pageAlignVertically = true
-    game.scale.pageAlignHorizontally = true
+    @game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
+    @game.scale.minWidth = width * scale
+    @game.scale.minHeight = height * scale
+    @game.scale.maxWidth = width * scale
+    @game.scale.maxHeight = height * scale
+    @game.scale.pageAlignVertically = true
+    @game.scale.pageAlignHorizontally = true
     return
 
   ###
    * Load assets
   ###
   preload: =>
-    game.load.image 'background', 'res/starfield.png'
-    game.load.image 'leaderboard', 'res/icons/b_Leaderboard.png'
-    game.load.image 'more', 'res/icons/b_More1.png'
-    game.load.image 'parameters', 'res/icons/b_Parameters.png'
-    game.load.image 'round', 'res/round.png'
-    game.load.image 'square', 'res/square.png'
+    @game.load.image 'background', 'res/starfield.png'
+    @game.load.image 'leaderboard', 'res/icons/b_Leaderboard.png'
+    @game.load.image 'more', 'res/icons/b_More1.png'
+    @game.load.image 'parameters', 'res/icons/b_Parameters.png'
+    @game.load.image 'round', 'res/round.png'
+    @game.load.image 'square', 'res/square.png'
     return
 
   ###
    * Start the game
   ###
   create: =>
-    #@background = game.add.sprite(0, 0, 'background')
-    game.stage.backgroundColor = @bgdColor
+    #@background = @game.add.sprite(0, 0, 'background')
+    @game.stage.backgroundColor = @bgdColor
 
     ###
      * Options:
     ###
-    game.add.button width - 50, 50, 'parameters',
+    @game.add.button width - 50, 50, 'parameters',
       => Cocoon.App.loadInTheWebView("options.html")
-    game.add.button width - 50, 125, 'leaderboard',
+    @game.add.button width - 50, 125, 'leaderboard',
       => Cocoon.App.loadInTheWebView("leaders.html")
-    game.add.button width - 50, 200, 'more',
+    @game.add.button width - 50, 200, 'more',
       => Cocoon.App.loadInTheWebView("more.html")
 
     Cocoon.App.WebView.on "load",
@@ -100,8 +101,8 @@ class Asteroids
 
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @engine = new Engine()
-    @creator = new EntityCreator(@engine, @world, @config)
-    @keyPoll = new KeyPoll(@config)
+    @creator = new EntityCreator(@game, @engine, @world, @config)
+    @keyPoll = new KeyPoll(@game, @config)
 
     @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate)
     @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
@@ -127,7 +128,7 @@ class Asteroids
     stats = @stats
     stats?.begin()
     # Ash expects milliseconds as a fraction of a second
-    @engine.update(game.time.elapsed/1000)
+    @engine.update(@game.time.elapsed/1000)
     stats?.end()
     return
 
