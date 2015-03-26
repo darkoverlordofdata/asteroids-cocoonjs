@@ -292,7 +292,7 @@
 
     KeyPoll.prototype.keys = [KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_Z, KeyPoll.KEY_UP];
 
-    function KeyPoll(config) {
+    function KeyPoll(game, config) {
       this.isUp = __bind(this.isUp, this);
       this.isDown = __bind(this.isDown, this);
       this.keyUpListener = __bind(this.keyUpListener, this);
@@ -300,7 +300,7 @@
       this.states = {};
       window.addEventListener('keydown', this.keyDownListener);
       window.addEventListener('keyup', this.keyUpListener);
-      this.gamePad(config);
+      this.gamePad(game, config);
     }
 
     KeyPoll.prototype.keyDownListener = function(event) {
@@ -326,7 +326,7 @@
      * Build a virtual game pad
      */
 
-    KeyPoll.prototype.gamePad = function(config) {
+    KeyPoll.prototype.gamePad = function(game, config) {
       var btn0, btn1, btn2, btn3;
       btn0 = game.add.button(0, config.height - 80, 'round');
       btn0.onInputDown.add((function(_this) {
@@ -492,7 +492,7 @@
       }
     });
 
-    function AsteroidView(radius) {
+    function AsteroidView(game, radius) {
       var angle, length, posX, posY;
       this.graphics = game.add.graphics(0, 0);
       this.graphics.clear();
@@ -531,12 +531,12 @@
 
     AsteroidDeathView.prototype.first = true;
 
-    function AsteroidDeathView(radius) {
+    function AsteroidDeathView(game, radius) {
       this.animate = __bind(this.animate, this);
       var dot, i, _i;
       this.dots = [];
       for (i = _i = 0; _i < 8; i = ++_i) {
-        dot = new Dot(radius);
+        dot = new Dot(game, radius);
         this.dots.push(dot);
       }
     }
@@ -586,7 +586,7 @@
 
     Dot.prototype.y = 0;
 
-    function Dot(maxDistance) {
+    function Dot(game, maxDistance) {
       var angle, distance, speed;
       this.graphics = game.add.graphics(0, 0);
       this.graphics.beginFill(0xffffff);
@@ -634,7 +634,7 @@
       }
     });
 
-    function BulletView() {
+    function BulletView(game) {
       this.graphics = game.add.graphics(0, 0);
       this.graphics.beginFill(0xffffff);
       this.graphics.drawCircle(0, 0, 2);
@@ -662,7 +662,7 @@
 
     HudView.prototype.rotation = 0;
 
-    function HudView(stage) {
+    function HudView(game, stage) {
       this.setScore = __bind(this.setScore, this);
       this.setLives = __bind(this.setLives, this);
       this.graphics = game.add.graphics(0, 100);
@@ -730,7 +730,7 @@
 
     SpaceshipDeathView.prototype.check = true;
 
-    function SpaceshipDeathView() {
+    function SpaceshipDeathView(game) {
       this.animate = __bind(this.animate, this);
       this.shape1 = game.add.graphics(0, 0);
       this.shape1.clear();
@@ -808,7 +808,7 @@
       }
     });
 
-    function SpaceshipView() {
+    function SpaceshipView(game) {
       this.graphics = game.add.graphics(0, 0);
       this.graphics.clear();
       this.graphics.beginFill(0xFFFFFF);
@@ -849,14 +849,13 @@
 
     WaitForStartView.prototype.click = null;
 
-    function WaitForStartView(stage) {
-      this.stage = stage;
+    function WaitForStartView(game) {
       this.start = __bind(this.start, this);
       this.click = new Signal0();
-      this.createText(WaitForStartView.count++);
+      this.createText(game, WaitForStartView.count++);
     }
 
-    WaitForStartView.prototype.createText = function(first) {
+    WaitForStartView.prototype.createText = function(game, first) {
       var x, y;
       x = Math.floor(window.innerWidth / 2);
       y = window.innerHeight - 40;
@@ -2091,6 +2090,8 @@
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
+    EntityCreator.prototype.game = null;
+
     EntityCreator.prototype.engine = null;
 
     EntityCreator.prototype.world = null;
@@ -2103,7 +2104,8 @@
 
     EntityCreator.prototype.spaceshipId = 0;
 
-    function EntityCreator(engine, world, config) {
+    function EntityCreator(game, engine, world, config) {
+      this.game = game;
       this.engine = engine;
       this.world = world;
       this.config = config;
@@ -2120,7 +2122,7 @@
 
     EntityCreator.prototype.createGame = function() {
       var gameEntity, hud;
-      hud = new HudView();
+      hud = new HudView(this.game);
       gameEntity = new Entity('game').add(new GameState()).add(new Hud(hud)).add(new Display(hud)).add(new Position(0, 0, 0, 0));
       this.engine.addEntity(gameEntity);
       return gameEntity;
@@ -2133,7 +2135,7 @@
 
     EntityCreator.prototype.createWaitForClick = function() {
       var waitView;
-      waitView = new WaitForStartView();
+      waitView = new WaitForStartView(this.game);
       this.waitEntity = new Entity('wait').add(new WaitForStart(waitView)).add(new Display(waitView)).add(new Position(0, 0, 0, 0));
       this.waitEntity.get(WaitForStart).startGame = false;
       this.engine.addEntity(this.waitEntity);
@@ -2173,9 +2175,9 @@
        */
       asteroid = new Entity();
       fsm = new EntityStateMachine(asteroid);
-      liveView = new AsteroidView(radius);
+      liveView = new AsteroidView(this.game, radius);
       fsm.createState('alive').add(Physics).withInstance(new Physics(body)).add(Collision).withInstance(new Collision(radius)).add(Display).withInstance(new Display(liveView));
-      deathView = new AsteroidDeathView(radius);
+      deathView = new AsteroidDeathView(this.game, radius);
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(3)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       asteroid.add(new Asteroid(fsm)).add(new Position(x, y, 0)).add(new Audio());
       body.SetUserData({
@@ -2222,9 +2224,9 @@
        */
       spaceship = new Entity();
       fsm = new EntityStateMachine(spaceship);
-      liveView = new SpaceshipView();
+      liveView = new SpaceshipView(this.game);
       fsm.createState('playing').add(Physics).withInstance(new Physics(body)).add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3)).add(Gun).withInstance(new Gun(8, 0, 0.3, 2)).add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z)).add(Collision).withInstance(new Collision(9)).add(Display).withInstance(new Display(liveView));
-      deathView = new SpaceshipDeathView();
+      deathView = new SpaceshipDeathView(this.game);
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(5)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       spaceship.add(new Spaceship(fsm)).add(new Position(x, y, 0)).add(new Audio());
       body.SetUserData({
@@ -2269,7 +2271,7 @@
       /*
        * Bullet entity
        */
-      bulletView = new BulletView();
+      bulletView = new BulletView(this.game);
       bullet = new Entity().add(new Bullet(gun.bulletLifetime)).add(new Position(x, y, 0)).add(new Collision(0)).add(new Physics(body)).add(new Display(bulletView));
       body.SetUserData({
         type: 'bullet',
@@ -2313,6 +2315,8 @@
 
     FrameTickProvider = ash.tick.FrameTickProvider;
 
+    Asteroids.prototype.game = null;
+
     Asteroids.prototype.engine = null;
 
     Asteroids.prototype.tickProvider = null;
@@ -2324,8 +2328,6 @@
     Asteroids.prototype.config = null;
 
     Asteroids.prototype.world = null;
-
-    Asteroids.prototype.renderer = null;
 
     Asteroids.prototype.background = null;
 
@@ -2349,7 +2351,7 @@
       this.create = __bind(this.create, this);
       this.preload = __bind(this.preload, this);
       this.init = __bind(this.init, this);
-      window.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '', {
+      this.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '', {
         init: this.init,
         preload: this.preload,
         create: this.create,
@@ -2363,13 +2365,13 @@
      */
 
     Asteroids.prototype.init = function() {
-      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      game.scale.minWidth = width * scale;
-      game.scale.minHeight = height * scale;
-      game.scale.maxWidth = width * scale;
-      game.scale.maxHeight = height * scale;
-      game.scale.pageAlignVertically = true;
-      game.scale.pageAlignHorizontally = true;
+      this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      this.game.scale.minWidth = width * scale;
+      this.game.scale.minHeight = height * scale;
+      this.game.scale.maxWidth = width * scale;
+      this.game.scale.maxHeight = height * scale;
+      this.game.scale.pageAlignVertically = true;
+      this.game.scale.pageAlignHorizontally = true;
     };
 
 
@@ -2378,12 +2380,12 @@
      */
 
     Asteroids.prototype.preload = function() {
-      game.load.image('background', 'res/starfield.png');
-      game.load.image('leaderboard', 'res/icons/b_Leaderboard.png');
-      game.load.image('more', 'res/icons/b_More1.png');
-      game.load.image('parameters', 'res/icons/b_Parameters.png');
-      game.load.image('round', 'res/round.png');
-      game.load.image('square', 'res/square.png');
+      this.game.load.image('background', 'res/starfield.png');
+      this.game.load.image('leaderboard', 'res/icons/b_Leaderboard.png');
+      this.game.load.image('more', 'res/icons/b_More1.png');
+      this.game.load.image('parameters', 'res/icons/b_Parameters.png');
+      this.game.load.image('round', 'res/round.png');
+      this.game.load.image('square', 'res/square.png');
     };
 
 
@@ -2392,22 +2394,22 @@
      */
 
     Asteroids.prototype.create = function() {
-      game.stage.backgroundColor = this.bgdColor;
+      this.game.stage.backgroundColor = this.bgdColor;
 
       /*
        * Options:
        */
-      game.add.button(width - 50, 50, 'parameters', (function(_this) {
+      this.game.add.button(width - 50, 50, 'parameters', (function(_this) {
         return function() {
           return Cocoon.App.loadInTheWebView("options.html");
         };
       })(this));
-      game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
+      this.game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
         return function() {
           return Cocoon.App.loadInTheWebView("leaders.html");
         };
       })(this));
-      game.add.button(width - 50, 200, 'more', (function(_this) {
+      this.game.add.button(width - 50, 200, 'more', (function(_this) {
         return function() {
           return Cocoon.App.loadInTheWebView("more.html");
         };
@@ -2431,8 +2433,8 @@
       this.config.width = width;
       this.world = new b2World(new b2Vec2(0, 0), true);
       this.engine = new Engine();
-      this.creator = new EntityCreator(this.engine, this.world, this.config);
-      this.keyPoll = new KeyPoll(this.config);
+      this.creator = new EntityCreator(this.game, this.engine, this.world, this.config);
+      this.keyPoll = new KeyPoll(this.game, this.config);
       this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
       this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
       this.engine.addSystem(new PhysicsControlSystem(this.keyPoll), SystemPriorities.update);
@@ -2460,7 +2462,7 @@
       if (stats != null) {
         stats.begin();
       }
-      this.engine.update(game.time.elapsed / 1000);
+      this.engine.update(this.game.time.elapsed / 1000);
       if (stats != null) {
         stats.end();
       }
@@ -2470,7 +2472,17 @@
       this.physics.enabled = !bValue;
     };
 
-    Asteroids.prototype.setBackground = function(value) {};
+    Asteroids.prototype.setBackground = function(value) {
+      if (value === 1) {
+        this.background.alpha = 1.0;
+        this.optBgd = 'star';
+        localStorage.background = 'star';
+      } else {
+        this.background.alpha = 0.0;
+        this.optBgd = 'blue';
+        localStorage.background = 'blue';
+      }
+    };
 
     Asteroids.prototype.setPlayMusic = function(value) {
       this.playMusic = value;
