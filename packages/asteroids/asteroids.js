@@ -21,7 +21,6 @@
    */
   var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, PhysicsSystem, Point, Position, RenderNode, RenderSystem, ShootGun, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -291,20 +290,9 @@
 
     KeyPoll.prototype.states = null;
 
-    KeyPoll.prototype.stage = null;
-
-    KeyPoll.prototype.btn0 = null;
-
-    KeyPoll.prototype.btn1 = null;
-
-    KeyPoll.prototype.btn2 = null;
-
-    KeyPoll.prototype.btn3 = null;
-
     KeyPoll.prototype.keys = [KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_Z, KeyPoll.KEY_UP];
 
-    function KeyPoll(stage, config) {
-      this.stage = stage;
+    function KeyPoll(config) {
       this.isUp = __bind(this.isUp, this);
       this.isDown = __bind(this.isDown, this);
       this.keyUpListener = __bind(this.keyUpListener, this);
@@ -312,9 +300,7 @@
       this.states = {};
       window.addEventListener('keydown', this.keyDownListener);
       window.addEventListener('keyup', this.keyUpListener);
-      if (__indexOf.call(window, 'ontouchstart') >= 0 || navigator.msMaxTouchPoints) {
-        this.gamePad(config);
-      }
+      this.gamePad(config);
     }
 
     KeyPoll.prototype.keyDownListener = function(event) {
@@ -341,77 +327,51 @@
      */
 
     KeyPoll.prototype.gamePad = function(config) {
-      var tmp1, tmp2;
-      tmp1 = PIXI.Texture.fromImage('res/round.png');
-      tmp2 = PIXI.Texture.fromImage('res/square.png');
-      this.btn0 = new PIXI.Sprite(tmp1);
-      this.btn0.interactive = true;
-      this.btn0.width *= window.devicePixelRatio * 1.4;
-      this.btn0.height *= window.devicePixelRatio * 1.4;
-      this.btn0.position.x = 0;
-      this.btn0.position.y = config.height - (this.btn0.height * 2) + 35;
-      this.btn0.mousedown = this.btn0.touchstart = (function(_this) {
-        return function(evt) {
+      var btn0, btn1, btn2, btn3;
+      btn0 = game.add.button(0, config.height - 80, 'round');
+      btn0.onInputDown.add((function(_this) {
+        return function() {
           _this.states[_this.keys[0]] = true;
         };
-      })(this);
-      this.btn0.mouseup = this.btn0.touchend = (function(_this) {
-        return function(evt) {
+      })(this));
+      btn0.onInputUp.add((function(_this) {
+        return function() {
           _this.states[_this.keys[0]] = false;
         };
-      })(this);
-      this.btn1 = new PIXI.Sprite(tmp1);
-      this.btn1.interactive = true;
-      this.btn1.width *= window.devicePixelRatio * 1.4;
-      this.btn1.height *= window.devicePixelRatio * 1.4;
-      this.btn1.position.x = this.btn1.width - 35;
-      this.btn1.position.y = config.height - this.btn1.height;
-      this.btn1.mousedown = this.btn1.touchstart = (function(_this) {
-        return function(evt) {
+      })(this));
+      btn1 = game.add.button(35, config.height - 45, 'round');
+      btn1.onInputDown.add((function(_this) {
+        return function() {
           _this.states[_this.keys[1]] = true;
         };
-      })(this);
-      this.btn1.mouseup = this.btn1.touchend = (function(_this) {
-        return function(evt) {
+      })(this));
+      btn1.onInputUp.add((function(_this) {
+        return function() {
           _this.states[_this.keys[1]] = false;
         };
-      })(this);
-      this.btn2 = new PIXI.Sprite(tmp1);
-      this.btn2.interactive = true;
-      this.btn2.width *= window.devicePixelRatio * 1.4;
-      this.btn2.height *= window.devicePixelRatio * 1.4;
-      this.btn2.position.x = config.width - this.btn2.width * 2 + 35;
-      this.btn2.position.y = config.height - this.btn2.height;
-      this.btn2.mousedown = this.btn2.touchstart = (function(_this) {
-        return function(evt) {
+      })(this));
+      btn2 = game.add.button(config.width - 80, config.height - 45, 'square');
+      btn2.onInputDown.add((function(_this) {
+        return function() {
           _this.states[_this.keys[2]] = true;
         };
-      })(this);
-      this.btn2.mouseup = this.btn2.touchend = (function(_this) {
-        return function(evt) {
+      })(this));
+      btn2.onInputUp.add((function(_this) {
+        return function() {
           _this.states[_this.keys[2]] = false;
         };
-      })(this);
-      this.btn3 = new PIXI.Sprite(tmp2);
-      this.btn3.interactive = true;
-      this.btn3.width *= window.devicePixelRatio * 1.4;
-      this.btn3.height *= window.devicePixelRatio * 1.4;
-      this.btn3.position.x = config.width - this.btn3.width;
-      this.btn3.position.y = config.height - (this.btn3.height * 2) + 35;
-      this.btn3.mousedown = this.btn3.touchstart = (function(_this) {
-        return function(evt) {
+      })(this));
+      btn3 = game.add.button(config.width - 45, config.height - 80, 'round');
+      btn3.onInputDown.add((function(_this) {
+        return function() {
           _this.states[_this.keys[3]] = true;
         };
-      })(this);
-      this.btn3.mouseup = this.btn3.touchend = (function(_this) {
-        return function(evt) {
+      })(this));
+      return btn3.onInputUp.add((function(_this) {
+        return function() {
           _this.states[_this.keys[3]] = false;
         };
-      })(this);
-      this.stage.addChild(this.btn0);
-      this.stage.addChild(this.btn1);
-      this.stage.addChild(this.btn2);
-      return this.stage.addChild(this.btn3);
+      })(this));
     };
 
     return KeyPoll;
@@ -532,10 +492,9 @@
       }
     });
 
-    function AsteroidView(stage, radius) {
+    function AsteroidView(radius) {
       var angle, length, posX, posY;
-      this.stage = stage;
-      this.graphics = new PIXI.Graphics();
+      this.graphics = game.add.graphics(0, 0);
       this.graphics.clear();
       angle = 0;
       this.graphics.beginFill(0xffffff);
@@ -549,11 +508,10 @@
       }
       this.graphics.moveTo(radius, 0);
       this.graphics.endFill();
-      this.stage.addChild(this.graphics);
     }
 
     AsteroidView.prototype.dispose = function() {
-      return this.stage.removeChild(this.graphics);
+      return this.graphics.destroy();
     };
 
     return AsteroidView;
@@ -573,13 +531,12 @@
 
     AsteroidDeathView.prototype.first = true;
 
-    function AsteroidDeathView(stage, radius) {
-      var dot, i, _i;
-      this.stage = stage;
+    function AsteroidDeathView(radius) {
       this.animate = __bind(this.animate, this);
+      var dot, i, _i;
       this.dots = [];
       for (i = _i = 0; _i < 8; i = ++_i) {
-        dot = new Dot(this.stage, radius);
+        dot = new Dot(radius);
         this.dots.push(dot);
       }
     }
@@ -591,7 +548,6 @@
         _ref = this.dots;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           dot = _ref[_i];
-          this.stage.addChild(dot.graphics);
           dot.graphics.x = this.x;
           dot.graphics.y = this.y;
         }
@@ -612,7 +568,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dot = _ref[_i];
-        _results.push(this.stage.removeChild(dot.graphics));
+        _results.push(dot.graphics.destroy());
       }
       return _results;
     };
@@ -630,10 +586,9 @@
 
     Dot.prototype.y = 0;
 
-    function Dot(stage, maxDistance) {
+    function Dot(maxDistance) {
       var angle, distance, speed;
-      this.stage = stage;
-      this.graphics = new PIXI.Graphics();
+      this.graphics = game.add.graphics(0, 0);
       this.graphics.beginFill(0xffffff);
       this.graphics.drawCircle(0, 0, 1);
       this.graphics.endFill();
@@ -679,17 +634,15 @@
       }
     });
 
-    function BulletView(stage) {
-      this.stage = stage;
-      this.graphics = new PIXI.Graphics();
+    function BulletView() {
+      this.graphics = game.add.graphics(0, 0);
       this.graphics.beginFill(0xffffff);
-      this.graphics.drawCircle(0, 0, 2 * window.devicePixelRatio);
+      this.graphics.drawCircle(0, 0, 2);
       this.graphics.endFill();
-      this.stage.addChild(this.graphics);
     }
 
     BulletView.prototype.dispose = function() {
-      return this.stage.removeChild(this.graphics);
+      return this.graphics.destroy();
     };
 
     return BulletView;
@@ -712,41 +665,35 @@
     function HudView(stage) {
       this.setScore = __bind(this.setScore, this);
       this.setLives = __bind(this.setLives, this);
-      this.graphics = new PIXI.Graphics();
-      this.graphics.x = 0;
-      this.graphics.y = 200;
+      this.graphics = game.add.graphics(0, 100);
       this.graphics.beginFill(0xc0c0c0);
-      this.graphics.drawRect(0, 0, 60, 80);
+      this.graphics.drawRect(0, 0, 30, 40);
       this.graphics.endFill();
       this.graphics.alpha = 0.5;
-      stage.addChild(this.graphics);
-      this.score = this.createTextField();
-      this.score.x = window.innerWidth * window.devicePixelRatio - 130;
-      this.score.y = 20;
-      stage.addChild(this.score);
+      this.score = game.add.text(window.innerWidth - 130, 20, '');
       this.setScore(0);
       this.setLives(3);
     }
 
     HudView.prototype.dispose = function() {
-      this.stage.removeChild(this.graphics);
-      return this.stage.removeChild(this.score);
+      this.graphics.destroy();
+      return this.score.destroy();
     };
 
     HudView.prototype.setLives = function(lives) {
       var c, i, _i;
       this.graphics.clear();
       this.graphics.beginFill(0xc0c0c0);
-      this.graphics.drawRect(0, 0, 60, 80);
+      this.graphics.drawRect(0, 0, 30, 40);
       this.graphics.endFill();
       this.graphics.beginFill(0x000000);
       for (i = _i = 0; 0 <= lives ? _i < lives : _i > lives; i = 0 <= lives ? ++_i : --_i) {
-        c = i * 20 + 20;
-        this.graphics.moveTo(10 * window.devicePixelRatio + 20, 0 + c);
-        this.graphics.lineTo(-7 * window.devicePixelRatio + 20, 7 * window.devicePixelRatio + c);
-        this.graphics.lineTo(-4 * window.devicePixelRatio + 20, 0 + c);
-        this.graphics.lineTo(-7 * window.devicePixelRatio + 20, -7 * window.devicePixelRatio + c);
-        this.graphics.lineTo(10 * window.devicePixelRatio + 20, 0 + c);
+        c = i * 10 + 10;
+        this.graphics.moveTo(10 + 10, 0 + c);
+        this.graphics.lineTo(-7 + 10, 7 + c);
+        this.graphics.lineTo(-4 + 10, 0 + c);
+        this.graphics.lineTo(-7 + 10, -7 + c);
+        this.graphics.lineTo(10 + 10, 0 + c);
       }
       this.graphics.endFill();
       this.graphics.alpha = 0.5;
@@ -756,20 +703,11 @@
       this.score.setText("SCORE: " + score);
     };
 
-    HudView.prototype.createTextField = function() {
-      return new PIXI.Text('', {
-        font: 'bold 22px opendyslexic',
-        fill: '#00ffff'
-      });
-    };
-
     return HudView;
 
   })();
 
   SpaceshipDeathView = (function() {
-    SpaceshipDeathView.prototype.stage = null;
-
     SpaceshipDeathView.prototype.shape1 = null;
 
     SpaceshipDeathView.prototype.shape2 = null;
@@ -792,24 +730,23 @@
 
     SpaceshipDeathView.prototype.check = true;
 
-    function SpaceshipDeathView(stage) {
-      this.stage = stage;
+    function SpaceshipDeathView() {
       this.animate = __bind(this.animate, this);
-      this.shape1 = new PIXI.Graphics();
+      this.shape1 = game.add.graphics(0, 0);
       this.shape1.clear();
       this.shape1.beginFill(0xFFFFFF);
-      this.shape1.moveTo(10 * window.devicePixelRatio, 0);
-      this.shape1.lineTo(-7 * window.devicePixelRatio, 7 * window.devicePixelRatio);
-      this.shape1.lineTo(-4 * window.devicePixelRatio, 0);
-      this.shape1.lineTo(10 * window.devicePixelRatio, 0);
+      this.shape1.moveTo(10, 0);
+      this.shape1.lineTo(-7, 7);
+      this.shape1.lineTo(-4, 0);
+      this.shape1.lineTo(10, 0);
       this.shape1.endFill();
-      this.shape2 = new PIXI.Graphics();
+      this.shape2 = game.add.graphics(0, 0);
       this.shape2.clear();
       this.shape2.beginFill(0xFFFFFF);
-      this.shape2.moveTo(10 * window.devicePixelRatio, 0);
-      this.shape2.lineTo(-7 * window.devicePixelRatio, -7 * window.devicePixelRatio);
-      this.shape2.lineTo(-4 * window.devicePixelRatio, 0);
-      this.shape2.lineTo(10 * window.devicePixelRatio, 0);
+      this.shape2.moveTo(10, 0);
+      this.shape2.lineTo(-7, -7);
+      this.shape2.lineTo(-4, 0);
+      this.shape2.lineTo(10, 0);
       this.shape2.endFill();
       this.vel1 = new Point(rnd.nextDouble() * 10 - 5, rnd.nextDouble() * 10 + 10);
       this.vel2 = new Point(rnd.nextDouble() * 10 - 5, -(rnd.nextDouble() * 10 + 10));
@@ -818,15 +755,13 @@
     }
 
     SpaceshipDeathView.prototype.dispose = function() {
-      this.stage.removeChild(this.shape1);
-      return this.stage.removeChild(this.shape2);
+      this.shape1.destroy();
+      return this.shape2.destroy();
     };
 
     SpaceshipDeathView.prototype.animate = function(time) {
       if (this.first) {
         this.first = false;
-        this.stage.addChild(this.shape1);
-        this.stage.addChild(this.shape2);
         this.shape1.x = this.shape2.x = this.x;
         this.shape1.y = this.shape2.y = this.y;
         this.shape1.rotation = this.shape2.rotation = this.rotation;
@@ -844,8 +779,6 @@
   })();
 
   SpaceshipView = (function() {
-    SpaceshipView.prototype.stage = null;
-
     SpaceshipView.prototype.graphics = null;
 
     Object.defineProperties(SpaceshipView.prototype, {
@@ -875,22 +808,20 @@
       }
     });
 
-    function SpaceshipView(stage) {
-      this.stage = stage;
-      this.graphics = new PIXI.Graphics();
+    function SpaceshipView() {
+      this.graphics = game.add.graphics(0, 0);
       this.graphics.clear();
       this.graphics.beginFill(0xFFFFFF);
-      this.graphics.moveTo(10 * window.devicePixelRatio, 0);
-      this.graphics.lineTo(-7 * window.devicePixelRatio, 7 * window.devicePixelRatio);
-      this.graphics.lineTo(-4 * window.devicePixelRatio, 0);
-      this.graphics.lineTo(-7 * window.devicePixelRatio, -7 * window.devicePixelRatio);
-      this.graphics.lineTo(10 * window.devicePixelRatio, 0);
+      this.graphics.moveTo(10, 0);
+      this.graphics.lineTo(-7, 7);
+      this.graphics.lineTo(-4, 0);
+      this.graphics.lineTo(-7, -7);
+      this.graphics.lineTo(10, 0);
       this.graphics.endFill();
-      this.stage.addChild(this.graphics);
     }
 
     SpaceshipView.prototype.dispose = function() {
-      return this.stage.removeChild(this.graphics);
+      return this.graphics.destroy();
     };
 
     return SpaceshipView;
@@ -926,50 +857,45 @@
     }
 
     WaitForStartView.prototype.createText = function(first) {
+      var x, y;
+      x = Math.floor(window.innerWidth / 2);
+      y = window.innerHeight - 40;
       if (first === 1) {
-        this.text1 = new PIXI.Text('GAME OVER', {
-          font: 'bold 120px opendyslexic',
+        this.text1 = game.add.text(x, 85, 'GAME OVER', {
+          font: 'bold 60px opendyslexic',
           fill: 'white',
           stroke: "black",
-          strokeThickness: 60
+          strokeThickness: 30
         });
       } else {
-        this.text1 = new PIXI.Text('ASTEROIDS', {
-          font: 'bold 120px opendyslexic',
+        this.text1 = game.add.text(x, 85, 'ASTEROIDS', {
+          font: 'bold 60px opendyslexic',
           fill: 'white',
           stroke: "black",
-          strokeThickness: 60
+          strokeThickness: 30
         });
       }
-      this.text2 = new PIXI.Text('CLICK TO START', {
-        font: 'bold 24px opendyslexic',
+      this.text2 = game.add.text(x, 175, 'CLICK TO START', {
+        font: 'bold 12px opendyslexic',
         fill: 'white'
       });
-      this.text3 = new PIXI.Text('Z to Fire  ~  Arrow Keys to Move', {
-        font: 'bold 18px opendyslexic',
+      this.text3 = game.add.text(x, y, 'Z to Fire  ~  Arrow Keys to Move', {
+        font: 'bold 10px opendyslexic',
         fill: 'white'
       });
       this.text1.anchor.x = 0.5;
-      this.text1.position.x = Math.floor(window.innerWidth * window.devicePixelRatio / 2);
-      this.text1.position.y = 175;
       this.text2.anchor.x = 0.5;
-      this.text2.position.x = Math.floor(window.innerWidth * window.devicePixelRatio / 2);
-      this.text2.position.y = 335;
       this.text3.anchor.x = 0.5;
-      this.text3.position.x = Math.floor(window.innerWidth * window.devicePixelRatio / 2);
-      this.text3.position.y = window.innerHeight * window.devicePixelRatio - 40;
-      this.text1.interactive = true;
-      this.text2.interactive = true;
-      this.text1.mousedown = this.text1.touchstart = this.text2.mousedown = this.text2.touchstart = this.start;
-      this.stage.addChild(this.text1);
-      this.stage.addChild(this.text2);
-      return this.stage.addChild(this.text3);
+      this.text1.inputEnabled = true;
+      this.text2.inputEnabled = true;
+      this.text1.events.onInputDown.add(this.start);
+      return this.text2.events.onInputDown.add(this.start);
     };
 
     WaitForStartView.prototype.start = function(data) {
-      this.stage.removeChild(this.text1);
-      this.stage.removeChild(this.text2);
-      this.stage.removeChild(this.text3);
+      this.text1.destroy();
+      this.text2.destroy();
+      this.text3.destroy();
       return this.click.dispatch();
     };
 
@@ -1889,7 +1815,6 @@
           } else {
             node.state.playing = false;
             this.creator.createWaitForClick();
-            this.updateScore();
           }
         }
         if (this.asteroids.empty && this.bullets.empty && !this.spaceships.empty) {
@@ -1916,25 +1841,6 @@
       this.spaceships = null;
       this.asteroids = null;
       this.bullets = null;
-    };
-
-    GameManager.prototype.updateScore = function() {
-      localStorage.score = Math.max(node.state.hits, parseInt(localStorage.score || '0', 10));
-      Cocoon.App.loadInTheWebView("leaders.html");
-      Cocoon.App.WebView.on("load", {
-        success: (function(_this) {
-          return function() {
-            _this.pause(true);
-            Cocoon.App.showTheWebView();
-          };
-        })(this),
-        error: (function(_this) {
-          return function() {
-            console.log("Cannot show the Webview for some reason :/");
-            console.log(JSON.stringify(arguments));
-          };
-        })(this)
-      });
     };
 
     return GameManager;
@@ -2046,9 +1952,8 @@
 
     RenderSystem.prototype.nodes = null;
 
-    function RenderSystem(stage, renderer) {
+    function RenderSystem(stage) {
       this.stage = stage;
-      this.renderer = renderer;
       this.update = __bind(this.update, this);
     }
 
@@ -2082,7 +1987,6 @@
         graphic.rotation = position.rotation;
         node = node.next;
       }
-      this.renderer.render(this.stage);
     };
 
     return RenderSystem;
@@ -2199,11 +2103,10 @@
 
     EntityCreator.prototype.spaceshipId = 0;
 
-    function EntityCreator(engine, world, config, stage) {
+    function EntityCreator(engine, world, config) {
       this.engine = engine;
       this.world = world;
       this.config = config;
-      this.stage = stage;
     }
 
     EntityCreator.prototype.destroyEntity = function(entity) {
@@ -2217,7 +2120,7 @@
 
     EntityCreator.prototype.createGame = function() {
       var gameEntity, hud;
-      hud = new HudView(this.stage);
+      hud = new HudView();
       gameEntity = new Entity('game').add(new GameState()).add(new Hud(hud)).add(new Display(hud)).add(new Position(0, 0, 0, 0));
       this.engine.addEntity(gameEntity);
       return gameEntity;
@@ -2230,7 +2133,7 @@
 
     EntityCreator.prototype.createWaitForClick = function() {
       var waitView;
-      waitView = new WaitForStartView(this.stage);
+      waitView = new WaitForStartView();
       this.waitEntity = new Entity('wait').add(new WaitForStart(waitView)).add(new Display(waitView)).add(new Position(0, 0, 0, 0));
       this.waitEntity.get(WaitForStart).startGame = false;
       this.engine.addEntity(this.waitEntity);
@@ -2253,8 +2156,8 @@
       bodyDef.fixedRotation = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2 * window.devicePixelRatio;
-      v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2 * window.devicePixelRatio;
+      v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2;
+      v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2;
       bodyDef.linearVelocity.Set(v1, v2);
       bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1;
       fixDef = new b2FixtureDef();
@@ -2270,9 +2173,9 @@
        */
       asteroid = new Entity();
       fsm = new EntityStateMachine(asteroid);
-      liveView = new AsteroidView(this.stage, radius);
+      liveView = new AsteroidView(radius);
       fsm.createState('alive').add(Physics).withInstance(new Physics(body)).add(Collision).withInstance(new Collision(radius)).add(Display).withInstance(new Display(liveView));
-      deathView = new AsteroidDeathView(this.stage, radius);
+      deathView = new AsteroidDeathView(radius);
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(3)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       asteroid.add(new Asteroid(fsm)).add(new Position(x, y, 0)).add(new Audio());
       body.SetUserData({
@@ -2310,7 +2213,7 @@
       fixDef.friction = 1.0;
       fixDef.restitution = 0.2;
       fixDef.shape = new b2PolygonShape();
-      fixDef.shape.SetAsArray([new b2Vec2(0.45 * window.devicePixelRatio, 0), new b2Vec2(-0.25 * window.devicePixelRatio, 0.25 * window.devicePixelRatio), new b2Vec2(-0.25 * window.devicePixelRatio, -0.25 * window.devicePixelRatio)], 3);
+      fixDef.shape.SetAsArray([new b2Vec2(0.45, 0), new b2Vec2(-0.25, 0.25), new b2Vec2(-0.25, -0.25)], 3);
       body = this.world.CreateBody(bodyDef);
       body.CreateFixture(fixDef);
 
@@ -2319,9 +2222,9 @@
        */
       spaceship = new Entity();
       fsm = new EntityStateMachine(spaceship);
-      liveView = new SpaceshipView(this.stage);
-      fsm.createState('playing').add(Physics).withInstance(new Physics(body)).add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3)).add(Gun).withInstance(new Gun(8, 0, 0.3, 2)).add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z)).add(Collision).withInstance(new Collision(9 * window.devicePixelRatio)).add(Display).withInstance(new Display(liveView));
-      deathView = new SpaceshipDeathView(this.stage);
+      liveView = new SpaceshipView();
+      fsm.createState('playing').add(Physics).withInstance(new Physics(body)).add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3)).add(Gun).withInstance(new Gun(8, 0, 0.3, 2)).add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z)).add(Collision).withInstance(new Collision(9)).add(Display).withInstance(new Display(liveView));
+      deathView = new SpaceshipDeathView();
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(5)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       spaceship.add(new Spaceship(fsm)).add(new Position(x, y, 0)).add(new Audio());
       body.SetUserData({
@@ -2353,7 +2256,7 @@
       bodyDef.fixedRotation = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      bodyDef.linearVelocity.Set(cos * 150 * window.devicePixelRatio, sin * 150 * window.devicePixelRatio);
+      bodyDef.linearVelocity.Set(cos * 150, sin * 150);
       bodyDef.angularVelocity = 0;
       fixDef = new b2FixtureDef();
       fixDef.density = 1.0;
@@ -2366,8 +2269,8 @@
       /*
        * Bullet entity
        */
-      bulletView = new BulletView(this.stage);
-      bullet = new Entity().add(new Bullet(gun.bulletLifetime * window.devicePixelRatio)).add(new Position(x, y, 0)).add(new Collision(0)).add(new Physics(body)).add(new Display(bulletView));
+      bulletView = new BulletView();
+      bullet = new Entity().add(new Bullet(gun.bulletLifetime)).add(new Position(x, y, 0)).add(new Collision(0)).add(new Physics(body)).add(new Display(bulletView));
       body.SetUserData({
         type: 'bullet',
         entity: bullet
@@ -2392,14 +2295,13 @@
   })();
 
   Asteroids = (function() {
-    var Engine, FrameTickProvider, b2DebugDraw, b2Vec2, b2World;
+    var Engine, FrameTickProvider, b2DebugDraw, b2Vec2, b2World, height, scale, width;
 
-    function Asteroids() {
-      this.setPlaySfx = __bind(this.setPlaySfx, this);
-      this.setPlayMusic = __bind(this.setPlayMusic, this);
-      this.setBackground = __bind(this.setBackground, this);
-      this.pause = __bind(this.pause, this);
-    }
+    width = window.innerWidth;
+
+    height = window.innerHeight;
+
+    scale = window.devicePixelRatio;
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
@@ -2423,8 +2325,6 @@
 
     Asteroids.prototype.world = null;
 
-    Asteroids.prototype.stage = null;
-
     Asteroids.prototype.renderer = null;
 
     Asteroids.prototype.background = null;
@@ -2439,107 +2339,79 @@
 
     Asteroids.prototype.bgdColor = 0x6A5ACD;
 
+    function Asteroids(stats) {
+      this.stats = stats;
+      this.setPlaySfx = __bind(this.setPlaySfx, this);
+      this.setPlayMusic = __bind(this.setPlayMusic, this);
+      this.setBackground = __bind(this.setBackground, this);
+      this.pause = __bind(this.pause, this);
+      this.update = __bind(this.update, this);
+      this.create = __bind(this.create, this);
+      this.preload = __bind(this.preload, this);
+      this.init = __bind(this.init, this);
+      window.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '', {
+        init: this.init,
+        preload: this.preload,
+        create: this.create,
+        update: this.update
+      });
+    }
+
 
     /*
-     * Assets for pre-loader
+     * Configure Phaser
      */
 
-    Asteroids.prototype.assets = ['res/starfield.png', 'res/b_Leaderboard.png', 'res/b_More1.png', 'res/b_Parameters.png', 'res/round.png', 'res/square.png'];
+    Asteroids.prototype.init = function() {
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      game.scale.minWidth = width * scale;
+      game.scale.minHeight = height * scale;
+      game.scale.maxWidth = width * scale;
+      game.scale.maxHeight = height * scale;
+      game.scale.pageAlignVertically = true;
+      game.scale.pageAlignHorizontally = true;
+    };
+
+
+    /*
+     * Load assets
+     */
+
+    Asteroids.prototype.preload = function() {
+      game.load.image('background', 'res/starfield.png');
+      game.load.image('leaderboard', 'res/icons/b_Leaderboard.png');
+      game.load.image('more', 'res/icons/b_More1.png');
+      game.load.image('parameters', 'res/icons/b_Parameters.png');
+      game.load.image('round', 'res/round.png');
+      game.load.image('square', 'res/square.png');
+    };
 
 
     /*
      * Start the game
-     *
-     * @param canvas  Canvas created for the game
-     * @param stats   Perfmon
-     * @return none
      */
 
-    Asteroids.prototype.start = function(canvas, stats) {
-      var height, width;
-      width = canvas.width;
-      height = canvas.height;
-      if (this.optBgd !== 'blue') {
-        this.bgdColor = 0x6A5ACD;
-      }
-      this.stage = new PIXI.Stage(this.bgdColor);
-      this.renderer = new PIXI.CanvasRenderer(width, height, {
-        view: canvas
-      });
-      this.background = PIXI.Sprite.fromImage('res/starfield.png');
-      this.background.width = window.innerWidth * window.devicePixelRatio;
-      this.background.height = window.innerHeight * window.devicePixelRatio;
-      this.background.x = 0;
-      this.background.y = 0;
-      if (this.optBgd === 'blue') {
-        this.background.alpha = 0.0;
-      }
-      this.stage.addChild(this.background);
-      this.config = new GameConfig();
-      this.config.height = height;
-      this.config.width = width;
-      this.options();
-      this.world = new b2World(new b2Vec2(0, 0), true);
-      this.engine = new Engine();
-      this.creator = new EntityCreator(this.engine, this.world, this.config, this.stage);
-      this.keyPoll = new KeyPoll(this.stage, this.config);
-      this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
-      this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
-      this.engine.addSystem(new PhysicsControlSystem(this.keyPoll), SystemPriorities.update);
-      this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
-      this.engine.addSystem(new BulletAgeSystem(this.creator), SystemPriorities.update);
-      this.engine.addSystem(new DeathThroesSystem(this.creator), SystemPriorities.update);
-      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world, this.stage), SystemPriorities.move);
-      this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
-      this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
-      this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
-      this.engine.addSystem(new RenderSystem(this.stage, this.renderer), SystemPriorities.render);
-      this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
-      this.creator.createWaitForClick();
-      this.creator.createGame();
-      this.tickProvider = new FrameTickProvider(stats);
-      this.tickProvider.add(this.engine.update);
-      this.tickProvider.start();
-    };
+    Asteroids.prototype.create = function() {
+      game.stage.backgroundColor = this.bgdColor;
 
-
-    /* ============================================================>
-    User Settings
-    ============================================================>
-     */
-
-    Asteroids.prototype.options = function() {
-      var leaders, more, options;
-      options = PIXI.Sprite.fromImage('res/b_Parameters.png');
-      options.interactive = true;
-      options.mousedown = options.touchstart = function(data) {
-        return Cocoon.App.loadInTheWebView("options.html");
-      };
-      options.anchor.x = 0.5;
-      options.anchor.y = 0.5;
-      options.position.x = this.config.width - options.width;
-      options.position.y = options.height * 2;
-      this.stage.addChild(options);
-      leaders = PIXI.Sprite.fromImage('res/b_Leaderboard.png');
-      leaders.interactive = true;
-      leaders.mousedown = leaders.touchstart = function(data) {
-        return Cocoon.App.loadInTheWebView("leaders.html");
-      };
-      leaders.anchor.x = 0.5;
-      leaders.anchor.y = 0.5;
-      leaders.position.x = this.config.width - options.width;
-      leaders.position.y = leaders.height * 3 + 40;
-      this.stage.addChild(leaders);
-      more = PIXI.Sprite.fromImage('res/b_More1.png');
-      more.interactive = true;
-      more.mousedown = more.touchstart = function(data) {
-        return Cocoon.App.loadInTheWebView("more.html");
-      };
-      more.anchor.x = 0.5;
-      more.anchor.y = 0.5;
-      more.position.x = this.config.width - options.width;
-      more.position.y = leaders.height * 4 + 80;
-      this.stage.addChild(more);
+      /*
+       * Options:
+       */
+      game.add.button(width - 50, 50, 'parameters', (function(_this) {
+        return function() {
+          return Cocoon.App.loadInTheWebView("options.html");
+        };
+      })(this));
+      game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
+        return function() {
+          return Cocoon.App.loadInTheWebView("leaders.html");
+        };
+      })(this));
+      game.add.button(width - 50, 200, 'more', (function(_this) {
+        return function() {
+          return Cocoon.App.loadInTheWebView("more.html");
+        };
+      })(this));
       Cocoon.App.WebView.on("load", {
         success: (function(_this) {
           return function() {
@@ -2554,23 +2426,51 @@
           };
         })(this)
       });
+      this.config = new GameConfig();
+      this.config.height = height;
+      this.config.width = width;
+      this.world = new b2World(new b2Vec2(0, 0), true);
+      this.engine = new Engine();
+      this.creator = new EntityCreator(this.engine, this.world, this.config);
+      this.keyPoll = new KeyPoll(this.config);
+      this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
+      this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
+      this.engine.addSystem(new PhysicsControlSystem(this.keyPoll), SystemPriorities.update);
+      this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
+      this.engine.addSystem(new BulletAgeSystem(this.creator), SystemPriorities.update);
+      this.engine.addSystem(new DeathThroesSystem(this.creator), SystemPriorities.update);
+      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world), SystemPriorities.move);
+      this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
+      this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
+      this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
+      this.engine.addSystem(new RenderSystem(), SystemPriorities.render);
+      this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
+      this.creator.createWaitForClick();
+      this.creator.createGame();
+    };
+
+
+    /*
+     * Update loop
+     */
+
+    Asteroids.prototype.update = function() {
+      var stats;
+      stats = this.stats;
+      if (stats != null) {
+        stats.begin();
+      }
+      this.engine.update(game.time.elapsed / 1000);
+      if (stats != null) {
+        stats.end();
+      }
     };
 
     Asteroids.prototype.pause = function(bValue) {
       this.physics.enabled = !bValue;
     };
 
-    Asteroids.prototype.setBackground = function(value) {
-      if (value === 1) {
-        this.background.alpha = 1.0;
-        this.optBgd = 'star';
-        localStorage.background = 'star';
-      } else {
-        this.background.alpha = 0.0;
-        this.optBgd = 'blue';
-        localStorage.background = 'blue';
-      }
-    };
+    Asteroids.prototype.setBackground = function(value) {};
 
     Asteroids.prototype.setPlayMusic = function(value) {
       this.playMusic = value;
@@ -2593,18 +2493,6 @@
    */
 
   (function() {
-    window.rnd = new MersenneTwister;
-
-    /*
-     * Polyfill the requestAnimationFrame method
-     */
-    if (!window.requestAnimationFrame) {
-      window.requestAnimationFrame = (function() {
-        return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
-          window.setTimeout(callback, 1000 / 60);
-        };
-      })();
-    }
 
     /*
      * when the doc loads
@@ -2614,7 +2502,7 @@
       /*
        * perf, mon
        */
-      var canvas, container, loader, stats, x, y;
+      var container, stats, x, y;
       if (navigator.isCocoonJS) {
         stats = null;
       } else {
@@ -2633,24 +2521,10 @@
       }
 
       /*
-       * configure the canvas element
+       * start the game
        */
-      canvas = document.createElement((navigator.isCocoonJS ? 'screencanvas' : 'canvas'));
-      canvas.width = window.innerWidth * window.devicePixelRatio;
-      canvas.height = window.innerHeight * window.devicePixelRatio;
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      document.body.appendChild(canvas);
-
-      /*
-       * load assets and start the game
-       */
-      window.game = new Asteroids();
-      loader = new PIXI.AssetLoader(game.assets);
-      loader.onComplete = function() {
-        return game.start(canvas, stats);
-      };
-      loader.load();
+      window.rnd = new MersenneTwister();
+      window.asteroids = new Asteroids(stats);
     });
   })();
 
