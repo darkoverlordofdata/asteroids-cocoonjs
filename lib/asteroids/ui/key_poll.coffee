@@ -9,14 +9,9 @@ class KeyPoll
   @KEY_Z           = 90    # fire
   
   states: null
-  stage: null
-  btn0: null
-  btn1: null
-  btn2: null
-  btn3: null
   keys: [@KEY_LEFT, @KEY_RIGHT, @KEY_Z, @KEY_UP]
 
-  constructor:(@stage, config) ->
+  constructor:(config) ->
     @states = {}
     window.addEventListener 'keydown', @keyDownListener
     window.addEventListener 'keyup', @keyUpListener
@@ -40,64 +35,37 @@ class KeyPoll
    * Build a virtual game pad
   ###
   gamePad: (config) ->
-    tmp1 = PIXI.Texture.fromImage('res/round.png')
-    tmp2 = PIXI.Texture.fromImage('res/square.png')
 
-    @btn0 = new PIXI.Sprite(tmp1)
-    @btn0.interactive = true
-    @btn0.width *= (window.devicePixelRatio*1.4)
-    @btn0.height *= (window.devicePixelRatio*1.4)
-    @btn0.position.x = 0
-    @btn0.position.y = config.height-(@btn0.height*2)+35
-    @btn0.mousedown = @btn0.touchstart = (evt) =>
+    btn0 = game.add.button(0, config.height-80, 'round')
+    btn0.onInputDown.add =>
       @states[@keys[0]] = true
       return
-    @btn0.mouseup = @btn0.touchend = (evt) =>
+    btn0.onInputUp.add =>
       @states[@keys[0]] = false
       return
 
-    @btn1 = new PIXI.Sprite(tmp1)
-    @btn1.interactive = true
-    @btn1.width *= (window.devicePixelRatio*1.4)
-    @btn1.height *= (window.devicePixelRatio*1.4)
-    @btn1.position.x = @btn1.width-35
-    @btn1.position.y = config.height-@btn1.height
-    @btn1.mousedown = @btn1.touchstart = (evt) =>
+    btn1 = game.add.button(35, config.height-45, 'round')
+    btn1.onInputDown.add  =>
       @states[@keys[1]] = true
       return
-    @btn1.mouseup = @btn1.touchend = (evt) =>
+    btn1.onInputUp.add  =>
       @states[@keys[1]] = false
       return
 
-    @btn2 = new PIXI.Sprite(tmp1)
-    @btn2.interactive = true
-    @btn2.width *= (window.devicePixelRatio*1.4)
-    @btn2.height *= (window.devicePixelRatio*1.4)
-    @btn2.position.x = config.width-@btn2.width*2+35
-    @btn2.position.y = config.height-@btn2.height
-    @btn2.mousedown = @btn2.touchstart = (evt) =>
+    btn2 = game.add.button(config.width-80, config.height-45, 'square')
+    btn2.onInputDown.add  =>
       @states[@keys[2]] = true
       return
-    @btn2.mouseup = @btn2.touchend = (evt) =>
+    btn2.onInputUp.add  =>
       @states[@keys[2]] = false
       return
 
-    @btn3 = new PIXI.Sprite(tmp2)
-    @btn3.interactive = true
-    @btn3.width *= (window.devicePixelRatio*1.4)
-    @btn3.height *= (window.devicePixelRatio*1.4)
-    @btn3.position.x = config.width-@btn3.width
-    @btn3.position.y = config.height-(@btn3.height*2)+35
-    @btn3.mousedown = @btn3.touchstart = (evt) =>
+    btn3 = game.add.button(config.width-45, config.height-80, 'round')
+    btn3.onInputDown.add  =>
       @states[@keys[3]] = true
       return
-    @btn3.mouseup = @btn3.touchend = (evt) =>
+    btn3.onInputUp.add  =>
       @states[@keys[3]] = false
       return
-
-    @stage.addChild(@btn0)
-    @stage.addChild(@btn1)
-    @stage.addChild(@btn2)
-    @stage.addChild(@btn3)
 
     

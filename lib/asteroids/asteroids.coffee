@@ -15,6 +15,10 @@
 #
 class Asteroids
 
+  width = window.innerWidth
+  height = window.innerHeight
+  scale = window.devicePixelRatio
+
   b2Vec2                = Box2D.Common.Math.b2Vec2
   b2World               = Box2D.Dynamics.b2World
   b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
@@ -28,60 +32,76 @@ class Asteroids
   keyPoll         : null #  KeyPoll
   config          : null #  GameConfig
   world           : null #  B2World
-  stage           : null #  Display container
-  renderer        : null #
-  background      : null
-  physics         : null
+  background      : null #  background image
+  physics         : null #  physics system
   playMusic       : localStorage.playMusic
   playSfx         : localStorage.playSfx
   optBgd          : localStorage.background || 'blue'
   bgdColor        : 0x6A5ACD
 
+  constructor: (@stats) ->
+    window.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '',
+      init: @init, preload: @preload, create: @create, update: @update)
+
   ###
-   * Assets for pre-loader
+   * Configure Phaser
   ###
-  assets: [
-    'res/starfield.png'           # alternate background
-    'res/b_Leaderboard.png'       # leaderboard button
-    'res/b_More1.png'             # more... button
-    'res/b_Parameters.png'        # options button
-    'res/round.png'               # gameboard button1
-    'res/square.png'              # gameboard button2
-  ]
+  init: =>
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
+    game.scale.minWidth = width * scale
+    game.scale.minHeight = height * scale
+    game.scale.maxWidth = width * scale
+    game.scale.maxHeight = height * scale
+    game.scale.pageAlignVertically = true
+    game.scale.pageAlignHorizontally = true
+    return
+
+  ###
+   * Load assets
+  ###
+  preload: =>
+    game.load.image 'background', 'res/starfield.png'
+    game.load.image 'leaderboard', 'res/icons/b_Leaderboard.png'
+    game.load.image 'more', 'res/icons/b_More1.png'
+    game.load.image 'parameters', 'res/icons/b_Parameters.png'
+    game.load.image 'round', 'res/round.png'
+    game.load.image 'square', 'res/square.png'
+    return
 
   ###
    * Start the game
-   *
-   * @param canvas  Canvas created for the game
-   * @param stats   Perfmon
-   * @return none
   ###
-  start: (canvas, stats) ->
+  create: =>
+    #@background = game.add.sprite(0, 0, 'background')
+    game.stage.backgroundColor = @bgdColor
 
-    width = canvas.width
-    height = canvas.height
-    @bgdColor = 0x6A5ACD unless @optBgd is 'blue'
-    @stage = new PIXI.Stage(@bgdColor)
-    @renderer = new PIXI.CanvasRenderer(width, height, view:canvas)
+    ###
+     * Options:
+    ###
+    game.add.button width - 50, 50, 'parameters',
+      => Cocoon.App.loadInTheWebView("options.html")
+    game.add.button width - 50, 125, 'leaderboard',
+      => Cocoon.App.loadInTheWebView("leaders.html")
+    game.add.button width - 50, 200, 'more',
+      => Cocoon.App.loadInTheWebView("more.html")
 
-    @background = PIXI.Sprite.fromImage('res/starfield.png')
-    @background.width = window.innerWidth * window.devicePixelRatio
-    @background.height = window.innerHeight * window.devicePixelRatio
-    @background.x = 0
-    @background.y = 0
-    @background.alpha = 0.0 if @optBgd is 'blue'
-    @stage.addChild(@background)
+    Cocoon.App.WebView.on "load",
+      success : =>
+        @pause(true)
+        Cocoon.App.showTheWebView()
+      error : =>
+        console.log("Cannot show the Webview for some reason :/")
+        console.log(JSON.stringify(arguments))
 
     @config = new GameConfig()
     @config.height = height
     @config.width = width
 
-    @options()
 
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @engine = new Engine()
-    @creator = new EntityCreator(@engine, @world, @config, @stage)
-    @keyPoll = new KeyPoll(@stage, @config)
+    @creator = new EntityCreator(@engine, @world, @config)
+    @keyPoll = new KeyPoll(@config)
 
     @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate)
     @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
@@ -89,67 +109,27 @@ class Asteroids
     @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
     @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
     @engine.addSystem(new DeathThroesSystem(@creator), SystemPriorities.update)
-    @engine.addSystem(@physics = new PhysicsSystem(@config, @world, @stage), SystemPriorities.move)
+    @engine.addSystem(@physics = new PhysicsSystem(@config, @world), SystemPriorities.move)
     @engine.addSystem(new CollisionSystem(@world, @creator), SystemPriorities.resolveCollisions)
     @engine.addSystem(new AnimationSystem(), SystemPriorities.animate)
     @engine.addSystem(new HudSystem(), SystemPriorities.animate)
-    @engine.addSystem(new RenderSystem(@stage, @renderer), SystemPriorities.render)
+    @engine.addSystem(new RenderSystem(), SystemPriorities.render)
     @engine.addSystem(new AudioSystem(), SystemPriorities.render)
 
     @creator.createWaitForClick()
     @creator.createGame()
-
-    @tickProvider = new FrameTickProvider(stats)
-    @tickProvider.add(@engine.update)
-    @tickProvider.start()
     return
 
-
-  ### ============================================================>
-  User Settings
-  ============================================================> ###
-  options: ->
-
-    options = PIXI.Sprite.fromImage('res/b_Parameters.png')
-    options.interactive = true
-    options.mousedown = options.touchstart = (data) ->
-      Cocoon.App.loadInTheWebView("options.html")
-    options.anchor.x = 0.5
-    options.anchor.y = 0.5
-    options.position.x = @config.width - options.width
-    options.position.y = options.height*2
-    @stage.addChild(options)
-
-    leaders = PIXI.Sprite.fromImage('res/b_Leaderboard.png')
-    leaders.interactive = true
-    leaders.mousedown = leaders.touchstart = (data) ->
-      Cocoon.App.loadInTheWebView("leaders.html")
-    leaders.anchor.x = 0.5
-    leaders.anchor.y = 0.5
-    leaders.position.x = @config.width - options.width
-    leaders.position.y = leaders.height*3+40
-    @stage.addChild(leaders)
-
-    more = PIXI.Sprite.fromImage('res/b_More1.png')
-    more.interactive = true
-    more.mousedown = more.touchstart = (data) ->
-      Cocoon.App.loadInTheWebView("more.html")
-    more.anchor.x = 0.5
-    more.anchor.y = 0.5
-    more.position.x = @config.width - options.width
-    more.position.y = leaders.height*4+80
-    @stage.addChild(more)
-
-    Cocoon.App.WebView.on "load",
-      success : () =>
-        @pause(true)
-        Cocoon.App.showTheWebView()
-      error : () =>
-        console.log("Cannot show the Webview for some reason :/")
-        console.log(JSON.stringify(arguments))
-
+  ###
+   * Update loop
+  ###
+  update: =>
+    stats = @stats
+    stats?.begin()
+    # Ash expects milliseconds as a fraction of a second
+    @engine.update(game.time.elapsed/1000)
+    stats?.end()
     return
-
 
   pause: (bValue) =>
     @physics.enabled = not bValue

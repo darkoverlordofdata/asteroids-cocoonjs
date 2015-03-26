@@ -3,16 +3,6 @@
 ###
 
 do ->
-  window.rnd = new MersenneTwister
-  ###
-   * Polyfill the requestAnimationFrame method
-  ###
-  unless window.requestAnimationFrame
-    window.requestAnimationFrame = do ->
-      window.webkitRequestAnimationFrame or window.mozRequestAnimationFrame or window.oRequestAnimationFrame or window.msRequestAnimationFrame or (callback) ->
-        window.setTimeout callback, 1000 / 60
-        return
-
   ###
    * when the doc loads
   ###
@@ -37,21 +27,9 @@ do ->
       document.body.appendChild stats.domElement
 
     ###
-     * configure the canvas element
+     * start the game
     ###
-    canvas = document.createElement((if navigator.isCocoonJS then 'screencanvas' else 'canvas'))
-    canvas.width = window.innerWidth * window.devicePixelRatio
-    canvas.height = window.innerHeight * window.devicePixelRatio
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    document.body.appendChild canvas
-
-    ###
-     * load assets and start the game
-    ###
-    window.game = new Asteroids()
-    loader = new PIXI.AssetLoader(game.assets)
-    loader.onComplete = -> game.start(canvas, stats)
-    loader.load()
+    window.rnd = new MersenneTwister()
+    window.asteroids = new Asteroids(stats)
     return
 

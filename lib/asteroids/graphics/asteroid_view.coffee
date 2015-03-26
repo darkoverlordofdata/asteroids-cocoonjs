@@ -13,9 +13,9 @@ class AsteroidView
       get: -> @graphics.rotation
       set: (rotation) -> @graphics.rotation = rotation
 
-  constructor: (@stage, radius) ->
+  constructor: (radius) ->
 
-    @graphics = new PIXI.Graphics()
+    @graphics = game.add.graphics(0, 0)
     @graphics.clear()
     angle = 0
     @graphics.beginFill(0xffffff)
@@ -29,8 +29,7 @@ class AsteroidView
 
     @graphics.moveTo radius, 0
     @graphics.endFill()
-    @stage.addChild(@graphics)
 
   dispose: ->
-    @stage.removeChild(@graphics)
+    @graphics.destroy()
 

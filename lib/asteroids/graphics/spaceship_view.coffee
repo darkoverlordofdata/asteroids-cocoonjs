@@ -1,6 +1,5 @@
 class SpaceshipView
 
-  stage: null
   graphics: null
 
   Object.defineProperties SpaceshipView::,
@@ -14,17 +13,16 @@ class SpaceshipView
       get: -> @graphics.rotation
       set: (rotation) -> @graphics.rotation = rotation
 
-  constructor: (@stage) ->
-    @graphics = new PIXI.Graphics()
+  constructor: () ->
+    @graphics = game.add.graphics(0, 0)
     @graphics.clear()
     @graphics.beginFill( 0xFFFFFF )
-    @graphics.moveTo( 10 * window.devicePixelRatio, 0 )
-    @graphics.lineTo( -7 * window.devicePixelRatio, 7 * window.devicePixelRatio )
-    @graphics.lineTo( -4 * window.devicePixelRatio, 0 )
-    @graphics.lineTo( -7 * window.devicePixelRatio, -7 * window.devicePixelRatio )
-    @graphics.lineTo( 10 * window.devicePixelRatio, 0 )
+    @graphics.moveTo( 10, 0 )
+    @graphics.lineTo( -7, 7 )
+    @graphics.lineTo( -4, 0 )
+    @graphics.lineTo( -7, -7 )
+    @graphics.lineTo( 10, 0 )
     @graphics.endFill()
-    @stage.addChild(@graphics)
 
   dispose: ->
-    @stage.removeChild(@graphics)
+    @graphics.destroy()

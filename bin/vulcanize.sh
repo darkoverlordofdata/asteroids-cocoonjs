@@ -7,6 +7,8 @@ vulcanize --output example.html --strip --inline --csp example.html
 vulcanize --output index.html --strip --inline --csp index.html
 vulcanize --output options.html --strip --inline --csp options.html
 vulcanize --output leaders.html --strip --inline --csp leaders.html
+vulcanize --output more.html --strip --inline --csp more.html
 rm -fr ./packages
+rm -fr ./css
 
 

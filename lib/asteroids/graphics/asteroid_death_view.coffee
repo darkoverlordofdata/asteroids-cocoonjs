@@ -7,17 +7,16 @@ class AsteroidDeathView
   stage: null
   first: true
 
-  constructor: (@stage, radius) ->
+  constructor: (radius) ->
     @dots = []
     for i in [0...8]
-      dot = new Dot(@stage, radius)
+      dot = new Dot(radius)
       @dots.push(dot)
 
   animate: (time) =>
     if @first
       @first = false
       for dot in @dots
-        @stage.addChild(dot.graphics)
         dot.graphics.x = @x
         dot.graphics.y = @y
 
@@ -27,7 +26,7 @@ class AsteroidDeathView
 
   dispose: () ->
     for dot in @dots
-      @stage.removeChild(dot.graphics)
+      dot.graphics.destroy()
 
 class Dot
 
@@ -36,8 +35,8 @@ class Dot
   x: 0
   y: 0
 
-  constructor: (@stage, maxDistance) ->
-    @graphics = new PIXI.Graphics()
+  constructor: (maxDistance) ->
+    @graphics = game.add.graphics(0, 0)
     @graphics.beginFill(0xffffff)
     @graphics.drawCircle(0, 0, 1)
     @graphics.endFill()
