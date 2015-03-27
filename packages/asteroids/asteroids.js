@@ -2522,17 +2522,11 @@
      * when the doc loads
      */
     return window.addEventListener('load', function() {
-      var container, e, stats, x, y;
-      try {
-        screen.lockOrientation('landscape');
-      } catch (_error) {
-        e = _error;
-        console.log(e);
-      }
 
       /*
        * perf, mon
        */
+      var container, stats, x, y;
       if (navigator.isCocoonJS) {
         stats = null;
       } else {
