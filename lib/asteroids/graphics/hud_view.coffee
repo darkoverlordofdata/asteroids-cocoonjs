@@ -16,7 +16,7 @@ class HudView
     @graphics.endFill()
     @graphics.alpha = 0.5
 
-    @score = game.add.text(window.innerWidth-130, 20, '')
+    @score = game.add.text(window.innerWidth-130, 20, '', font: 'bold 18px opendyslexic', fill: 'white')
 
     @setScore(0)
     @setLives(3)
@@ -33,11 +33,11 @@ class HudView
     @graphics.beginFill( 0x000000 )
     for i in [0...lives]
       c = i*10+10
-      @graphics.moveTo( 10 + 10, 0 + c)
+      @graphics.moveTo( 10 + 10, c)
       @graphics.lineTo( -7 + 10, 7 + c)
-      @graphics.lineTo( -4 + 10, 0 + c)
+      @graphics.lineTo( -4 + 10, c)
       @graphics.lineTo( -7 + 10, -7 + c)
-      @graphics.lineTo( 10 + 10, 0 + c)
+      @graphics.lineTo( 10 + 10, c)
 
     @graphics.endFill()
     @graphics.alpha = 0.5

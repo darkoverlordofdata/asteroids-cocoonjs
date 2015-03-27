@@ -6,7 +6,7 @@
 #|
 #| This file is a part of asteroids.coffee
 #|
-#| ash.coffee is free software; you can copy, modify, and distribute
+#| asteroids.coffee is free software; you can copy, modify, and distribute
 #| it under the terms of the MIT License
 #|
 #+--------------------------------------------------------------------+
@@ -15,37 +15,36 @@
 #
 class Asteroids
 
-  width = window.innerWidth
-  height = window.innerHeight
-  scale = window.devicePixelRatio
+  width             = window.innerWidth
+  height            = window.innerHeight
+  scale             = window.devicePixelRatio
 
-  b2Vec2                = Box2D.Common.Math.b2Vec2
-  b2World               = Box2D.Dynamics.b2World
-  b2DebugDraw           = Box2D.Dynamics.b2DebugDraw
+  b2Vec2            = Box2D.Common.Math.b2Vec2
+  b2World           = Box2D.Dynamics.b2World
 
-  Engine                = ash.core.Engine
-  FrameTickProvider     = ash.tick.FrameTickProvider
+  Engine            = ash.core.Engine
+  FrameTickProvider = ash.tick.FrameTickProvider
 
-  game            : null #  Phaser.io
-  engine          : null #  Engine
-  tickProvider    : null #  FrameTickProvider
-  creator         : null #  EntityCreator
-  keyPoll         : null #  KeyPoll
-  config          : null #  GameConfig
-  world           : null #  B2World
-  background      : null #  background image
-  physics         : null #  physics system
-  playMusic       : localStorage.playMusic
-  playSfx         : localStorage.playSfx
-  optBgd          : localStorage.background || 'blue'
-  bgdColor        : 0x6A5ACD
+  game              : null  #  Phaser.io game object
+  engine            : null  #  Ash Engine
+  tickProvider      : null  #  FrameTickProvider
+  creator           : null  #  EntityCreator
+  keyPoll           : null  #  KeyPoll
+  config            : null  #  GameConfig
+  world             : null  #  b2World
+  background        : null  #  background image
+  physics           : null  #  physics system
+  playMusic         : localStorage.playMusic
+  playSfx           : localStorage.playSfx
+  optBgd            : localStorage.background || 'blue'
+  bgdColor          : 0x6A5ACD
 
   constructor: (@stats) ->
     @game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '',
-      init: @init, preload: @preload, create: @create, update: @update)
+      init: @init, preload: @preload, create: @create)
 
   ###
-   * Configure Phaser
+   * Configure Phaser scaling
   ###
   init: =>
     @game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
@@ -67,13 +66,26 @@ class Asteroids
     @game.load.image 'parameters', 'res/icons/b_Parameters.png'
     @game.load.image 'round', 'res/round.png'
     @game.load.image 'square', 'res/square.png'
+    @game.load.audio 'asteroid', [ExplodeAsteroid::src]
+    @game.load.audio 'ship', [ExplodeShip::src]
+    @game.load.audio 'shoot', [ShootGun::src]
     return
 
   ###
    * Start the game
   ###
   create: =>
-    #@background = @game.add.sprite(0, 0, 'background')
+
+    ExplodeAsteroid.audio = @game.add.audio('asteroid')
+    ExplodeAsteroid.audio.play('', 0, 0)
+    ExplodeShip.audio = @game.add.audio('ship')
+    ExplodeShip.audio.play('', 0, 0)
+    ShootGun.audio = @game.add.audio('shoot')
+    ShootGun.audio.play('', 0, 0)
+
+    @background = @game.add.sprite(0, 0, 'background')
+    @background.width = width
+    @background.height = height
     @game.stage.backgroundColor = @bgdColor
 
     ###
@@ -119,17 +131,13 @@ class Asteroids
 
     @creator.createWaitForClick()
     @creator.createGame()
-    return
-
-  ###
-   * Update loop
-  ###
-  update: =>
-    stats = @stats
-    stats?.begin()
-    # Ash expects milliseconds as a fraction of a second
-    @engine.update(@game.time.elapsed/1000)
-    stats?.end()
+    ###
+     * We'll use Ash to run the game loop
+     * Phaser will tend to it's own.
+    ###
+    @tickProvider = new FrameTickProvider(@stats)
+    @tickProvider.add(@engine.update)
+    @tickProvider.start()
     return
 
   pause: (bValue) =>

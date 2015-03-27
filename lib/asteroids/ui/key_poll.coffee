@@ -15,7 +15,7 @@ class KeyPoll
     @states = {}
     window.addEventListener 'keydown', @keyDownListener
     window.addEventListener 'keyup', @keyUpListener
-    @gamePad(game, config)
+    @gamePad(game, config) if game.device.touch
 
   keyDownListener: (event) =>
     @states[event.keyCode] = true
@@ -32,7 +32,7 @@ class KeyPoll
     return not @states[keyCode]
 
   ###
-   * Build a virtual game pad
+   * Build a virtual game pad for touch devices
   ###
   gamePad: (game, config) ->
 

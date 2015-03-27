@@ -18,7 +18,7 @@ do ->
       document.body.appendChild container
       container.appendChild stats.domElement
       stats.domElement.style.position = 'absolute'
-      x = 0 #Math.floor(window.innerWidth * window.devicePixelRatio/2)
+      x = 0
       y = 0
       stats.setMode 0
       stats.domElement.style.position = "absolute"

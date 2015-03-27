@@ -23,15 +23,17 @@
     "box2d": "git://github.com/darkoverlordofdata/Box2dWeb",
     "stats.js": "*",
     "pixi.js": "~2.2.8",
-    "phaser": "2.2.2"
+    "phaser": "2.3.0",
+    "modal": "git://github.com/netgfx/phaser_modals"
   },
   "packages": {
     "cocoonjs": "cocoonjs/build/*.*",
-    "ash": "ash/dist/*.js",
+    "ash": "ash/dist/*.*",
     "box2d": "box2d/dist/*.js",
     "stats.js": "stats.js/build/*.js",
     "pixi.js": "pixi.js/bin/*.*",
-    "phaser": "phaser/build/custom/*.*"
+    "phaser": "phaser/build/custom/*.*",
+    "modal": "modal/src/*.js"
 
   }
 }
