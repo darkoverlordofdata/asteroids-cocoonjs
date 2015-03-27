@@ -300,7 +300,9 @@
       this.states = {};
       window.addEventListener('keydown', this.keyDownListener);
       window.addEventListener('keyup', this.keyUpListener);
-      this.gamePad(game, config);
+      if (game.device.touch) {
+        this.gamePad(game, config);
+      }
     }
 
     KeyPoll.prototype.keyDownListener = function(event) {
@@ -323,7 +325,7 @@
 
 
     /*
-     * Build a virtual game pad
+     * Build a virtual game pad for touch devices
      */
 
     KeyPoll.prototype.gamePad = function(game, config) {
@@ -423,44 +425,44 @@
 
   })();
 
-  ExplodeAsteroid = (function(_super) {
-    __extends(ExplodeAsteroid, _super);
-
-    function ExplodeAsteroid() {
-      return ExplodeAsteroid.__super__.constructor.apply(this, arguments);
-    }
+  ExplodeAsteroid = (function() {
+    function ExplodeAsteroid() {}
 
     ExplodeAsteroid.prototype.src = Sound.preload('res/sounds/asteroid.wav');
 
+    ExplodeAsteroid.prototype.play = function() {
+      return ExplodeAsteroid.sfx.play('', 0, Sound.volume);
+    };
+
     return ExplodeAsteroid;
 
-  })(Sound);
+  })();
 
-  ExplodeShip = (function(_super) {
-    __extends(ExplodeShip, _super);
-
-    function ExplodeShip() {
-      return ExplodeShip.__super__.constructor.apply(this, arguments);
-    }
+  ExplodeShip = (function() {
+    function ExplodeShip() {}
 
     ExplodeShip.prototype.src = Sound.preload('res/sounds/ship.wav');
 
+    ExplodeShip.prototype.play = function() {
+      return ExplodeShip.sfx.play('', 0, Sound.volume);
+    };
+
     return ExplodeShip;
 
-  })(Sound);
+  })();
 
-  ShootGun = (function(_super) {
-    __extends(ShootGun, _super);
-
-    function ShootGun() {
-      return ShootGun.__super__.constructor.apply(this, arguments);
-    }
+  ShootGun = (function() {
+    function ShootGun() {}
 
     ShootGun.prototype.src = Sound.preload('res/sounds/shoot.wav');
 
+    ShootGun.prototype.play = function() {
+      return ShootGun.sfx.play('', 0, Sound.volume);
+    };
+
     return ShootGun;
 
-  })(Sound);
+  })();
 
   AsteroidView = (function() {
     AsteroidView.prototype.graphics = null;
@@ -670,7 +672,10 @@
       this.graphics.drawRect(0, 0, 30, 40);
       this.graphics.endFill();
       this.graphics.alpha = 0.5;
-      this.score = game.add.text(window.innerWidth - 130, 20, '');
+      this.score = game.add.text(window.innerWidth - 130, 20, '', {
+        font: 'bold 18px opendyslexic',
+        fill: 'white'
+      });
       this.setScore(0);
       this.setLives(3);
     }
@@ -689,11 +694,11 @@
       this.graphics.beginFill(0x000000);
       for (i = _i = 0; 0 <= lives ? _i < lives : _i > lives; i = 0 <= lives ? ++_i : --_i) {
         c = i * 10 + 10;
-        this.graphics.moveTo(10 + 10, 0 + c);
+        this.graphics.moveTo(10 + 10, c);
         this.graphics.lineTo(-7 + 10, 7 + c);
-        this.graphics.lineTo(-4 + 10, 0 + c);
+        this.graphics.lineTo(-4 + 10, c);
         this.graphics.lineTo(-7 + 10, -7 + c);
-        this.graphics.lineTo(10 + 10, 0 + c);
+        this.graphics.lineTo(10 + 10, c);
       }
       this.graphics.endFill();
       this.graphics.alpha = 0.5;
@@ -851,15 +856,11 @@
 
     function WaitForStartView(game) {
       this.start = __bind(this.start, this);
-      this.click = new Signal0();
-      this.createText(game, WaitForStartView.count++);
-    }
-
-    WaitForStartView.prototype.createText = function(game, first) {
       var x, y;
+      this.click = new Signal0();
       x = Math.floor(window.innerWidth / 2);
       y = window.innerHeight - 40;
-      if (first === 1) {
+      if ((WaitForStartView.count++) === 1) {
         this.text1 = game.add.text(x, 85, 'GAME OVER', {
           font: 'bold 60px opendyslexic',
           fill: 'white',
@@ -874,27 +875,39 @@
           strokeThickness: 30
         });
       }
-      this.text2 = game.add.text(x, 175, 'CLICK TO START', {
-        font: 'bold 12px opendyslexic',
-        fill: 'white'
-      });
-      this.text3 = game.add.text(x, y, 'Z to Fire  ~  Arrow Keys to Move', {
-        font: 'bold 10px opendyslexic',
-        fill: 'white'
-      });
+      if (game.device.touch) {
+        this.text2 = game.add.text(x, 175, 'TOUCH TO START', {
+          font: 'bold 12px opendyslexic',
+          fill: 'white'
+        });
+      } else {
+        this.text2 = game.add.text(x, 175, 'CLICK TO START', {
+          font: 'bold 12px opendyslexic',
+          fill: 'white'
+        });
+      }
       this.text1.anchor.x = 0.5;
       this.text2.anchor.x = 0.5;
-      this.text3.anchor.x = 0.5;
+      if (game.device.desktop) {
+        this.text3 = game.add.text(x, y, 'Z to Fire  ~  Arrow Keys to Move', {
+          font: 'bold 10px opendyslexic',
+          fill: 'white'
+        });
+        this.text3.anchor.x = 0.5;
+      }
       this.text1.inputEnabled = true;
       this.text2.inputEnabled = true;
       this.text1.events.onInputDown.add(this.start);
-      return this.text2.events.onInputDown.add(this.start);
-    };
+      this.text2.events.onInputDown.add(this.start);
+    }
 
     WaitForStartView.prototype.start = function(data) {
+      var _ref;
       this.text1.destroy();
       this.text2.destroy();
-      this.text3.destroy();
+      if ((_ref = this.text3) != null) {
+        _ref.destroy();
+      }
       return this.click.dispatch();
     };
 
@@ -2347,21 +2360,19 @@
       this.setPlayMusic = __bind(this.setPlayMusic, this);
       this.setBackground = __bind(this.setBackground, this);
       this.pause = __bind(this.pause, this);
-      this.update = __bind(this.update, this);
       this.create = __bind(this.create, this);
       this.preload = __bind(this.preload, this);
       this.init = __bind(this.init, this);
       this.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '', {
         init: this.init,
         preload: this.preload,
-        create: this.create,
-        update: this.update
+        create: this.create
       });
     }
 
 
     /*
-     * Configure Phaser
+     * Configure Phaser scaling
      */
 
     Asteroids.prototype.init = function() {
@@ -2386,6 +2397,9 @@
       this.game.load.image('parameters', 'res/icons/b_Parameters.png');
       this.game.load.image('round', 'res/round.png');
       this.game.load.image('square', 'res/square.png');
+      this.game.load.audio('asteroid', [ExplodeAsteroid.prototype.src]);
+      this.game.load.audio('ship', [ExplodeShip.prototype.src]);
+      this.game.load.audio('shoot', [ShootGun.prototype.src]);
     };
 
 
@@ -2394,6 +2408,15 @@
      */
 
     Asteroids.prototype.create = function() {
+      ExplodeAsteroid.sfx = this.game.add.audio('asteroid');
+      ExplodeAsteroid.sfx.play('', 0, 0);
+      ExplodeShip.sfx = this.game.add.audio('ship');
+      ExplodeShip.sfx.play('', 0, 0);
+      ShootGun.sfx = this.game.add.audio('shoot');
+      ShootGun.sfx.play('', 0, 0);
+      this.background = this.game.add.sprite(0, 0, 'background');
+      this.background.width = width;
+      this.background.height = height;
       this.game.stage.backgroundColor = this.bgdColor;
 
       /*
@@ -2449,23 +2472,14 @@
       this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
       this.creator.createWaitForClick();
       this.creator.createGame();
-    };
 
-
-    /*
-     * Update loop
-     */
-
-    Asteroids.prototype.update = function() {
-      var stats;
-      stats = this.stats;
-      if (stats != null) {
-        stats.begin();
-      }
-      this.engine.update(this.game.time.elapsed / 1000);
-      if (stats != null) {
-        stats.end();
-      }
+      /*
+       * We'll use Ash to run the game loop
+       * Phaser will tend to it's own.
+       */
+      this.tickProvider = new FrameTickProvider(this.stats);
+      this.tickProvider.add(this.engine.update);
+      this.tickProvider.start();
     };
 
     Asteroids.prototype.pause = function(bValue) {
