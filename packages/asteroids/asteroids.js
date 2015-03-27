@@ -2310,7 +2310,7 @@
   })();
 
   Asteroids = (function() {
-    var Engine, FrameTickProvider, b2DebugDraw, b2Vec2, b2World, height, scale, width;
+    var Engine, FrameTickProvider, b2Vec2, b2World, height, scale, width;
 
     width = window.innerWidth;
 
@@ -2321,8 +2321,6 @@
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
     b2World = Box2D.Dynamics.b2World;
-
-    b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 
     Engine = ash.core.Engine;
 
@@ -2524,11 +2522,17 @@
      * when the doc loads
      */
     return window.addEventListener('load', function() {
+      var container, e, stats, x, y;
+      try {
+        screen.lockOrientation('landscape');
+      } catch (_error) {
+        e = _error;
+        console.log(e);
+      }
 
       /*
        * perf, mon
        */
-      var container, stats, x, y;
       if (navigator.isCocoonJS) {
         stats = null;
       } else {
