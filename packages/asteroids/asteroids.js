@@ -431,7 +431,7 @@
     ExplodeAsteroid.prototype.src = Sound.preload('res/sounds/asteroid.wav');
 
     ExplodeAsteroid.prototype.play = function() {
-      return ExplodeAsteroid.sfx.play('', 0, Sound.volume);
+      return ExplodeAsteroid.audio.play('', 0, Sound.volume / 10);
     };
 
     return ExplodeAsteroid;
@@ -444,7 +444,7 @@
     ExplodeShip.prototype.src = Sound.preload('res/sounds/ship.wav');
 
     ExplodeShip.prototype.play = function() {
-      return ExplodeShip.sfx.play('', 0, Sound.volume);
+      return ExplodeShip.audio.play('', 0, Sound.volume / 10);
     };
 
     return ExplodeShip;
@@ -457,7 +457,7 @@
     ShootGun.prototype.src = Sound.preload('res/sounds/shoot.wav');
 
     ShootGun.prototype.play = function() {
-      return ShootGun.sfx.play('', 0, Sound.volume);
+      return ShootGun.audio.play('', 0, Sound.volume / 10);
     };
 
     return ShootGun;
@@ -2406,12 +2406,12 @@
      */
 
     Asteroids.prototype.create = function() {
-      ExplodeAsteroid.sfx = this.game.add.audio('asteroid');
-      ExplodeAsteroid.sfx.play('', 0, 0);
-      ExplodeShip.sfx = this.game.add.audio('ship');
-      ExplodeShip.sfx.play('', 0, 0);
-      ShootGun.sfx = this.game.add.audio('shoot');
-      ShootGun.sfx.play('', 0, 0);
+      ExplodeAsteroid.audio = this.game.add.audio('asteroid');
+      ExplodeAsteroid.audio.play('', 0, 0);
+      ExplodeShip.audio = this.game.add.audio('ship');
+      ExplodeShip.audio.play('', 0, 0);
+      ShootGun.audio = this.game.add.audio('shoot');
+      ShootGun.audio.play('', 0, 0);
       this.background = this.game.add.sprite(0, 0, 'background');
       this.background.width = width;
       this.background.height = height;
