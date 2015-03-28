@@ -288,9 +288,13 @@
 
     KeyPoll.KEY_Z = 90;
 
+    KeyPoll.KEY_W = 87;
+
+    KeyPoll.KEY_SPACE = 32;
+
     KeyPoll.prototype.states = null;
 
-    KeyPoll.prototype.keys = [KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_Z, KeyPoll.KEY_UP];
+    KeyPoll.prototype.keys = [KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_Z, KeyPoll.KEY_UP, KeyPoll.KEY_SPACE];
 
     function KeyPoll(game, config) {
       this.isUp = __bind(this.isUp, this);
@@ -329,7 +333,7 @@
      */
 
     KeyPoll.prototype.gamePad = function(game, config) {
-      var btn0, btn1, btn2, btn3;
+      var btn0, btn1, btn2, btn3, btn4;
       btn0 = game.add.button(0, config.height - 80, 'round');
       btn0.onInputDown.add((function(_this) {
         return function() {
@@ -352,7 +356,7 @@
           _this.states[_this.keys[1]] = false;
         };
       })(this));
-      btn2 = game.add.button(config.width - 80, config.height - 45, 'square');
+      btn2 = game.add.button(config.width - 80, config.height - 45, 'round');
       btn2.onInputDown.add((function(_this) {
         return function() {
           _this.states[_this.keys[2]] = true;
@@ -369,9 +373,21 @@
           _this.states[_this.keys[3]] = true;
         };
       })(this));
-      return btn3.onInputUp.add((function(_this) {
+      btn3.onInputUp.add((function(_this) {
         return function() {
           _this.states[_this.keys[3]] = false;
+        };
+      })(this));
+      btn4 = game.add.button(config.width / 2, config.height - 45, 'square');
+      btn4.anchor.x = 0.5;
+      btn4.onInputDown.add((function(_this) {
+        return function() {
+          _this.states[_this.keys[4]] = true;
+        };
+      })(this));
+      return btn4.onInputUp.add((function(_this) {
+        return function() {
+          _this.states[_this.keys[4]] = false;
         };
       })(this));
     };
@@ -384,6 +400,8 @@
     Sound.volume = 0.5;
 
     Sound.enabled = true;
+
+    Sound.FACTOR = 2;
 
     Sound.preload = function(src) {
       var audio;
@@ -431,7 +449,7 @@
     ExplodeAsteroid.prototype.src = Sound.preload('res/sounds/asteroid.wav');
 
     ExplodeAsteroid.prototype.play = function() {
-      return ExplodeAsteroid.audio.play('', 0, Sound.volume / 10);
+      return ExplodeAsteroid.audio.play('', 0, Sound.volume / Sound.FACTOR);
     };
 
     return ExplodeAsteroid;
@@ -444,7 +462,7 @@
     ExplodeShip.prototype.src = Sound.preload('res/sounds/ship.wav');
 
     ExplodeShip.prototype.play = function() {
-      return ExplodeShip.audio.play('', 0, Sound.volume / 10);
+      return ExplodeShip.audio.play('', 0, Sound.volume / Sound.FACTOR);
     };
 
     return ExplodeShip;
@@ -457,7 +475,7 @@
     ShootGun.prototype.src = Sound.preload('res/sounds/shoot.wav');
 
     ShootGun.prototype.play = function() {
-      return ShootGun.audio.play('', 0, Sound.volume / 10);
+      return ShootGun.audio.play('', 0, Sound.volume / Sound.FACTOR);
     };
 
     return ShootGun;
@@ -815,18 +833,22 @@
 
     function SpaceshipView(game) {
       this.graphics = game.add.graphics(0, 0);
+      this.draw(0xFFFFFF);
+    }
+
+    SpaceshipView.prototype.dispose = function() {
+      return this.graphics.destroy();
+    };
+
+    SpaceshipView.prototype.draw = function(color) {
       this.graphics.clear();
-      this.graphics.beginFill(0xFFFFFF);
+      this.graphics.beginFill(color);
       this.graphics.moveTo(10, 0);
       this.graphics.lineTo(-7, 7);
       this.graphics.lineTo(-4, 0);
       this.graphics.lineTo(-7, -7);
       this.graphics.lineTo(10, 0);
-      this.graphics.endFill();
-    }
-
-    SpaceshipView.prototype.dispose = function() {
-      return this.graphics.destroy();
+      return this.graphics.endFill();
     };
 
     return SpaceshipView;
@@ -889,7 +911,7 @@
       this.text1.anchor.x = 0.5;
       this.text2.anchor.x = 0.5;
       if (game.device.desktop) {
-        this.text3 = game.add.text(x, y, 'Z to Fire  ~  Arrow Keys to Move', {
+        this.text3 = game.add.text(x, y, 'Z ~ Fire  |  SPACE ~ Warp  |  Left/Right ~ Turn  |  Up ~ Accelerate', {
           font: 'bold 10px opendyslexic',
           fill: 'white'
         });
@@ -1071,14 +1093,17 @@
 
     MotionControls.prototype.accelerate = 0;
 
+    MotionControls.prototype.warp = 0;
+
     MotionControls.prototype.accelerationRate = 0;
 
     MotionControls.prototype.rotationRate = 0;
 
-    function MotionControls(left, right, accelerate, accelerationRate, rotationRate) {
+    function MotionControls(left, right, accelerate, warp, accelerationRate, rotationRate) {
       this.left = left;
       this.right = right;
       this.accelerate = accelerate;
+      this.warp = warp;
       this.accelerationRate = accelerationRate;
       this.rotationRate = rotationRate;
     }
@@ -1358,12 +1383,15 @@
 
     PhysicsControlNode.components = {
       control: MotionControls,
-      physics: Physics
+      physics: Physics,
+      display: Display
     };
 
     PhysicsControlNode.prototype.control = null;
 
     PhysicsControlNode.prototype.physics = null;
+
+    PhysicsControlNode.prototype.display = null;
 
     return PhysicsControlNode;
 
@@ -1909,7 +1937,7 @@
   })(ash.tools.ListIteratingSystem);
 
   PhysicsControlSystem = (function(_super) {
-    var IDTK, R, b2Vec2, _ref;
+    var IDTK, R, b2Vec2, colors, _ref;
 
     __extends(PhysicsControlSystem, _super);
 
@@ -1919,18 +1947,42 @@
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
+    colors = [0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffff00];
+
     PhysicsControlSystem.prototype.keyPoll = null;
 
-    function PhysicsControlSystem(keyPoll) {
+    PhysicsControlSystem.prototype.warping = 0;
+
+    function PhysicsControlSystem(keyPoll, config) {
       this.keyPoll = keyPoll;
+      this.config = config;
       this.updateNode = __bind(this.updateNode, this);
       PhysicsControlSystem.__super__.constructor.call(this, PhysicsControlNode, this.updateNode);
     }
 
     PhysicsControlSystem.prototype.updateNode = function(node, time) {
-      var body, control, rotation, v;
+      var body, control, rotation, v, x, y;
       control = node.control;
       body = node.physics.body;
+      if (this.warping) {
+        this.warping--;
+        x = rnd.nextInt(this.config.width);
+        y = rnd.nextInt(this.config.height);
+        body.SetPosition({
+          x: x,
+          y: y
+        });
+        if (this.warping === 0) {
+          node.display.graphic.draw(0xFFFFFF);
+        } else {
+          node.display.graphic.draw(colors[rnd.nextInt(6)]);
+        }
+        return;
+      }
+      if (this.keyPoll.isDown(control.warp)) {
+        this.warping = rnd.nextInt(30) + 30;
+        return;
+      }
       if (this.keyPoll.isDown(control.left)) {
         rotation = body.GetAngularVelocity();
         body.SetAngularVelocity(rotation - control.rotationRate * time);
@@ -2082,6 +2134,36 @@
   EntityCreator = (function() {
     var Entity, EntityStateMachine, b2Body, b2BodyDef, b2CircleShape, b2FixtureDef, b2PolygonShape, b2Vec2;
 
+    EntityCreator.prototype.ASTEROID_DENSITY = 1.0;
+
+    EntityCreator.prototype.ASTEROID_FRICTION = 1.0;
+
+    EntityCreator.prototype.ASTEROID_RESTITUTION = 0.2;
+
+    EntityCreator.prototype.ASTEROID_DAMPING = 0.0;
+
+    EntityCreator.prototype.ASTEROID_LINEAR = 4.0;
+
+    EntityCreator.prototype.ASTEROID_ANGULAR = 2.0;
+
+    EntityCreator.prototype.SPACESHIP_DENSITY = 1.0;
+
+    EntityCreator.prototype.SPACESHIP_FRICTION = 1.0;
+
+    EntityCreator.prototype.SPACESHIP_RESTITUTION = 0.2;
+
+    EntityCreator.prototype.SPACESHIP_DAMPING = 0.75;
+
+    EntityCreator.prototype.LEFT = KeyPoll.KEY_LEFT;
+
+    EntityCreator.prototype.RIGHT = KeyPoll.KEY_RIGHT;
+
+    EntityCreator.prototype.THRUST = KeyPoll.KEY_UP;
+
+    EntityCreator.prototype.FIRE = KeyPoll.KEY_Z;
+
+    EntityCreator.prototype.WARP = KeyPoll.KEY_SPACE;
+
     Entity = ash.core.Entity;
 
     EntityStateMachine = ash.fsm.EntityStateMachine;
@@ -2171,14 +2253,15 @@
       bodyDef.fixedRotation = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2;
-      v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2;
+      v1 = (rnd.nextDouble() - 0.5) * this.ASTEROID_LINEAR * (50 - radius) * 2;
+      v2 = (rnd.nextDouble() - 0.5) * this.ASTEROID_LINEAR * (50 - radius) * 2;
       bodyDef.linearVelocity.Set(v1, v2);
-      bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1;
+      bodyDef.angularVelocity = rnd.nextDouble() * this.ASTEROID_ANGULAR - 1;
+      bodyDef.linearDamping = this.ASTEROID_DAMPING;
       fixDef = new b2FixtureDef();
-      fixDef.density = 1.0;
-      fixDef.friction = 1.0;
-      fixDef.restitution = 0.2;
+      fixDef.density = this.ASTEROID_DENSITY;
+      fixDef.friction = this.ASTEROID_FRICTION;
+      fixDef.restitution = this.ASTEROID_RESTITUTION;
       fixDef.shape = new b2CircleShape(radius);
       body = this.world.CreateBody(bodyDef);
       body.CreateFixture(fixDef);
@@ -2222,11 +2305,11 @@
       bodyDef.position.y = y;
       bodyDef.linearVelocity.Set(0, 0);
       bodyDef.angularVelocity = 0;
-      bodyDef.linearDamping = 0.75;
+      bodyDef.linearDamping = this.SPACESHIP_DAMPING;
       fixDef = new b2FixtureDef();
-      fixDef.density = 1.0;
-      fixDef.friction = 1.0;
-      fixDef.restitution = 0.2;
+      fixDef.density = this.SPACESHIP_DENSITY;
+      fixDef.friction = this.SPACESHIP_FRICTION;
+      fixDef.restitution = this.SPACESHIP_RESTITUTION;
       fixDef.shape = new b2PolygonShape();
       fixDef.shape.SetAsArray([new b2Vec2(0.45, 0), new b2Vec2(-0.25, 0.25), new b2Vec2(-0.25, -0.25)], 3);
       body = this.world.CreateBody(bodyDef);
@@ -2238,7 +2321,7 @@
       spaceship = new Entity();
       fsm = new EntityStateMachine(spaceship);
       liveView = new SpaceshipView(this.game);
-      fsm.createState('playing').add(Physics).withInstance(new Physics(body)).add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3)).add(Gun).withInstance(new Gun(8, 0, 0.3, 2)).add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z)).add(Collision).withInstance(new Collision(9)).add(Display).withInstance(new Display(liveView));
+      fsm.createState('playing').add(Physics).withInstance(new Physics(body)).add(MotionControls).withInstance(new MotionControls(this.LEFT, this.RIGHT, this.THRUST, this.WARP, 100, 3)).add(Gun).withInstance(new Gun(8, 0, 0.3, 2)).add(GunControls).withInstance(new GunControls(this.FIRE)).add(Collision).withInstance(new Collision(9)).add(Display).withInstance(new Display(liveView));
       deathView = new SpaceshipDeathView(this.game);
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(5)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       spaceship.add(new Spaceship(fsm)).add(new Position(x, y, 0)).add(new Audio());
@@ -2310,7 +2393,7 @@
   })();
 
   Asteroids = (function() {
-    var Engine, FrameTickProvider, b2Vec2, b2World, height, scale, width;
+    var b2Vec2, b2World, height, scale, width;
 
     width = window.innerWidth;
 
@@ -2321,10 +2404,6 @@
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
     b2World = Box2D.Dynamics.b2World;
-
-    Engine = ash.core.Engine;
-
-    FrameTickProvider = ash.tick.FrameTickProvider;
 
     Asteroids.prototype.game = null;
 
@@ -2352,8 +2431,12 @@
 
     Asteroids.prototype.bgdColor = 0x6A5ACD;
 
-    function Asteroids(stats) {
-      this.stats = stats;
+
+    /*
+     * Create the phaser game component
+     */
+
+    function Asteroids() {
       this.setPlaySfx = __bind(this.setPlaySfx, this);
       this.setPlayMusic = __bind(this.setPlayMusic, this);
       this.setBackground = __bind(this.setBackground, this);
@@ -2398,6 +2481,22 @@
       this.game.load.audio('asteroid', [ExplodeAsteroid.prototype.src]);
       this.game.load.audio('ship', [ExplodeShip.prototype.src]);
       this.game.load.audio('shoot', [ShootGun.prototype.src]);
+      this.game.load.image("bg", "http://i221.photobucket.com/albums/dd22/djmid71/Untitled-1_zpswmvh3qea.jpg");
+      this.game.load.image("m1", "http://i221.photobucket.com/albums/dd22/djmid71/M1_zpsdprlkpno.png");
+      this.game.load.image("m2", "http://i221.photobucket.com/albums/dd22/djmid71/M2_zpsefls9w86.png");
+      this.game.load.image("m3", "http://i221.photobucket.com/albums/dd22/djmid71/m3_zpszzqyjbpa.png");
+      this.game.load.image("m4", "http://i221.photobucket.com/albums/dd22/djmid71/m4_zps5tnlccp0.png");
+      this.game.load.image("m5", "http://i221.photobucket.com/albums/dd22/djmid71/m5_zpsdpz0cohz.png");
+      this.game.load.image("m6", "http://i221.photobucket.com/albums/dd22/djmid71/m6_zpsvfvskl1d.png");
+      this.game.load.image("gameover", "http://i221.photobucket.com/albums/dd22/djmid71/gameover_zpse663rlsp.png");
+      this.game.load.image("tryagain", "http://i221.photobucket.com/albums/dd22/djmid71/tryagain_zpszyvxhs8m.png");
+      this.game.load.image("yes", "http://i221.photobucket.com/albums/dd22/djmid71/yes_zpsfppqya7h.png");
+      this.game.load.image("no", "http://i221.photobucket.com/albums/dd22/djmid71/no_zpsnjisaare.png");
+      this.game.load.image("twitter", "http://i221.photobucket.com/albums/dd22/djmid71/twitter_zpsyadnfz48.png");
+      this.game.load.image("facebook", "http://i221.photobucket.com/albums/dd22/djmid71/facebook_zpsxiqll8e0.png");
+      this.game.load.image("clear", "http://i221.photobucket.com/albums/dd22/djmid71/clear_zpspuy7nqhg.png");
+      this.game.load.image("star", "http://i221.photobucket.com/albums/dd22/djmid71/star_zpseh4eqpzn.png");
+      this.game.load.image("modalBG", "http://i221.photobucket.com/albums/dd22/djmid71/modalBG_zpsgvwlxhmv.png");
     };
 
 
@@ -2406,6 +2505,8 @@
      */
 
     Asteroids.prototype.create = function() {
+      var k;
+      this.game.plugins.add(Phaser.Plugin.ProfilerPlugin);
       ExplodeAsteroid.audio = this.game.add.audio('asteroid');
       ExplodeAsteroid.audio.play('', 0, 0);
       ExplodeShip.audio = this.game.add.audio('ship');
@@ -2416,10 +2517,14 @@
       this.background.width = width;
       this.background.height = height;
       this.game.stage.backgroundColor = this.bgdColor;
+      if (this.optBgd === 'blue') {
+        this.background.alpha = 0.0;
+      }
 
       /*
        * Options:
        */
+      k = 0;
       this.game.add.button(width - 50, 50, 'parameters', (function(_this) {
         return function() {
           return Cocoon.App.loadInTheWebView("options.html");
@@ -2452,13 +2557,13 @@
       this.config = new GameConfig();
       this.config.height = height;
       this.config.width = width;
-      this.world = new b2World(new b2Vec2(0, 0), true);
-      this.engine = new Engine();
-      this.creator = new EntityCreator(this.game, this.engine, this.world, this.config);
       this.keyPoll = new KeyPoll(this.game, this.config);
+      this.engine = this.game.plugins.add(ash.core.PhaserEngine);
+      this.world = new b2World(new b2Vec2(0, 0), true);
+      this.creator = new EntityCreator(this.game, this.engine, this.world, this.config);
       this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
       this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
-      this.engine.addSystem(new PhysicsControlSystem(this.keyPoll), SystemPriorities.update);
+      this.engine.addSystem(new PhysicsControlSystem(this.keyPoll, this.config), SystemPriorities.update);
       this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
       this.engine.addSystem(new BulletAgeSystem(this.creator), SystemPriorities.update);
       this.engine.addSystem(new DeathThroesSystem(this.creator), SystemPriorities.update);
@@ -2470,14 +2575,6 @@
       this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
       this.creator.createWaitForClick();
       this.creator.createGame();
-
-      /*
-       * We'll use Ash to run the game loop
-       * Phaser will tend to it's own.
-       */
-      this.tickProvider = new FrameTickProvider(this.stats);
-      this.tickProvider.add(this.engine.update);
-      this.tickProvider.start();
     };
 
     Asteroids.prototype.pause = function(bValue) {
@@ -2507,48 +2604,336 @@
       localStorage.playSfx = value;
     };
 
+    Asteroids.prototype.createModals = function() {
+      this.modal.createModal({
+        type: "modal1",
+        includeBackground: true,
+        modalCloseOnInput: true,
+        itemsArr: [
+          {
+            type: "text",
+            content: "Simple Text with Modal background, \n nothing fancy here...",
+            fontFamily: "Luckiest Guy",
+            fontSize: 42,
+            color: "0xFEFF49",
+            offsetY: -50
+          }
+        ]
+      });
+      this.modal.createModal({
+        type: "modal2",
+        includeBackground: true,
+        modalCloseOnInput: true,
+        itemsArr: [
+          {
+            type: "text",
+            content: "Seriously???",
+            fontFamily: "Luckiest Guy",
+            fontSize: 42,
+            color: "0xFEFF49",
+            offsetY: 50
+          }, {
+            type: "image",
+            content: "gameover",
+            offsetY: -50,
+            contentScale: 0.6
+          }
+        ]
+      });
+      this.modal.createModal({
+        type: "modal3",
+        includeBackground: true,
+        modalCloseOnInput: true,
+        itemsArr: [
+          {
+            type: "image",
+            content: "gameover",
+            offsetY: -110,
+            contentScale: 0.6
+          }, {
+            type: "image",
+            content: "tryagain",
+            contentScale: 0.6
+          }, {
+            type: "image",
+            content: "yes",
+            offsetY: 100,
+            offsetX: -80,
+            contentScale: 0.6,
+            callback: function() {
+              alert("YES!");
+            }
+          }, {
+            type: "image",
+            content: "no",
+            offsetY: 100,
+            offsetX: 80,
+            contentScale: 0.6,
+            callback: function() {
+              alert("NO!");
+            }
+          }
+        ]
+      });
+      this.modal.createModal({
+        type: "modal4",
+        includeBackground: true,
+        modalCloseOnInput: true,
+        itemsArr: [
+          {
+            type: "text",
+            content: "Share the awesomeness!",
+            fontFamily: "Luckiest Guy",
+            fontSize: 42,
+            color: "0xfb387c",
+            offsetY: -80
+          }, {
+            type: "image",
+            content: "twitter",
+            offsetY: 20,
+            offsetX: 80,
+            contentScale: 0.8,
+            callback: function() {
+              window.open("https://twitter.com/intent/tweet?text=Cool%20modals%20%40%20http%3A%2F%2Fcodepen.io%2Fnetgfx%2Fpen%2FbNLgaX", "twitter");
+            }
+          }, {
+            type: "image",
+            content: "facebook",
+            offsetY: 20,
+            offsetX: -80,
+            contentScale: 0.8,
+            callback: function() {
+              window.open("http://www.facebook.com/sharer.php?u=Cool%20modals%20%40%20http%3A%2F%2Fcodepen.io%2Fnetgfx%2Fpen%2FbNLgaX");
+            }
+          }
+        ]
+      });
+      this.modal.createModal({
+        type: "modal5",
+        includeBackground: false,
+        modalCloseOnInput: true,
+        itemsArr: [
+          {
+            type: "image",
+            content: "modalBG",
+            offsetY: -20,
+            contentScale: 1
+          }, {
+            type: "image",
+            content: "clear",
+            contentScale: 0.5,
+            offsetY: -80
+          }, {
+            type: "image",
+            content: "star",
+            offsetY: 80,
+            offsetX: -100,
+            contentScale: 0.6
+          }, {
+            type: "image",
+            content: "star",
+            offsetY: 50,
+            offsetX: 0,
+            contentScale: 0.6
+          }, {
+            type: "image",
+            content: "star",
+            offsetY: 80,
+            offsetX: 100,
+            contentScale: 0.6
+          }, {
+            type: "text",
+            content: "X",
+            fontSize: 52,
+            color: "0x000000",
+            offsetY: -130,
+            offsetX: 240,
+            callback: (function(_this) {
+              return function() {
+                _this.modal.hideModal("modal5");
+              };
+            })(this)
+          }
+        ]
+      });
+      this.modal.createModal({
+        type: "modal6",
+        includeBackground: true,
+        backgroundColor: "0xffffff",
+        backgroundOpacity: 0.8,
+        itemsArr: [
+          {
+            type: "text",
+            content: "Starting \nNext Level",
+            fontFamily: "Luckiest Guy",
+            fontSize: 52,
+            offsetY: -100
+          }, {
+            type: "text",
+            content: "5",
+            fontFamily: "Luckiest Guy",
+            fontSize: 42,
+            offsetY: 0
+          }
+        ]
+      });
+    };
+
     return Asteroids;
 
   })();
 
 
   /*
-   * Boot the game
+   * Perf, Mon
+   * Collect performance data
+   *
+   *  @game.plugins.add(Phaser.Plugin.ProfilerPlugin, x: 100, y: 100, mode: 1)
+   *
+   *
+   *
+   */
+
+  Phaser.Plugin.ProfilerPlugin = (function(_super) {
+    __extends(ProfilerPlugin, _super);
+
+    ProfilerPlugin.prototype.stats = null;
+
+    ProfilerPlugin.prototype.visible = false;
+
+    ProfilerPlugin.prototype.active = false;
+
+    ProfilerPlugin.prototype.hasPreUpdate = false;
+
+    ProfilerPlugin.prototype.hasPostRender = false;
+
+
+    /*
+     * @param   game    current phaser game context
+     * @param   parent  current phaser state context
+     * @param   options:
+     *            x           position.x
+     *            y           position.y
+     *            container   DOM Element
+     *            mode        initial stats mode
+     */
+
+    function ProfilerPlugin(game, parent, options) {
+      var container, x, y, _ref, _ref1, _ref2;
+      if (options == null) {
+        options = {};
+      }
+      ProfilerPlugin.__super__.constructor.call(this, game, parent);
+      if (navigator.isCocoonJS) {
+        this.preUpdate = this.nop;
+        this.postRender = this.nop;
+      } else {
+        if (typeof Stats !== "undefined" && Stats !== null) {
+          if (options.container != null) {
+            container = options.container;
+          } else {
+            container = document.createElement('div');
+            document.body.appendChild(container);
+          }
+          this.stats = new Stats();
+          container.appendChild(this.stats.domElement);
+          this.stats.domElement.style.position = 'absolute';
+          x = (_ref = options.x) != null ? _ref : 0;
+          y = (_ref1 = options.y) != null ? _ref1 : 0;
+          this.stats.setMode((_ref2 = options.mode) != null ? _ref2 : 0);
+          this.stats.domElement.style.position = "absolute";
+          this.stats.domElement.style.left = "" + x + "px";
+          this.stats.domElement.style.top = "" + y + "px";
+          this.active = true;
+          this.visible = true;
+          this.hasPreUpdate = true;
+          this.hasPostRender = true;
+        } else {
+          this.preUpdate = this.nop;
+          this.postRender = this.nop;
+        }
+      }
+    }
+
+
+    /*
+     * The beginning of the game loop
+     */
+
+    ProfilerPlugin.prototype.preUpdate = function() {
+      this.stats.begin();
+    };
+
+
+    /*
+     * The end of the game loop
+     */
+
+    ProfilerPlugin.prototype.postRender = function() {
+      this.stats.end();
+    };
+
+
+    /*
+     * Null routine
+     */
+
+    ProfilerPlugin.prototype.nop = function() {};
+
+    return ProfilerPlugin;
+
+  })(Phaser.Plugin);
+
+
+  /*
+   * Ash Engine Plugin
+   */
+
+  Phaser.Plugin.AshEnginePlugin = (function(_super) {
+    __extends(AshEnginePlugin, _super);
+
+    AshEnginePlugin.prototype.engine = null;
+
+    AshEnginePlugin.prototype.active = true;
+
+    AshEnginePlugin.prototype.visible = true;
+
+    AshEnginePlugin.prototype.hasPostRender = true;
+
+    function AshEnginePlugin(game, parent) {
+      AshEnginePlugin.__super__.constructor.call(this, game, parent);
+      this.engine = new ash.core.Engine();
+    }
+
+    AshEnginePlugin.prototype.addSystem = function(system, priority) {
+      this.engine.addSystem(system, priority);
+    };
+
+    AshEnginePlugin.prototype.addEntity = function(entity) {
+      this.engine.addEntity(entity);
+    };
+
+    AshEnginePlugin.prototype.removeEntity = function(entity) {
+      this.engine.removeEntity(entity);
+    };
+
+    AshEnginePlugin.prototype.postRender = function() {
+      this.engine.update(this.game.time.elapsed * 0.001);
+    };
+
+    return AshEnginePlugin;
+
+  })(Phaser.Plugin);
+
+
+  /*
+   * Das Boot
    */
 
   (function() {
-
-    /*
-     * when the doc loads
-     */
     return window.addEventListener('load', function() {
-
-      /*
-       * perf, mon
-       */
-      var container, stats, x, y;
-      if (navigator.isCocoonJS) {
-        stats = null;
-      } else {
-        stats = new Stats();
-        container = document.createElement('div');
-        document.body.appendChild(container);
-        container.appendChild(stats.domElement);
-        stats.domElement.style.position = 'absolute';
-        x = 0;
-        y = 0;
-        stats.setMode(0);
-        stats.domElement.style.position = "absolute";
-        stats.domElement.style.left = "" + x + "px";
-        stats.domElement.style.top = "" + y + "px";
-        document.body.appendChild(stats.domElement);
-      }
-
-      /*
-       * start the game
-       */
       window.rnd = new MersenneTwister();
-      window.asteroids = new Asteroids(stats);
+      window.asteroids = new Asteroids();
     });
   })();
 
