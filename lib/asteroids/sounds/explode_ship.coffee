@@ -2,4 +2,4 @@ class ExplodeShip #extends Sound
 
   src: Sound.preload('res/sounds/ship.wav')
   play: ->
-    ExplodeShip.audio.play('', 0, Sound.volume/10)
+    ExplodeShip.audio.play('', 0, Sound.volume/Sound.FACTOR)

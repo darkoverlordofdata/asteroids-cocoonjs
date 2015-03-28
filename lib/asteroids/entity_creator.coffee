@@ -15,6 +15,24 @@
 #
 class EntityCreator
 
+  ASTEROID_DENSITY        : 1.0
+  ASTEROID_FRICTION       : 1.0
+  ASTEROID_RESTITUTION    : 0.2
+  ASTEROID_DAMPING        : 0.0
+  ASTEROID_LINEAR         : 4.0
+  ASTEROID_ANGULAR        : 2.0
+
+  SPACESHIP_DENSITY       : 1.0
+  SPACESHIP_FRICTION      : 1.0
+  SPACESHIP_RESTITUTION   : 0.2
+  SPACESHIP_DAMPING       : 0.75
+
+  LEFT                    : KeyPoll.KEY_LEFT
+  RIGHT                   : KeyPoll.KEY_RIGHT
+  THRUST                  : KeyPoll.KEY_UP
+  FIRE                    : KeyPoll.KEY_Z
+  WARP                    : KeyPoll.KEY_SPACE
+
   Entity                = ash.core.Entity
   EntityStateMachine    = ash.fsm.EntityStateMachine
 
@@ -83,16 +101,17 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2
-    v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2
+    v1 = (rnd.nextDouble() - 0.5) * @ASTEROID_LINEAR * (50 - radius) * 2
+    v2 = (rnd.nextDouble() - 0.5) * @ASTEROID_LINEAR * (50 - radius) * 2
 
     bodyDef.linearVelocity.Set(v1, v2)
-    bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1
+    bodyDef.angularVelocity = rnd.nextDouble() * @ASTEROID_ANGULAR - 1
+    bodyDef.linearDamping = @ASTEROID_DAMPING
 
     fixDef = new b2FixtureDef()
-    fixDef.density = 1.0
-    fixDef.friction = 1.0
-    fixDef.restitution = 0.2
+    fixDef.density = @ASTEROID_DENSITY
+    fixDef.friction = @ASTEROID_FRICTION
+    fixDef.restitution = @ASTEROID_RESTITUTION
     fixDef.shape = new b2CircleShape(radius)
 
     body = @world.CreateBody(bodyDef)
@@ -143,12 +162,12 @@ class EntityCreator
     bodyDef.position.y = y
     bodyDef.linearVelocity.Set(0, 0)
     bodyDef.angularVelocity = 0
-    bodyDef.linearDamping = 0.75
+    bodyDef.linearDamping = @SPACESHIP_DAMPING
 
     fixDef = new b2FixtureDef()
-    fixDef.density = 1.0
-    fixDef.friction = 1.0
-    fixDef.restitution = 0.2
+    fixDef.density = @SPACESHIP_DENSITY
+    fixDef.friction = @SPACESHIP_FRICTION
+    fixDef.restitution = @SPACESHIP_RESTITUTION
     fixDef.shape = new b2PolygonShape()
     fixDef.shape.SetAsArray([
       new b2Vec2(0.45, 0)
@@ -165,12 +184,13 @@ class EntityCreator
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
+
     liveView = new SpaceshipView(@game)
     fsm.createState('playing')
     .add(Physics).withInstance(new Physics(body))
-    .add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3))
+    .add(MotionControls).withInstance(new MotionControls(@LEFT, @RIGHT, @THRUST, @WARP, 100, 3))
     .add(Gun).withInstance(new Gun(8, 0, 0.3, 2 ))
-    .add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z))
+    .add(GunControls).withInstance(new GunControls(@FIRE))
     .add(Collision).withInstance(new Collision(9))
     .add(Display).withInstance(new Display(liveView))
 

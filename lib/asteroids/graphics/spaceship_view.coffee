@@ -15,14 +15,17 @@ class SpaceshipView
 
   constructor: (game) ->
     @graphics = game.add.graphics(0, 0)
+    @draw(0xFFFFFF)
+
+  dispose: ->
+    @graphics.destroy()
+
+  draw: (color) ->
     @graphics.clear()
-    @graphics.beginFill( 0xFFFFFF )
+    @graphics.beginFill(color)
     @graphics.moveTo( 10, 0 )
     @graphics.lineTo( -7, 7 )
     @graphics.lineTo( -4, 0 )
     @graphics.lineTo( -7, -7 )
     @graphics.lineTo( 10, 0 )
     @graphics.endFill()
-
-  dispose: ->
-    @graphics.destroy()

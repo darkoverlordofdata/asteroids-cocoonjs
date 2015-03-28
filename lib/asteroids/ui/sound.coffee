@@ -2,6 +2,7 @@ class Sound
 
   @volume = 0.5
   @enabled = true
+  @FACTOR = 2
 
   @preload: (src) ->
     audio = new window.Audio()

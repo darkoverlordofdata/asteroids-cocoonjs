@@ -33,7 +33,7 @@ class WaitForStartView
     @text2.anchor.x = 0.5
 
     if game.device.desktop
-      @text3 = game.add.text(x, y, 'Z to Fire  ~  Arrow Keys to Move', font: 'bold 10px opendyslexic', fill: 'white')
+      @text3 = game.add.text(x, y, 'Z ~ Fire  |  SPACE ~ Warp  |  Left/Right ~ Turn  |  Up ~ Accelerate', font: 'bold 10px opendyslexic', fill: 'white')
       @text3.anchor.x = 0.5
 
     @text1.inputEnabled = true

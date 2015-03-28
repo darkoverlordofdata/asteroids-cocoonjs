@@ -60,4 +60,5 @@ lib/asteroids/systems/wait_for_start_system.coffee
 lib/asteroids/entity_creator.coffee
 lib/asteroids/game_config.coffee
 lib/asteroids/asteroids.coffee
+lib/performance_monitor.coffee
 lib/boot.coffee

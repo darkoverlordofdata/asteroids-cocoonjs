@@ -3,13 +3,15 @@
 ###
 class KeyPoll
 
-  @KEY_LEFT        = 37    # turn left
-  @KEY_UP          = 38    # accelerate
-  @KEY_RIGHT       = 39    # turn right
-  @KEY_Z           = 90    # fire
-  
+  @KEY_LEFT         = 37    # turn left
+  @KEY_UP           = 38    # accelerate
+  @KEY_RIGHT        = 39    # turn right
+  @KEY_Z            = 90    # fire
+  @KEY_W            = 87    # warp
+  @KEY_SPACE        = 32    # warp
+
   states: null
-  keys: [@KEY_LEFT, @KEY_RIGHT, @KEY_Z, @KEY_UP]
+  keys: [@KEY_LEFT, @KEY_RIGHT, @KEY_Z, @KEY_UP, @KEY_SPACE]
 
   constructor:(game, config) ->
     @states = {}
@@ -52,7 +54,7 @@ class KeyPoll
       @states[@keys[1]] = false
       return
 
-    btn2 = game.add.button(config.width-80, config.height-45, 'square')
+    btn2 = game.add.button(config.width-80, config.height-45, 'round')
     btn2.onInputDown.add  =>
       @states[@keys[2]] = true
       return
@@ -68,4 +70,13 @@ class KeyPoll
       @states[@keys[3]] = false
       return
 
-    
+    btn4 = game.add.button(config.width/2, config.height-45, 'square')
+    btn4.anchor.x = 0.5
+    btn4.onInputDown.add  =>
+      @states[@keys[4]] = true
+      return
+    btn4.onInputUp.add  =>
+      @states[@keys[4]] = false
+      return
+
+ 
