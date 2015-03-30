@@ -8,9 +8,6 @@
 	<link rel="stylesheet" href="themes/jquery.mobile.structure-1.4.5.min.css" />
     <link rel="stylesheet" href="themes/page.css" />
     <style>
-        .ui-page {
-            -webkit-backface-visibility: hidden;
-        }
         body {
             visibility: hidden;
         }
@@ -30,6 +27,7 @@
                     <li><a href="#asteroids">Asteroids</a></li>
                     <li><a href="#spaceship">Spaceship</a></li>
                     <li><a href="#bullets">Bullet</a></li>
+                    <li><a href="#credits">Credits</a></li>
                 </ul>
             </div>
             <div role="main" class="ui-content">
@@ -43,13 +41,13 @@
 
                     <p>
                         <label for="playMusic"><img src="res/icons/b_Music.png" /> Music Volume</label>
-                        <input type="range" id="playMusic" min="0" max="100" value="50" data-highlight="true" oninput="setPlayMusic(this.value);" />
+                        <input type="range" id="playMusic" min="0" max="100" value="50" data-highlight="true" onchange="setPlayMusic(this.value);" />
                     </p>
 
 
                     <p>
                         <label for="playSfx"><img src="res/icons/b_Sound1.png" /> Sound FX Volume</label>
-                        <input type="range" id="playSfx" min="0" max="100" value="50" data-highlight="true" oninput="setPlaySfx(this.value);"/>
+                        <input type="range" id="playSfx" min="0" max="100" value="50" data-highlight="true" onchange="setPlaySfx(this.value);"/>
                     </p>
 
                 </div>
@@ -59,27 +57,27 @@
                         <col width="70%">
                         <tr>
                             <td><label for="asteroidDensity">Density</label></td>
-                            <td><input type="range" id="asteroidDensity" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" oninput="setAsteroidDensity(this.value);"/></td>
+                            <td><input type="range" id="asteroidDensity" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" onchange="setAsteroidDensity(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="asteroidFriction">Friction</label></td>
-                            <td><input type="range" id="asteroidFriction" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" oninput="setAsteroidFriction(this.value);"/></td>
+                            <td><input type="range" id="asteroidFriction" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" onchange="setAsteroidFriction(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="asteroidRestitution">Restitution</label></td>
-                            <td><input type="range" id="asteroidRestitution" min="0.0" max="1.0" step = "0.01" value="0.2" data-highlight="true" oninput="setAsteroidRestitution(this.value);"/></td>
+                            <td><input type="range" id="asteroidRestitution" min="0.0" max="1.0" step = "0.01" value="0.2" data-highlight="true" onchange="setAsteroidRestitution(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="asteroidDamping">Damping</label></td>
-                            <td><input type="range" id="asteroidDamping" min="0.0" max="1.0" step = "0.01" value="0.0" data-highlight="true" oninput="setAsteroidDamping(this.value);"/></td>
+                            <td><input type="range" id="asteroidDamping" min="0.0" max="1.0" step = "0.01" value="0.0" data-highlight="true" onchange="setAsteroidDamping(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="asteroidLinearVelocity">Linear Velocity</label></td>
-                            <td><input type="range" id="asteroidLinearVelocity" min="0.0" max="10.0" step = "0.1" value="4.0" data-highlight="true" oninput="setAsteroidLinearVelocity(this.value);"/></td>
+                            <td><input type="range" id="asteroidLinearVelocity" min="0.0" max="10.0" step = "0.1" value="4.0" data-highlight="true" onchange="setAsteroidLinearVelocity(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="asteroidAngularVelocity">Angular Velocity</label></td>
-                            <td><input type="range" id="asteroidAngularVelocity" min="0.0" max="10.0" step = "0.1" value="2.0" data-highlight="true" oninput="setAsteroidAngularVelocity(this.value);"/></td>
+                            <td><input type="range" id="asteroidAngularVelocity" min="0.0" max="10.0" step = "0.1" value="2.0" data-highlight="true" onchange="setAsteroidAngularVelocity(this.value);"/></td>
                         </tr>
                     </table>
                 </div>
@@ -89,19 +87,19 @@
                         <col width="70%">
                         <tr>
                             <td><label for="spaceshipDensity">Density</label></td>
-                            <td><input type="range" id="spaceshipDensity" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" oninput="setSpaceshipDensity(this.value);"/></td>
+                            <td><input type="range" id="spaceshipDensity" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" onchange="setSpaceshipDensity(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="spaceshipFriction">Friction</label></td>
-                            <td><input type="range" id="spaceshipFriction" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" oninput="setSpaceshipFriction(this.value);"/></td>
+                            <td><input type="range" id="spaceshipFriction" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" onchange="setSpaceshipFriction(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="spaceshipRestitution">Restitution</label></td>
-                            <td><input type="range" id="spaceshipRestitution" min="0.0" max="1.0" step = "0.01" value="0.2" data-highlight="true" oninput="setSpaceshipRestitution(this.value);"/></td>
+                            <td><input type="range" id="spaceshipRestitution" min="0.0" max="1.0" step = "0.01" value="0.2" data-highlight="true" onchange="setSpaceshipRestitution(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="spaceshipDamping">Damping</label></td>
-                            <td><input type="range" id="spaceshipDamping" min="0.0" max="1.0" step = "0.01" value="0.75" data-highlight="true" oninput="setSpaceshipDamping(this.value);"/></td>
+                            <td><input type="range" id="spaceshipDamping" min="0.0" max="1.0" step = "0.01" value="0.75" data-highlight="true" onchange="setSpaceshipDamping(this.value);"/></td>
                         </tr>
                     </table>
                 </div>
@@ -111,25 +109,37 @@
                         <col width="70%">
                         <tr>
                             <td><label for="bulletDensity">Density</label></td>
-                            <td><input type="range" id="bulletDensity" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" oninput="setBulletDensity(this.value);"/></td>
+                            <td><input type="range" id="bulletDensity" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" onchange="setBulletDensity(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="bulletFriction">Friction</label></td>
-                            <td><input type="range" id="bulletFriction" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" oninput="getBulletFriction(this.value);"/></td>
+                            <td><input type="range" id="bulletFriction" min="0.0" max="1.0" step = "0.01" value="1.0" data-highlight="true" onchange="getBulletFriction(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="bulletRestitution">Restitution</label></td>
-                            <td><input type="range" id="bulletRestitution" min="0.0" max="1.0" step = "0.01" value="0.2" data-highlight="true" oninput="setBulletRestitution(this.value);"/></td>
+                            <td><input type="range" id="bulletRestitution" min="0.0" max="1.0" step = "0.01" value="0.2" data-highlight="true" onchange="setBulletRestitution(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="bulletDamping">Damping</label></td>
-                            <td><input type="range" id="bulletDamping" min="0.0" max="1.0" step = "0.01" value="0.0" data-highlight="true" oninput="setBulletDamping(this.value);"/></td>
+                            <td><input type="range" id="bulletDamping" min="0.0" max="1.0" step = "0.01" value="0.0" data-highlight="true" onchange="setBulletDamping(this.value);"/></td>
                         </tr>
                         <tr>
                             <td><label for="bulletLinearVelocity">Linear Velocity</label></td>
-                            <td><input type="range" id="bulletLinearVelocity" min="0" max="1000" step = "10" value="150" data-highlight="true" oninput="setBulletLinearVelocity(this.value);"/></td>
+                            <td><input type="range" id="bulletLinearVelocity" min="0" max="1000" step = "10" value="150" data-highlight="true" onchange="setBulletLinearVelocity(this.value);"/></td>
                         </tr>
                     </table>
+                </div>
+                <div id="credits">
+                    <p>Based on the Flash version by Richard Lord.</p>
+                    <p>Sounds from freesound.org :</p>
+                        <p>&nbsp;http://www.freesound.org/people/wildweasel/sounds/39023/</p>
+                        <p>&nbsp;http://www.freesound.org/people/sarge4267/sounds/102733/</p>
+                        <p>&nbsp;http://www.freesound.org/people/sarge4267/sounds/102734/</p>
+                    </p>
+                    <p>Icons ~ http://opengameart.org/.</p>
+                    <p>Font OpenDyslexic ~ http://opendyslexic.org</p>
+                    <p>Programming by Bruce Davidson</p>
+                    <p>&copy;copyright 2015 Dark Overlord of Data ~ http://darkoverlordofdata.com</p>
                 </div>
             </div>
         </div>

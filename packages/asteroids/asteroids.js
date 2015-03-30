@@ -19,7 +19,7 @@
 
   /*
    */
-  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, PhysicsSystem, Point, Position, RenderNode, RenderSystem, ShootGun, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
+  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, Leaderboard, LeaderboardSystem, LeaderboardView, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, PhysicsSystem, Point, Position, RenderNode, RenderSystem, ShootGun, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -345,7 +345,7 @@
           _this.states[_this.keys[0]] = false;
         };
       })(this));
-      btn1 = game.add.button(35, config.height - 45, 'round');
+      btn1 = game.add.button(40, config.height - 45, 'round');
       btn1.onInputDown.add((function(_this) {
         return function() {
           _this.states[_this.keys[1]] = true;
@@ -356,7 +356,7 @@
           _this.states[_this.keys[1]] = false;
         };
       })(this));
-      btn2 = game.add.button(config.width - 80, config.height - 45, 'round');
+      btn2 = game.add.button(config.width - 85, config.height - 45, 'round');
       btn2.onInputDown.add((function(_this) {
         return function() {
           _this.states[_this.keys[2]] = true;
@@ -727,6 +727,27 @@
     };
 
     return HudView;
+
+  })();
+
+  LeaderboardView = (function() {
+    LeaderboardView.prototype.game = null;
+
+    LeaderboardView.prototype.score = 0;
+
+    function LeaderboardView(game) {
+      this.game = game;
+      this.background = this.game.add.sprite(0, 0, 'dialog');
+      this.background.width = this.config.width;
+      this.background.height = this.config.height;
+      this.background.alpha = 0;
+    }
+
+    LeaderboardView.prototype.setScore = function(score) {
+      this.score = score;
+    };
+
+    return LeaderboardView;
 
   })();
 
@@ -1111,6 +1132,19 @@
 
   })();
 
+  Leaderboard = (function() {
+    Leaderboard.prototype.score = 0;
+
+    Leaderboard.prototype.show = false;
+
+    function Leaderboard(score) {
+      this.score = score;
+    }
+
+    return Leaderboard;
+
+  })();
+
   MotionControls = (function() {
     MotionControls.prototype.left = 0;
 
@@ -1327,10 +1361,16 @@
     }
 
     GameNode.components = {
-      state: GameState
+      state: GameState,
+      leader: Leaderboard,
+      display: Display
     };
 
     GameNode.prototype.state = null;
+
+    GameNode.prototype.leader = null;
+
+    GameNode.prototype.display = null;
 
     return GameNode;
 
@@ -1879,6 +1919,7 @@
             }
           } else {
             node.state.playing = false;
+            node.leader.show = true;
             this.creator.createWaitForClick();
           }
         }
@@ -1958,6 +1999,34 @@
     };
 
     return HudSystem;
+
+  })(ash.tools.ListIteratingSystem);
+
+  LeaderboardSystem = (function(_super) {
+    __extends(LeaderboardSystem, _super);
+
+    LeaderboardSystem.prototype.creator = null;
+
+    LeaderboardSystem.prototype.kount = 0;
+
+    function LeaderboardSystem(game, config) {
+      this.game = game;
+      this.config = config;
+      this.updateNode = __bind(this.updateNode, this);
+      LeaderboardSystem.__super__.constructor.call(this, GameNode, this.updateNode);
+    }
+
+    LeaderboardSystem.prototype.updateNode = function(node, time) {
+      var leader;
+      leader = node.leader;
+      if (leader.show) {
+        if (++this.kount === 1) {
+          console.log(node);
+        }
+      }
+    };
+
+    return LeaderboardSystem;
 
   })(ash.tools.ListIteratingSystem);
 
@@ -2253,7 +2322,7 @@
     EntityCreator.prototype.createGame = function() {
       var gameEntity, hud;
       hud = new HudView(this.game);
-      gameEntity = new Entity('game').add(new GameState()).add(new Hud(hud)).add(new Display(hud)).add(new Position(0, 0, 0, 0));
+      gameEntity = new Entity('game').add(new GameState()).add(new Leaderboard()).add(new Hud(hud)).add(new Display(hud)).add(new Position(0, 0, 0, 0));
       this.engine.addEntity(gameEntity);
       return gameEntity;
     };
@@ -2270,6 +2339,14 @@
       this.waitEntity.get(WaitForStart).startGame = false;
       this.engine.addEntity(this.waitEntity);
       return this.waitEntity;
+    };
+
+    EntityCreator.prototype.createLeaderboard = function() {
+      var leaderboard;
+      leaderboard = new Entity('leaderboard').add(new Leaderboard(0)).add(new Display(new LeaderboardView(this.game))).add(new Position(0, 0, 0, 0));
+      leaderboard.get(Leaderboard).show = false;
+      this.engine.addEntity(leaderboard);
+      return leaderboard;
     };
 
 
@@ -2505,6 +2582,18 @@
         preload: this.preload,
         create: this.create
       });
+      Cocoon.App.WebView.on("load", {
+        success: (function(_this) {
+          return function() {
+            return Cocoon.App.showTheWebView();
+          };
+        })(this),
+        error: (function(_this) {
+          return function() {
+            return console.log("Cannot show the Webview: " + (JSON.stringify(arguments)));
+          };
+        })(this)
+      });
     }
 
 
@@ -2528,31 +2617,15 @@
      */
 
     Asteroids.prototype.preload = function() {
+      this.game.load.image('dialog', 'res/dialog-box.png');
       this.game.load.image('background', 'res/starfield.png');
       this.game.load.image('leaderboard', 'res/icons/b_Leaderboard.png');
-      this.game.load.image('more', 'res/icons/b_More1.png');
       this.game.load.image('settings', 'res/icons/b_Parameters.png');
-      this.game.load.image('round', 'res/round.png');
-      this.game.load.image('square', 'res/square.png');
+      this.game.load.image('round', 'res/round48.png');
+      this.game.load.image('square', 'res/square48.png');
       this.game.load.audio('asteroid', [ExplodeAsteroid.prototype.src]);
       this.game.load.audio('ship', [ExplodeShip.prototype.src]);
       this.game.load.audio('shoot', [ShootGun.prototype.src]);
-      this.game.load.image("bg", "http://i221.photobucket.com/albums/dd22/djmid71/Untitled-1_zpswmvh3qea.jpg");
-      this.game.load.image("m1", "http://i221.photobucket.com/albums/dd22/djmid71/M1_zpsdprlkpno.png");
-      this.game.load.image("m2", "http://i221.photobucket.com/albums/dd22/djmid71/M2_zpsefls9w86.png");
-      this.game.load.image("m3", "http://i221.photobucket.com/albums/dd22/djmid71/m3_zpszzqyjbpa.png");
-      this.game.load.image("m4", "http://i221.photobucket.com/albums/dd22/djmid71/m4_zps5tnlccp0.png");
-      this.game.load.image("m5", "http://i221.photobucket.com/albums/dd22/djmid71/m5_zpsdpz0cohz.png");
-      this.game.load.image("m6", "http://i221.photobucket.com/albums/dd22/djmid71/m6_zpsvfvskl1d.png");
-      this.game.load.image("gameover", "http://i221.photobucket.com/albums/dd22/djmid71/gameover_zpse663rlsp.png");
-      this.game.load.image("tryagain", "http://i221.photobucket.com/albums/dd22/djmid71/tryagain_zpszyvxhs8m.png");
-      this.game.load.image("yes", "http://i221.photobucket.com/albums/dd22/djmid71/yes_zpsfppqya7h.png");
-      this.game.load.image("no", "http://i221.photobucket.com/albums/dd22/djmid71/no_zpsnjisaare.png");
-      this.game.load.image("twitter", "http://i221.photobucket.com/albums/dd22/djmid71/twitter_zpsyadnfz48.png");
-      this.game.load.image("facebook", "http://i221.photobucket.com/albums/dd22/djmid71/facebook_zpsxiqll8e0.png");
-      this.game.load.image("clear", "http://i221.photobucket.com/albums/dd22/djmid71/clear_zpspuy7nqhg.png");
-      this.game.load.image("star", "http://i221.photobucket.com/albums/dd22/djmid71/star_zpseh4eqpzn.png");
-      this.game.load.image("modalBG", "http://i221.photobucket.com/albums/dd22/djmid71/modalBG_zpsgvwlxhmv.png");
     };
 
 
@@ -2583,18 +2656,6 @@
           });
         };
       })(this));
-      Cocoon.App.WebView.on("load", {
-        success: (function(_this) {
-          return function() {
-            return Cocoon.App.showTheWebView();
-          };
-        })(this),
-        error: (function(_this) {
-          return function() {
-            return console.log("Cannot show the Webview: " + (JSON.stringify(arguments)));
-          };
-        })(this)
-      });
       ExplodeAsteroid.audio = this.game.add.audio('asteroid');
       ExplodeAsteroid.audio.play('', 0, 0);
       ExplodeShip.audio = this.game.add.audio('ship');
@@ -2618,6 +2679,7 @@
       this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
       this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
       this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
+      this.engine.addSystem(new LeaderboardSystem(this.game, this.config), SystemPriorities.animate);
       this.engine.addSystem(new RenderSystem(), SystemPriorities.render);
       this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
       this.creator.createWaitForClick();
@@ -2717,7 +2779,7 @@
 
 
     /*
-     * ASteroid Options
+     * Asteroid Options
      */
 
     Asteroids.prototype.setAsteroidDensity = function(value) {
@@ -2788,181 +2850,6 @@
 
     Asteroids.prototype.setBulletLinearVelocity = function(value) {
       EntityCreator.BULLET_LINEAR = value;
-    };
-
-    Asteroids.prototype.createModals = function() {
-      this.modal.createModal({
-        type: "modal1",
-        includeBackground: true,
-        modalCloseOnInput: true,
-        itemsArr: [
-          {
-            type: "text",
-            content: "Simple Text with Modal background, \n nothing fancy here...",
-            fontFamily: "Luckiest Guy",
-            fontSize: 42,
-            color: "0xFEFF49",
-            offsetY: -50
-          }
-        ]
-      });
-      this.modal.createModal({
-        type: "modal2",
-        includeBackground: true,
-        modalCloseOnInput: true,
-        itemsArr: [
-          {
-            type: "text",
-            content: "Seriously???",
-            fontFamily: "Luckiest Guy",
-            fontSize: 42,
-            color: "0xFEFF49",
-            offsetY: 50
-          }, {
-            type: "image",
-            content: "gameover",
-            offsetY: -50,
-            contentScale: 0.6
-          }
-        ]
-      });
-      this.modal.createModal({
-        type: "modal3",
-        includeBackground: true,
-        modalCloseOnInput: true,
-        itemsArr: [
-          {
-            type: "image",
-            content: "gameover",
-            offsetY: -110,
-            contentScale: 0.6
-          }, {
-            type: "image",
-            content: "tryagain",
-            contentScale: 0.6
-          }, {
-            type: "image",
-            content: "yes",
-            offsetY: 100,
-            offsetX: -80,
-            contentScale: 0.6,
-            callback: function() {
-              alert("YES!");
-            }
-          }, {
-            type: "image",
-            content: "no",
-            offsetY: 100,
-            offsetX: 80,
-            contentScale: 0.6,
-            callback: function() {
-              alert("NO!");
-            }
-          }
-        ]
-      });
-      this.modal.createModal({
-        type: "modal4",
-        includeBackground: true,
-        modalCloseOnInput: true,
-        itemsArr: [
-          {
-            type: "text",
-            content: "Share the awesomeness!",
-            fontFamily: "Luckiest Guy",
-            fontSize: 42,
-            color: "0xfb387c",
-            offsetY: -80
-          }, {
-            type: "image",
-            content: "twitter",
-            offsetY: 20,
-            offsetX: 80,
-            contentScale: 0.8,
-            callback: function() {
-              window.open("https://twitter.com/intent/tweet?text=Cool%20modals%20%40%20http%3A%2F%2Fcodepen.io%2Fnetgfx%2Fpen%2FbNLgaX", "twitter");
-            }
-          }, {
-            type: "image",
-            content: "facebook",
-            offsetY: 20,
-            offsetX: -80,
-            contentScale: 0.8,
-            callback: function() {
-              window.open("http://www.facebook.com/sharer.php?u=Cool%20modals%20%40%20http%3A%2F%2Fcodepen.io%2Fnetgfx%2Fpen%2FbNLgaX");
-            }
-          }
-        ]
-      });
-      this.modal.createModal({
-        type: "modal5",
-        includeBackground: false,
-        modalCloseOnInput: true,
-        itemsArr: [
-          {
-            type: "image",
-            content: "modalBG",
-            offsetY: -20,
-            contentScale: 1
-          }, {
-            type: "image",
-            content: "clear",
-            contentScale: 0.5,
-            offsetY: -80
-          }, {
-            type: "image",
-            content: "star",
-            offsetY: 80,
-            offsetX: -100,
-            contentScale: 0.6
-          }, {
-            type: "image",
-            content: "star",
-            offsetY: 50,
-            offsetX: 0,
-            contentScale: 0.6
-          }, {
-            type: "image",
-            content: "star",
-            offsetY: 80,
-            offsetX: 100,
-            contentScale: 0.6
-          }, {
-            type: "text",
-            content: "X",
-            fontSize: 52,
-            color: "0x000000",
-            offsetY: -130,
-            offsetX: 240,
-            callback: (function(_this) {
-              return function() {
-                _this.modal.hideModal("modal5");
-              };
-            })(this)
-          }
-        ]
-      });
-      this.modal.createModal({
-        type: "modal6",
-        includeBackground: true,
-        backgroundColor: "0xffffff",
-        backgroundOpacity: 0.8,
-        itemsArr: [
-          {
-            type: "text",
-            content: "Starting \nNext Level",
-            fontFamily: "Luckiest Guy",
-            fontSize: 52,
-            offsetY: -100
-          }, {
-            type: "text",
-            content: "5",
-            fontFamily: "Luckiest Guy",
-            fontSize: 42,
-            offsetY: 0
-          }
-        ]
-      });
     };
 
     return Asteroids;
