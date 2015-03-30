@@ -877,41 +877,43 @@
     WaitForStartView.prototype.click = null;
 
     function WaitForStartView(game) {
-      this.start = __bind(this.start, this);
       var x, y;
+      this.game = game;
+      this.start1 = __bind(this.start1, this);
+      this.start = __bind(this.start, this);
       this.click = new Signal0();
       x = Math.floor(window.innerWidth / 2);
       y = window.innerHeight - 40;
       if ((WaitForStartView.count++) === 1) {
-        this.text1 = game.add.text(x, 85, 'GAME OVER', {
+        this.text1 = this.game.add.text(x, 85, 'GAME OVER', {
           font: 'bold 60px opendyslexic',
           fill: 'white',
           stroke: "black",
           strokeThickness: 30
         });
       } else {
-        this.text1 = game.add.text(x, 85, 'ASTEROIDS', {
+        this.text1 = this.game.add.text(x, 85, 'ASTEROIDS', {
           font: 'bold 60px opendyslexic',
           fill: 'white',
           stroke: "black",
           strokeThickness: 30
         });
       }
-      if (game.device.touch) {
-        this.text2 = game.add.text(x, 175, 'TOUCH TO START', {
+      if (this.game.device.touch) {
+        this.text2 = this.game.add.text(x, 175, 'TOUCH TO START', {
           font: 'bold 12px opendyslexic',
           fill: 'white'
         });
       } else {
-        this.text2 = game.add.text(x, 175, 'CLICK TO START', {
+        this.text2 = this.game.add.text(x, 175, 'CLICK TO START', {
           font: 'bold 12px opendyslexic',
           fill: 'white'
         });
       }
       this.text1.anchor.x = 0.5;
       this.text2.anchor.x = 0.5;
-      if (game.device.desktop) {
-        this.text3 = game.add.text(x, y, 'Z ~ Fire  |  SPACE ~ Warp  |  Left/Right ~ Turn  |  Up ~ Accelerate', {
+      if (this.game.device.desktop) {
+        this.text3 = this.game.add.text(x, y, 'Z ~ Fire  |  SPACE ~ Warp  |  Left/Right ~ Turn  |  Up ~ Accelerate', {
           font: 'bold 10px opendyslexic',
           fill: 'white'
         });
@@ -924,13 +926,36 @@
     }
 
     WaitForStartView.prototype.start = function(data) {
-      var _ref;
+      var fader;
+      this.faderBitmap = this.game.make.bitmapData(this.game.width, this.game.height);
+      this.faderBitmap.rect(0, 0, this.game.width, this.game.height, 'rgb(0,0,0)');
+      this.faderSprite = this.game.add.sprite(0, 0, this.faderBitmap);
+      this.faderSprite.alpha = 0;
+      fader = this.game.add.tween(this.faderSprite);
+      fader.to({
+        alpha: 1
+      }, 1000);
+      fader.onComplete.add(this.start1);
+      return fader.start();
+    };
+
+    WaitForStartView.prototype.start1 = function() {
+      var fader, _ref;
       this.text1.destroy();
       this.text2.destroy();
       if ((_ref = this.text3) != null) {
         _ref.destroy();
       }
-      return this.click.dispatch();
+      fader = this.game.add.tween(this.faderSprite);
+      fader.to({
+        alpha: 0
+      }, 1000);
+      fader.onComplete.add((function(_this) {
+        return function() {
+          return _this.click.dispatch();
+        };
+      })(this));
+      return fader.start();
     };
 
     return WaitForStartView;
@@ -2132,27 +2157,37 @@
   })(ash.core.System);
 
   EntityCreator = (function() {
-    var Entity, EntityStateMachine, b2Body, b2BodyDef, b2CircleShape, b2FixtureDef, b2PolygonShape, b2Vec2;
+    var Entity, EntityStateMachine, b2Body, b2BodyDef, b2CircleShape, b2FixtureDef, b2PolygonShape, b2Vec2, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
 
-    EntityCreator.prototype.ASTEROID_DENSITY = 1.0;
+    EntityCreator.prototype.ASTEROID_DENSITY = (_ref = localStorage.asteroidDensity) != null ? _ref : 1.0;
 
-    EntityCreator.prototype.ASTEROID_FRICTION = 1.0;
+    EntityCreator.prototype.ASTEROID_FRICTION = (_ref1 = localStorage.asteroidFriction) != null ? _ref1 : 1.0;
 
-    EntityCreator.prototype.ASTEROID_RESTITUTION = 0.2;
+    EntityCreator.prototype.ASTEROID_RESTITUTION = (_ref2 = localStorage.asteroidRestitution) != null ? _ref2 : 0.2;
 
-    EntityCreator.prototype.ASTEROID_DAMPING = 0.0;
+    EntityCreator.prototype.ASTEROID_DAMPING = (_ref3 = localStorage.asteroidDamping) != null ? _ref3 : 0.0;
 
-    EntityCreator.prototype.ASTEROID_LINEAR = 4.0;
+    EntityCreator.prototype.ASTEROID_LINEAR = (_ref4 = localStorage.asteroidLinearVelocity) != null ? _ref4 : 4.0;
 
-    EntityCreator.prototype.ASTEROID_ANGULAR = 2.0;
+    EntityCreator.prototype.ASTEROID_ANGULAR = (_ref5 = localStorage.asteroidAngularVelocity) != null ? _ref5 : 2.0;
 
-    EntityCreator.prototype.SPACESHIP_DENSITY = 1.0;
+    EntityCreator.prototype.SPACESHIP_DENSITY = (_ref6 = localStorage.spaceshipDensity) != null ? _ref6 : 1.0;
 
-    EntityCreator.prototype.SPACESHIP_FRICTION = 1.0;
+    EntityCreator.prototype.SPACESHIP_FRICTION = (_ref7 = localStorage.spaceshipFriction) != null ? _ref7 : 1.0;
 
-    EntityCreator.prototype.SPACESHIP_RESTITUTION = 0.2;
+    EntityCreator.prototype.SPACESHIP_RESTITUTION = (_ref8 = localStorage.spaceshipRestitution) != null ? _ref8 : 0.2;
 
-    EntityCreator.prototype.SPACESHIP_DAMPING = 0.75;
+    EntityCreator.prototype.SPACESHIP_DAMPING = (_ref9 = localStorage.spaceshipDamping) != null ? _ref9 : 0.75;
+
+    EntityCreator.prototype.BULLET_DENSITY = (_ref10 = localStorage.bulletDensity) != null ? _ref10 : 1.0;
+
+    EntityCreator.prototype.BULLET_FRICTION = (_ref11 = localStorage.bulletFriction) != null ? _ref11 : 1.0;
+
+    EntityCreator.prototype.BULLET_RESTITUTION = (_ref12 = localStorage.bulletRestitution) != null ? _ref12 : 0.2;
+
+    EntityCreator.prototype.BULLET_DAMPING = (_ref13 = localStorage.bulletDamping) != null ? _ref13 : 0.0;
+
+    EntityCreator.prototype.BULLET_LINEAR = (_ref14 = localStorage.bulletLinearVelocity) != null ? _ref14 : 150.0;
 
     EntityCreator.prototype.LEFT = KeyPoll.KEY_LEFT;
 
@@ -2354,12 +2389,13 @@
       bodyDef.fixedRotation = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      bodyDef.linearVelocity.Set(cos * 150, sin * 150);
+      bodyDef.linearVelocity.Set(cos * this.BULLET_LINEAR, sin * this.BULLET_LINEAR);
       bodyDef.angularVelocity = 0;
+      bodyDef.linearDamping = this.BULLET_DAMPING;
       fixDef = new b2FixtureDef();
-      fixDef.density = 1.0;
-      fixDef.friction = 0.0;
-      fixDef.restitution = 0.2;
+      fixDef.density = this.BULLET_DENSITY;
+      fixDef.friction = this.BULLET_FRICTION;
+      fixDef.restitution = this.BULLET_RESTITUTION;
       fixDef.shape = new b2CircleShape(0);
       body = this.world.CreateBody(bodyDef);
       body.CreateFixture(fixDef);
@@ -2431,16 +2467,36 @@
 
     Asteroids.prototype.bgdColor = 0x6A5ACD;
 
+    Asteroids.prototype.faderBitmap = null;
+
+    Asteroids.prototype.faderSprite = null;
+
 
     /*
      * Create the phaser game component
      */
 
     function Asteroids() {
+      this.setBulletLinearVelocity = __bind(this.setBulletLinearVelocity, this);
+      this.setBulletDamping = __bind(this.setBulletDamping, this);
+      this.setBulletRestitution = __bind(this.setBulletRestitution, this);
+      this.setBulletFriction = __bind(this.setBulletFriction, this);
+      this.setBulletDensity = __bind(this.setBulletDensity, this);
+      this.setSpaceshipDamping = __bind(this.setSpaceshipDamping, this);
+      this.setSpaceshipRestitution = __bind(this.setSpaceshipRestitution, this);
+      this.setSpaceshipFriction = __bind(this.setSpaceshipFriction, this);
+      this.setSpaceshipDensity = __bind(this.setSpaceshipDensity, this);
+      this.setAsteroidAngularVelocity = __bind(this.setAsteroidAngularVelocity, this);
+      this.setAsteroidLinearVelocity = __bind(this.setAsteroidLinearVelocity, this);
+      this.setAsteroidDamping = __bind(this.setAsteroidDamping, this);
+      this.setAsteroidRestitution = __bind(this.setAsteroidRestitution, this);
+      this.setAsteroidFriction = __bind(this.setAsteroidFriction, this);
+      this.setAsteroidDensity = __bind(this.setAsteroidDensity, this);
       this.setPlaySfx = __bind(this.setPlaySfx, this);
       this.setPlayMusic = __bind(this.setPlayMusic, this);
       this.setBackground = __bind(this.setBackground, this);
       this.pause = __bind(this.pause, this);
+      this.fade = __bind(this.fade, this);
       this.create = __bind(this.create, this);
       this.preload = __bind(this.preload, this);
       this.init = __bind(this.init, this);
@@ -2475,7 +2531,7 @@
       this.game.load.image('background', 'res/starfield.png');
       this.game.load.image('leaderboard', 'res/icons/b_Leaderboard.png');
       this.game.load.image('more', 'res/icons/b_More1.png');
-      this.game.load.image('parameters', 'res/icons/b_Parameters.png');
+      this.game.load.image('settings', 'res/icons/b_Parameters.png');
       this.game.load.image('round', 'res/round.png');
       this.game.load.image('square', 'res/square.png');
       this.game.load.audio('asteroid', [ExplodeAsteroid.prototype.src]);
@@ -2505,55 +2561,46 @@
      */
 
     Asteroids.prototype.create = function() {
-      var k;
-      this.game.plugins.add(Phaser.Plugin.ProfilerPlugin);
+      this.game.plugins.add(Phaser.Plugin.PerformanceMonitor, {
+        mode: 1
+      });
+      this.game.stage.backgroundColor = this.bgdColor;
+      this.background = this.game.add.sprite(0, 0, 'background');
+      this.background.width = width;
+      this.background.height = height;
+      this.background.alpha = this.optBgd === 'blue' ? 0 : 1;
+      this.game.add.button(width - 50, 50, 'settings', (function(_this) {
+        return function() {
+          _this.pause(function() {
+            return Cocoon.App.loadInTheWebView("settings.html");
+          });
+        };
+      })(this));
+      this.game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
+        return function() {
+          _this.pause(function() {
+            return Cocoon.App.loadInTheWebView("settings.html");
+          });
+        };
+      })(this));
+      Cocoon.App.WebView.on("load", {
+        success: (function(_this) {
+          return function() {
+            return Cocoon.App.showTheWebView();
+          };
+        })(this),
+        error: (function(_this) {
+          return function() {
+            return console.log("Cannot show the Webview: " + (JSON.stringify(arguments)));
+          };
+        })(this)
+      });
       ExplodeAsteroid.audio = this.game.add.audio('asteroid');
       ExplodeAsteroid.audio.play('', 0, 0);
       ExplodeShip.audio = this.game.add.audio('ship');
       ExplodeShip.audio.play('', 0, 0);
       ShootGun.audio = this.game.add.audio('shoot');
       ShootGun.audio.play('', 0, 0);
-      this.background = this.game.add.sprite(0, 0, 'background');
-      this.background.width = width;
-      this.background.height = height;
-      this.game.stage.backgroundColor = this.bgdColor;
-      if (this.optBgd === 'blue') {
-        this.background.alpha = 0.0;
-      }
-
-      /*
-       * Options:
-       */
-      k = 0;
-      this.game.add.button(width - 50, 50, 'parameters', (function(_this) {
-        return function() {
-          return Cocoon.App.loadInTheWebView("options.html");
-        };
-      })(this));
-      this.game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
-        return function() {
-          return Cocoon.App.loadInTheWebView("leaders.html");
-        };
-      })(this));
-      this.game.add.button(width - 50, 200, 'more', (function(_this) {
-        return function() {
-          return Cocoon.App.loadInTheWebView("more.html");
-        };
-      })(this));
-      Cocoon.App.WebView.on("load", {
-        success: (function(_this) {
-          return function() {
-            _this.pause(true);
-            return Cocoon.App.showTheWebView();
-          };
-        })(this),
-        error: (function(_this) {
-          return function() {
-            console.log("Cannot show the Webview for some reason :/");
-            return console.log(JSON.stringify(arguments));
-          };
-        })(this)
-      });
       this.config = new GameConfig();
       this.config.height = height;
       this.config.width = width;
@@ -2577,9 +2624,73 @@
       this.creator.createGame();
     };
 
-    Asteroids.prototype.pause = function(bValue) {
-      this.physics.enabled = !bValue;
+
+    /*
+     * Get Fader Sprite
+     *
+     * A screen sized black rectangle used for full screen fades
+     */
+
+    Asteroids.prototype.getFaderSprite = function() {
+      if (this.faderSprite == null) {
+        this.faderBitmap = this.game.make.bitmapData(this.game.width, this.game.height);
+        this.faderBitmap.rect(0, 0, this.game.width, this.game.height, 'rgb(0,0,0)');
+        this.faderSprite = this.game.add.sprite(0, 0, this.faderBitmap);
+        this.faderSprite.alpha = 0;
+      }
+      return this.faderSprite;
     };
+
+
+    /*
+     * Fade
+     */
+
+    Asteroids.prototype.fade = function(next) {
+      var fader, sprite;
+      sprite = this.getFaderSprite();
+      fader = this.game.add.tween(sprite);
+      if (sprite.alpha === 0) {
+        fader.to({
+          alpha: 1
+        }, 500);
+        fader.onComplete.add(next, this);
+        fader.start();
+      } else {
+        this.game.paused = false;
+        fader.to({
+          alpha: 0
+        }, 500);
+        fader.onComplete.add(next, this);
+        fader.start();
+      }
+    };
+
+
+    /*
+     * Pause
+     *
+     * If there is a callback, fadeout and run callback
+     * Otherwise we fade in and restore
+     */
+
+    Asteroids.prototype.pause = function(next) {
+      if (next != null) {
+        this.physics.enabled = false;
+        this.fade(next);
+      } else {
+        this.fade((function(_this) {
+          return function() {
+            return _this.physics.enabled = true;
+          };
+        })(this));
+      }
+    };
+
+
+    /*
+      * Set Properties:
+     */
 
     Asteroids.prototype.setBackground = function(value) {
       if (value === 1) {
@@ -2602,6 +2713,81 @@
       this.playSfx = value;
       Sound.volume = value / 100;
       localStorage.playSfx = value;
+    };
+
+
+    /*
+     * ASteroid Options
+     */
+
+    Asteroids.prototype.setAsteroidDensity = function(value) {
+      EntityCreator.ASTEROID_DENSITY = value;
+    };
+
+    Asteroids.prototype.setAsteroidFriction = function(value) {
+      EntityCreator.ASTEROID_FRICTION = value;
+    };
+
+    Asteroids.prototype.setAsteroidRestitution = function(value) {
+      EntityCreator.ASTEROID_RESTITUTION = value;
+    };
+
+    Asteroids.prototype.setAsteroidDamping = function(value) {
+      EntityCreator.ASTEROID_DAMPING = value;
+    };
+
+    Asteroids.prototype.setAsteroidLinearVelocity = function(value) {
+      EntityCreator.ASTEROID_LINEAR = value;
+    };
+
+    Asteroids.prototype.setAsteroidAngularVelocity = function(value) {
+      EntityCreator.ASTEROID_ANGULAR = value;
+    };
+
+
+    /*
+     * Spaceship Options
+     */
+
+    Asteroids.prototype.setSpaceshipDensity = function(value) {
+      EntityCreator.SPACESHIP_DENSITY = value;
+    };
+
+    Asteroids.prototype.setSpaceshipFriction = function(value) {
+      EntityCreator.SPACESHIP_FRICTION = value;
+    };
+
+    Asteroids.prototype.setSpaceshipRestitution = function(value) {
+      EntityCreator.SPACESHIP_RESTITUTION = value;
+    };
+
+    Asteroids.prototype.setSpaceshipDamping = function(value) {
+      EntityCreator.SPACESHIP_DAMPING = value;
+    };
+
+
+    /*
+     * Bullet Options
+     */
+
+    Asteroids.prototype.setBulletDensity = function(value) {
+      EntityCreator.BULLET_DENSITY = value;
+    };
+
+    Asteroids.prototype.setBulletFriction = function(value) {
+      EntityCreator.BULLET_FRICTION = value;
+    };
+
+    Asteroids.prototype.setBulletRestitution = function(value) {
+      EntityCreator.BULLET_RESTITUTION = value;
+    };
+
+    Asteroids.prototype.setBulletDamping = function(value) {
+      EntityCreator.BULLET_DAMPING = value;
+    };
+
+    Asteroids.prototype.setBulletLinearVelocity = function(value) {
+      EntityCreator.BULLET_LINEAR = value;
     };
 
     Asteroids.prototype.createModals = function() {
@@ -2785,27 +2971,27 @@
 
 
   /*
-   * Perf, Mon
-   * Collect performance data
    *
-   *  @game.plugins.add(Phaser.Plugin.ProfilerPlugin, x: 100, y: 100, mode: 1)
+   * JavaScript Performance Monitor Plugin
    *
+   * @see https://github.com/mrdoob/stats.js
    *
+   *  @game.plugins.add(Phaser.Plugin.PerformanceMonitor, x: 100, y: 100, mode: 1)
    *
    */
 
-  Phaser.Plugin.ProfilerPlugin = (function(_super) {
-    __extends(ProfilerPlugin, _super);
+  Phaser.Plugin.PerformanceMonitor = (function(_super) {
+    __extends(PerformanceMonitor, _super);
 
-    ProfilerPlugin.prototype.stats = null;
+    PerformanceMonitor.prototype.stats = null;
 
-    ProfilerPlugin.prototype.visible = false;
+    PerformanceMonitor.prototype.visible = false;
 
-    ProfilerPlugin.prototype.active = false;
+    PerformanceMonitor.prototype.active = false;
 
-    ProfilerPlugin.prototype.hasPreUpdate = false;
+    PerformanceMonitor.prototype.hasPreUpdate = false;
 
-    ProfilerPlugin.prototype.hasPostRender = false;
+    PerformanceMonitor.prototype.hasPostRender = false;
 
 
     /*
@@ -2818,12 +3004,12 @@
      *            mode        initial stats mode
      */
 
-    function ProfilerPlugin(game, parent, options) {
+    function PerformanceMonitor(game, parent, options) {
       var container, x, y, _ref, _ref1, _ref2;
       if (options == null) {
         options = {};
       }
-      ProfilerPlugin.__super__.constructor.call(this, game, parent);
+      PerformanceMonitor.__super__.constructor.call(this, game, parent);
       if (navigator.isCocoonJS) {
         this.preUpdate = this.nop;
         this.postRender = this.nop;
@@ -2860,7 +3046,7 @@
      * The beginning of the game loop
      */
 
-    ProfilerPlugin.prototype.preUpdate = function() {
+    PerformanceMonitor.prototype.preUpdate = function() {
       this.stats.begin();
     };
 
@@ -2869,7 +3055,7 @@
      * The end of the game loop
      */
 
-    ProfilerPlugin.prototype.postRender = function() {
+    PerformanceMonitor.prototype.postRender = function() {
       this.stats.end();
     };
 
@@ -2878,50 +3064,9 @@
      * Null routine
      */
 
-    ProfilerPlugin.prototype.nop = function() {};
+    PerformanceMonitor.prototype.nop = function() {};
 
-    return ProfilerPlugin;
-
-  })(Phaser.Plugin);
-
-
-  /*
-   * Ash Engine Plugin
-   */
-
-  Phaser.Plugin.AshEnginePlugin = (function(_super) {
-    __extends(AshEnginePlugin, _super);
-
-    AshEnginePlugin.prototype.engine = null;
-
-    AshEnginePlugin.prototype.active = true;
-
-    AshEnginePlugin.prototype.visible = true;
-
-    AshEnginePlugin.prototype.hasPostRender = true;
-
-    function AshEnginePlugin(game, parent) {
-      AshEnginePlugin.__super__.constructor.call(this, game, parent);
-      this.engine = new ash.core.Engine();
-    }
-
-    AshEnginePlugin.prototype.addSystem = function(system, priority) {
-      this.engine.addSystem(system, priority);
-    };
-
-    AshEnginePlugin.prototype.addEntity = function(entity) {
-      this.engine.addEntity(entity);
-    };
-
-    AshEnginePlugin.prototype.removeEntity = function(entity) {
-      this.engine.removeEntity(entity);
-    };
-
-    AshEnginePlugin.prototype.postRender = function() {
-      this.engine.update(this.game.time.elapsed * 0.001);
-    };
-
-    return AshEnginePlugin;
+    return PerformanceMonitor;
 
   })(Phaser.Plugin);
 
