@@ -35,6 +35,8 @@ class Asteroids
   playSfx           : localStorage.playSfx
   optBgd            : localStorage.background || 'blue'
   bgdColor          : 0x6A5ACD
+  faderBitmap       : null  # for screen fade
+  faderSprite       : null  # for screen fade
 
   ###
    * Create the phaser game component
@@ -42,6 +44,12 @@ class Asteroids
   constructor: () ->
     @game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '',
       init: @init, preload: @preload, create: @create)
+
+    # show the web view when it loads
+    Cocoon.App.WebView.on "load",
+      success : => Cocoon.App.showTheWebView()
+      error : => console.log("Cannot show the Webview: #{JSON.stringify(arguments)}")
+
 
   ###
    * Configure Phaser scaling
@@ -60,47 +68,41 @@ class Asteroids
    * Load assets
   ###
   preload: =>
+    @game.load.image 'dialog', 'res/dialog-box.png'
     @game.load.image 'background', 'res/starfield.png'
     @game.load.image 'leaderboard', 'res/icons/b_Leaderboard.png'
-    @game.load.image 'more', 'res/icons/b_More1.png'
-    @game.load.image 'parameters', 'res/icons/b_Parameters.png'
-    @game.load.image 'round', 'res/round.png'
-    @game.load.image 'square', 'res/square.png'
+    @game.load.image 'settings', 'res/icons/b_Parameters.png'
+    @game.load.image 'round', 'res/round48.png'
+    @game.load.image 'square', 'res/square48.png'
     @game.load.audio 'asteroid', [ExplodeAsteroid::src]
     @game.load.audio 'ship', [ExplodeShip::src]
     @game.load.audio 'shoot', [ShootGun::src]
-
-
-    @game.load.image("bg","http://i221.photobucket.com/albums/dd22/djmid71/Untitled-1_zpswmvh3qea.jpg")
-    @game.load.image("m1", "http://i221.photobucket.com/albums/dd22/djmid71/M1_zpsdprlkpno.png")
-    @game.load.image("m2", "http://i221.photobucket.com/albums/dd22/djmid71/M2_zpsefls9w86.png")
-    @game.load.image("m3", "http://i221.photobucket.com/albums/dd22/djmid71/m3_zpszzqyjbpa.png")
-    @game.load.image("m4", "http://i221.photobucket.com/albums/dd22/djmid71/m4_zps5tnlccp0.png")
-    @game.load.image("m5", "http://i221.photobucket.com/albums/dd22/djmid71/m5_zpsdpz0cohz.png")
-    @game.load.image("m6", "http://i221.photobucket.com/albums/dd22/djmid71/m6_zpsvfvskl1d.png")
-    @game.load.image("gameover","http://i221.photobucket.com/albums/dd22/djmid71/gameover_zpse663rlsp.png")
-    @game.load.image("tryagain", "http://i221.photobucket.com/albums/dd22/djmid71/tryagain_zpszyvxhs8m.png")
-    @game.load.image("yes","http://i221.photobucket.com/albums/dd22/djmid71/yes_zpsfppqya7h.png")
-    @game.load.image("no","http://i221.photobucket.com/albums/dd22/djmid71/no_zpsnjisaare.png")
-    @game.load.image("twitter","http://i221.photobucket.com/albums/dd22/djmid71/twitter_zpsyadnfz48.png")
-    @game.load.image("facebook","http://i221.photobucket.com/albums/dd22/djmid71/facebook_zpsxiqll8e0.png")
-    @game.load.image("clear", "http://i221.photobucket.com/albums/dd22/djmid71/clear_zpspuy7nqhg.png")
-    @game.load.image("star", "http://i221.photobucket.com/albums/dd22/djmid71/star_zpseh4eqpzn.png")
-    @game.load.image("modalBG","http://i221.photobucket.com/albums/dd22/djmid71/modalBG_zpsgvwlxhmv.png")
     return
 
   ###
    * Start the game
   ###
   create: =>
+    # install the profiler first
+    @game.plugins.add(Phaser.Plugin.PerformanceMonitor, mode:1)
 
-    # install the profiler before anything else
-    @game.plugins.add(Phaser.Plugin.PerformanceMonitor)
+    # set the background
+    @game.stage.backgroundColor = @bgdColor
+    @background = @game.add.sprite(0, 0, 'background')
+    @background.width = width
+    @background.height = height
+    @background.alpha = if @optBgd is 'blue' then 0 else 1
 
-#
-#    @modal = new gameModal(@game)
-#    @createModals()
-#
+    # settings
+    @game.add.button width - 50, 50, 'settings', =>
+      @pause => Cocoon.App.loadInTheWebView("settings.html")
+      return
+
+    # leaderboard
+    @game.add.button width - 50, 125, 'leaderboard', =>
+      @pause => Cocoon.App.loadInTheWebView("settings.html")
+      return
+
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
     ExplodeAsteroid.audio.play('', 0, 0)
     ExplodeShip.audio = @game.add.audio('ship')
@@ -108,42 +110,12 @@ class Asteroids
     ShootGun.audio = @game.add.audio('shoot')
     ShootGun.audio.play('', 0, 0)
 
-    @background = @game.add.sprite(0, 0, 'background')
-    @background.width = width
-    @background.height = height
-    @game.stage.backgroundColor = @bgdColor
-
-    if @optBgd is 'blue'
-      @background.alpha = 0.0
-
-    ###
-     * Options:
-    ###
-    k = 0
-    @game.add.button width - 50, 50, 'parameters',
-#      => @modal.showModal("modal#{((k++)%6)+1}")
-      => Cocoon.App.loadInTheWebView("options.html")
-    @game.add.button width - 50, 125, 'leaderboard',
-      => Cocoon.App.loadInTheWebView("leaders.html")
-    @game.add.button width - 50, 200, 'more',
-      => Cocoon.App.loadInTheWebView("more.html")
-
-    Cocoon.App.WebView.on "load",
-      success : =>
-        @pause(true)
-        Cocoon.App.showTheWebView()
-      error : =>
-        console.log("Cannot show the Webview for some reason :/")
-        console.log(JSON.stringify(arguments))
-
     @config = new GameConfig()
     @config.height = height
     @config.width = width
 
-
     @keyPoll = new KeyPoll(@game, @config)
     @engine = @game.plugins.add(ash.core.PhaserEngine)
-#    @engine = @game.plugins.add(Phaser.Plugin.AshEnginePlugin)
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @creator = new EntityCreator(@game, @engine, @world, @config)
 
@@ -157,6 +129,7 @@ class Asteroids
     @engine.addSystem(new CollisionSystem(@world, @creator), SystemPriorities.resolveCollisions)
     @engine.addSystem(new AnimationSystem(), SystemPriorities.animate)
     @engine.addSystem(new HudSystem(), SystemPriorities.animate)
+    @engine.addSystem(new LeaderboardSystem(@game, @config), SystemPriorities.animate)
     @engine.addSystem(new RenderSystem(), SystemPriorities.render)
     @engine.addSystem(new AudioSystem(), SystemPriorities.render)
 
@@ -164,10 +137,54 @@ class Asteroids
     @creator.createGame()
     return
 
-  pause: (bValue) =>
-    @physics.enabled = not bValue
+  ###
+   * Get Fader Sprite
+   *
+   * A screen sized black rectangle used for full screen fades
+  ###
+  getFaderSprite: ->
+    unless @faderSprite?
+      @faderBitmap = @game.make.bitmapData(@game.width, @game.height)
+      @faderBitmap.rect(0, 0, @game.width, @game.height, 'rgb(0,0,0)')
+      @faderSprite = @game.add.sprite(0,0, @faderBitmap)
+      @faderSprite.alpha = 0
+    return @faderSprite
+
+
+  ###
+   * Fade
+  ###
+  fade: (next) =>
+    sprite = @getFaderSprite()
+    fader = @game.add.tween(sprite)
+    if sprite.alpha is 0
+      fader.to(alpha: 1, 500)
+      fader.onComplete.add(next, this)
+      fader.start()
+    else
+      @game.paused = false
+      fader.to(alpha: 0, 500)
+      fader.onComplete.add(next, this)
+      fader.start()
     return
 
+  ###
+   * Pause
+   *
+   * If there is a callback, fadeout and run callback
+   * Otherwise we fade in and restore
+  ###
+  pause: (next) =>
+    if next?
+      @physics.enabled = false
+      @fade next
+    else
+      @fade => @physics.enabled = true
+    return
+
+  ###
+   # Set Properties:
+  ###
   setBackground: (value) =>
     if value is 1
       @background.alpha = 1.0
@@ -190,195 +207,75 @@ class Asteroids
     localStorage.playSfx = value
     return
 
-  createModals: ->
-    @modal.createModal
-      type: "modal1"
-      includeBackground: true
-      modalCloseOnInput: true
-      itemsArr: [
-        type: "text"
-        content: "Simple Text with Modal background, \n nothing fancy here..."
-        fontFamily: "Luckiest Guy"
-        fontSize: 42
-        color: "0xFEFF49"
-        offsetY: -50
-      ]
-
-
-    #////// modal 2 ////////////
-    @modal.createModal
-      type: "modal2"
-      includeBackground: true
-      modalCloseOnInput: true
-      itemsArr: [
-        {
-          type: "text"
-          content: "Seriously???"
-          fontFamily: "Luckiest Guy"
-          fontSize: 42
-          color: "0xFEFF49"
-          offsetY: 50
-        }
-        {
-          type: "image"
-          content: "gameover"
-          offsetY: -50
-          contentScale: 0.6
-        }
-      ]
-
-
-    #/////// modal 3 //////////
-    @modal.createModal
-      type: "modal3"
-      includeBackground: true
-      modalCloseOnInput: true
-      itemsArr: [
-        {
-          type: "image"
-          content: "gameover"
-          offsetY: -110
-          contentScale: 0.6
-        }
-        {
-          type: "image"
-          content: "tryagain"
-          contentScale: 0.6
-        }
-        {
-          type: "image"
-          content: "yes"
-          offsetY: 100
-          offsetX: -80
-          contentScale: 0.6
-          callback: ->
-            alert "YES!"
-            return
-        }
-        {
-          type: "image"
-          content: "no"
-          offsetY: 100
-          offsetX: 80
-          contentScale: 0.6
-          callback: ->
-            alert "NO!"
-            return
-        }
-      ]
-
-
-    #////// modal 4 //////////
-    @modal.createModal
-      type: "modal4"
-      includeBackground: true
-      modalCloseOnInput: true
-      itemsArr: [
-        {
-          type: "text"
-          content: "Share the awesomeness!"
-          fontFamily: "Luckiest Guy"
-          fontSize: 42
-          color: "0xfb387c"
-          offsetY: -80
-        }
-        {
-          type: "image"
-          content: "twitter"
-          offsetY: 20
-          offsetX: 80
-          contentScale: 0.8
-          callback: ->
-            window.open "https://twitter.com/intent/tweet?text=Cool%20modals%20%40%20http%3A%2F%2Fcodepen.io%2Fnetgfx%2Fpen%2FbNLgaX", "twitter"
-            return
-        }
-        {
-          type: "image"
-          content: "facebook"
-          offsetY: 20
-          offsetX: -80
-          contentScale: 0.8
-          callback: ->
-            window.open "http://www.facebook.com/sharer.php?u=Cool%20modals%20%40%20http%3A%2F%2Fcodepen.io%2Fnetgfx%2Fpen%2FbNLgaX"
-            return
-        }
-      ]
-
-
-    #///// modal 5 //////////
-    @modal.createModal
-      type: "modal5"
-      includeBackground: false
-      modalCloseOnInput: true
-      itemsArr: [
-        {
-          type: "image"
-          content: "modalBG"
-          offsetY: -20
-          contentScale: 1
-        }
-        {
-          type: "image"
-          content: "clear"
-          contentScale: 0.5
-          offsetY: -80
-        }
-        {
-          type: "image"
-          content: "star"
-          offsetY: 80
-          offsetX: -100
-          contentScale: 0.6
-        }
-        {
-          type: "image"
-          content: "star"
-          offsetY: 50
-          offsetX: 0
-          contentScale: 0.6
-        }
-        {
-          type: "image"
-          content: "star"
-          offsetY: 80
-          offsetX: 100
-          contentScale: 0.6
-        }
-        {
-          type: "text"
-          content: "X"
-          fontSize: 52
-          color: "0x000000"
-          offsetY: -130
-          offsetX: 240
-          callback: =>
-            @modal.hideModal "modal5"
-            return
-        }
-      ]
-
-
-    #//// modal 6 //////////
-    @modal.createModal
-      type: "modal6"
-      includeBackground: true
-      backgroundColor: "0xffffff"
-      backgroundOpacity: 0.8
-      itemsArr: [
-        {
-          type: "text"
-          content: "Starting \nNext Level"
-          fontFamily: "Luckiest Guy"
-          fontSize: 52
-          offsetY: -100
-        }
-        {
-          type: "text"
-          content: "5"
-          fontFamily: "Luckiest Guy"
-          fontSize: 42
-          offsetY: 0
-        }
-      ]
-
+  ###
+   * Asteroid Options
+  ###
+  setAsteroidDensity: (value) =>
+    EntityCreator.ASTEROID_DENSITY = value
     return
+
+  setAsteroidFriction: (value) =>
+    EntityCreator.ASTEROID_FRICTION = value
+    return
+
+  setAsteroidRestitution: (value) =>
+    EntityCreator.ASTEROID_RESTITUTION = value
+    return
+
+  setAsteroidDamping: (value) =>
+    EntityCreator.ASTEROID_DAMPING = value
+    return
+
+  setAsteroidLinearVelocity: (value) =>
+    EntityCreator.ASTEROID_LINEAR = value
+    return
+
+  setAsteroidAngularVelocity: (value) =>
+    EntityCreator.ASTEROID_ANGULAR = value
+    return
+
+  ###
+   * Spaceship Options
+  ###
+  setSpaceshipDensity: (value) =>
+    EntityCreator.SPACESHIP_DENSITY = value
+    return
+
+  setSpaceshipFriction: (value) =>
+    EntityCreator.SPACESHIP_FRICTION = value
+    return
+
+  setSpaceshipRestitution: (value) =>
+    EntityCreator.SPACESHIP_RESTITUTION = value
+    return
+
+  setSpaceshipDamping: (value) =>
+    EntityCreator.SPACESHIP_DAMPING = value
+    return
+
+  ###
+   * Bullet Options
+  ###
+  setBulletDensity: (value) =>
+    EntityCreator.BULLET_DENSITY = value
+    return
+
+  setBulletFriction: (value) =>
+    EntityCreator.BULLET_FRICTION = value
+    return
+
+  setBulletRestitution: (value) =>
+    EntityCreator.BULLET_RESTITUTION = value
+    return
+
+  setBulletDamping: (value) =>
+    EntityCreator.BULLET_DAMPING = value
+    return
+
+  setBulletLinearVelocity: (value) =>
+    EntityCreator.BULLET_LINEAR = value
+    return
+
+
+
+

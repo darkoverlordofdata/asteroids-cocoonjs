@@ -34,6 +34,7 @@ class GameManager extends ash.core.System
             @creator.createSpaceship()
         else
           node.state.playing = false
+          node.leader.show = true
           @creator.createWaitForClick()
   
       # game over
@@ -53,6 +54,7 @@ class GameManager extends ash.core.System
 
           @creator.createAsteroid 30, position.x, position.y
           ++i
+
     return # Void
 
   removeFromEngine: (engine) ->

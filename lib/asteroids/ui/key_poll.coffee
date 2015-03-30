@@ -46,7 +46,7 @@ class KeyPoll
       @states[@keys[0]] = false
       return
 
-    btn1 = game.add.button(35, config.height-45, 'round')
+    btn1 = game.add.button(50, config.height-50, 'round')
     btn1.onInputDown.add  =>
       @states[@keys[1]] = true
       return
@@ -54,7 +54,7 @@ class KeyPoll
       @states[@keys[1]] = false
       return
 
-    btn2 = game.add.button(config.width-80, config.height-45, 'round')
+    btn2 = game.add.button(config.width-100, config.height-50, 'round')
     btn2.onInputDown.add  =>
       @states[@keys[2]] = true
       return
@@ -62,7 +62,7 @@ class KeyPoll
       @states[@keys[2]] = false
       return
 
-    btn3 = game.add.button(config.width-45, config.height-80, 'round')
+    btn3 = game.add.button(config.width-50, config.height-80, 'round')
     btn3.onInputDown.add  =>
       @states[@keys[3]] = true
       return
@@ -70,7 +70,7 @@ class KeyPoll
       @states[@keys[3]] = false
       return
 
-    btn4 = game.add.button(config.width/2, config.height-45, 'square')
+    btn4 = game.add.button(config.width/2, config.height-50, 'square')
     btn4.anchor.x = 0.5
     btn4.onInputDown.add  =>
       @states[@keys[4]] = true

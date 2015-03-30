@@ -15,17 +15,23 @@
 #
 class EntityCreator
 
-  ASTEROID_DENSITY        : 1.0
-  ASTEROID_FRICTION       : 1.0
-  ASTEROID_RESTITUTION    : 0.2
-  ASTEROID_DAMPING        : 0.0
-  ASTEROID_LINEAR         : 4.0
-  ASTEROID_ANGULAR        : 2.0
+  ASTEROID_DENSITY        : localStorage.asteroidDensity          ? 1.0
+  ASTEROID_FRICTION       : localStorage.asteroidFriction         ? 1.0
+  ASTEROID_RESTITUTION    : localStorage.asteroidRestitution      ? 0.2
+  ASTEROID_DAMPING        : localStorage.asteroidDamping          ? 0.0
+  ASTEROID_LINEAR         : localStorage.asteroidLinearVelocity   ? 4.0
+  ASTEROID_ANGULAR        : localStorage.asteroidAngularVelocity  ? 2.0
 
-  SPACESHIP_DENSITY       : 1.0
-  SPACESHIP_FRICTION      : 1.0
-  SPACESHIP_RESTITUTION   : 0.2
-  SPACESHIP_DAMPING       : 0.75
+  SPACESHIP_DENSITY       : localStorage.spaceshipDensity         ? 1.0
+  SPACESHIP_FRICTION      : localStorage.spaceshipFriction        ? 1.0
+  SPACESHIP_RESTITUTION   : localStorage.spaceshipRestitution     ? 0.2
+  SPACESHIP_DAMPING       : localStorage.spaceshipDamping         ? 0.75
+
+  BULLET_DENSITY          : localStorage.bulletDensity            ? 1.0
+  BULLET_FRICTION         : localStorage.bulletFriction           ? 1.0
+  BULLET_RESTITUTION      : localStorage.bulletRestitution        ? 0.2
+  BULLET_DAMPING          : localStorage.bulletDamping            ? 0.0
+  BULLET_LINEAR           : localStorage.bulletLinearVelocity     ? 150.0
 
   LEFT                    : KeyPoll.KEY_LEFT
   RIGHT                   : KeyPoll.KEY_RIGHT
@@ -67,6 +73,7 @@ class EntityCreator
     hud = new HudView(@game)
     gameEntity = new Entity('game')
     .add(new GameState())
+    .add(new Leaderboard())
     .add(new Hud(hud))
     .add(new Display(hud))
     .add(new Position(0, 0, 0, 0))
@@ -87,6 +94,17 @@ class EntityCreator
     @waitEntity.get(WaitForStart).startGame = false
     @engine.addEntity(@waitEntity)
     return @waitEntity
+
+
+  createLeaderboard: ->
+    leaderboard = new Entity('leaderboard')
+    .add(new Leaderboard(0))
+    .add(new Display(new LeaderboardView(@game)))
+    .add(new Position(0, 0, 0, 0))
+
+    leaderboard.get(Leaderboard).show = false
+    @engine.addEntity(leaderboard)
+    return leaderboard
 
   ###
    * Create an Asteroid with FSM Animation
@@ -231,13 +249,14 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set(cos * 150, sin * 150)
+    bodyDef.linearVelocity.Set(cos * @BULLET_LINEAR, sin * @BULLET_LINEAR)
     bodyDef.angularVelocity = 0
+    bodyDef.linearDamping = @BULLET_DAMPING
 
     fixDef = new b2FixtureDef()
-    fixDef.density = 1.0
-    fixDef.friction = 0.0
-    fixDef.restitution = 0.2
+    fixDef.density = @BULLET_DENSITY
+    fixDef.friction = @BULLET_FRICTION
+    fixDef.restitution = @BULLET_RESTITUTION
     fixDef.shape = new b2CircleShape(0)
 
     body = @world.CreateBody(bodyDef)

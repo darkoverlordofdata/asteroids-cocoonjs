@@ -10,6 +10,7 @@ lib/asteroids/graphics/asteroid_view.coffee
 lib/asteroids/graphics/asteroid_death_view.coffee
 lib/asteroids/graphics/bullet_view.coffee
 lib/asteroids/graphics/hud_view.coffee
+lib/asteroids/graphics/leaderboard_view.coffee
 lib/asteroids/graphics/spaceship_death_view.coffee
 lib/asteroids/graphics/spaceship_view.coffee
 lib/asteroids/graphics/wait_for_start_view.coffee
@@ -24,6 +25,7 @@ lib/asteroids/components/game_state.coffee
 lib/asteroids/components/gun.coffee
 lib/asteroids/components/gun_controls.coffee
 lib/asteroids/components/hud.coffee
+lib/asteroids/components/leaderboard.coffee
 lib/asteroids/components/motion_controls.coffee
 lib/asteroids/components/physics.coffee
 lib/asteroids/components/position.coffee
@@ -53,6 +55,7 @@ lib/asteroids/systems/death_throes_system.coffee
 lib/asteroids/systems/game_manager.coffee
 lib/asteroids/systems/gun_control_system.coffee
 lib/asteroids/systems/hud_system.coffee
+lib/asteroids/systems/leaderboard_system.coffee
 lib/asteroids/systems/physics_control_system.coffee
 lib/asteroids/systems/render_system.coffee
 lib/asteroids/systems/system_priorities.coffee
