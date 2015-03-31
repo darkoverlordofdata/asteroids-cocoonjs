@@ -19,7 +19,7 @@
 
   /*
    */
-  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, Leaderboard, LeaderboardSystem, LeaderboardView, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, PhysicsSystem, Point, Position, RenderNode, RenderSystem, ShootGun, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
+  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, PhysicsSystem, Point, Position, RenderNode, RenderSystem, ShootGun, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -345,7 +345,7 @@
           _this.states[_this.keys[0]] = false;
         };
       })(this));
-      btn1 = game.add.button(40, config.height - 45, 'round');
+      btn1 = game.add.button(50, config.height - 50, 'round');
       btn1.onInputDown.add((function(_this) {
         return function() {
           _this.states[_this.keys[1]] = true;
@@ -356,7 +356,7 @@
           _this.states[_this.keys[1]] = false;
         };
       })(this));
-      btn2 = game.add.button(config.width - 85, config.height - 45, 'round');
+      btn2 = game.add.button(config.width - 100, config.height - 50, 'round');
       btn2.onInputDown.add((function(_this) {
         return function() {
           _this.states[_this.keys[2]] = true;
@@ -367,7 +367,7 @@
           _this.states[_this.keys[2]] = false;
         };
       })(this));
-      btn3 = game.add.button(config.width - 45, config.height - 80, 'round');
+      btn3 = game.add.button(config.width - 50, config.height - 80, 'round');
       btn3.onInputDown.add((function(_this) {
         return function() {
           _this.states[_this.keys[3]] = true;
@@ -378,7 +378,7 @@
           _this.states[_this.keys[3]] = false;
         };
       })(this));
-      btn4 = game.add.button(config.width / 2, config.height - 45, 'square');
+      btn4 = game.add.button(config.width / 2, config.height - 50, 'square');
       btn4.anchor.x = 0.5;
       btn4.onInputDown.add((function(_this) {
         return function() {
@@ -727,27 +727,6 @@
     };
 
     return HudView;
-
-  })();
-
-  LeaderboardView = (function() {
-    LeaderboardView.prototype.game = null;
-
-    LeaderboardView.prototype.score = 0;
-
-    function LeaderboardView(game) {
-      this.game = game;
-      this.background = this.game.add.sprite(0, 0, 'dialog');
-      this.background.width = this.config.width;
-      this.background.height = this.config.height;
-      this.background.alpha = 0;
-    }
-
-    LeaderboardView.prototype.setScore = function(score) {
-      this.score = score;
-    };
-
-    return LeaderboardView;
 
   })();
 
@@ -1124,24 +1103,13 @@
   Hud = (function() {
     Hud.prototype.view = null;
 
+    Hud.prototype.leaderboard = false;
+
     function Hud(view) {
       this.view = view;
     }
 
     return Hud;
-
-  })();
-
-  Leaderboard = (function() {
-    Leaderboard.prototype.score = 0;
-
-    Leaderboard.prototype.show = false;
-
-    function Leaderboard(score) {
-      this.score = score;
-    }
-
-    return Leaderboard;
 
   })();
 
@@ -1361,16 +1329,10 @@
     }
 
     GameNode.components = {
-      state: GameState,
-      leader: Leaderboard,
-      display: Display
+      state: GameState
     };
 
     GameNode.prototype.state = null;
-
-    GameNode.prototype.leader = null;
-
-    GameNode.prototype.display = null;
 
     return GameNode;
 
@@ -1899,7 +1861,7 @@
     };
 
     GameManager.prototype.update = function(time) {
-      var asteroid, asteroidCount, clearToAddSpaceship, i, newSpaceshipPosition, node, position, spaceship;
+      var asteroid, asteroidCount, clearToAddSpaceship, dd, i, mm, newSpaceshipPosition, node, position, spaceship, today, yyyy, yyyymmdd;
       node = this.gameNodes.head;
       if (node && node.state.playing) {
         if (this.spaceships.empty) {
@@ -1919,7 +1881,42 @@
             }
           } else {
             node.state.playing = false;
-            node.leader.show = true;
+
+            /*
+             * Save the highest score for today
+             */
+            today = new Date();
+            mm = (today.getMonth() + 1).toString();
+            if (mm.length === 1) {
+              mm = '0' + mm;
+            }
+            dd = today.getDate().toString();
+            if (dd.length === 1) {
+              dd = '0' + dd;
+            }
+            yyyy = today.getFullYear().toString();
+            yyyymmdd = yyyy + mm + dd;
+            if (0 === Db.queryAll('leaderboard', {
+              query: {
+                date: yyyymmdd
+              }
+            }).length) {
+              Db.insert('leaderboard', {
+                date: yyyymmdd,
+                score: node.state.hits
+              });
+            } else {
+              Db.update('leaderboard', {
+                date: yyyymmdd
+              }, function(row) {
+                if (node.state.hits > row.score) {
+                  row.score = node.state.hits;
+                }
+                row.value = value;
+                return row;
+              });
+            }
+            Db.commit();
             this.creator.createWaitForClick();
           }
         }
@@ -1999,34 +1996,6 @@
     };
 
     return HudSystem;
-
-  })(ash.tools.ListIteratingSystem);
-
-  LeaderboardSystem = (function(_super) {
-    __extends(LeaderboardSystem, _super);
-
-    LeaderboardSystem.prototype.creator = null;
-
-    LeaderboardSystem.prototype.kount = 0;
-
-    function LeaderboardSystem(game, config) {
-      this.game = game;
-      this.config = config;
-      this.updateNode = __bind(this.updateNode, this);
-      LeaderboardSystem.__super__.constructor.call(this, GameNode, this.updateNode);
-    }
-
-    LeaderboardSystem.prototype.updateNode = function(node, time) {
-      var leader;
-      leader = node.leader;
-      if (leader.show) {
-        if (++this.kount === 1) {
-          console.log(node);
-        }
-      }
-    };
-
-    return LeaderboardSystem;
 
   })(ash.tools.ListIteratingSystem);
 
@@ -2210,6 +2179,10 @@
       if (node && node.wait.startGame && game) {
         asteroid = this.asteroids.head;
         while (asteroid) {
+
+          /*
+           * Clean up asteroids left from prior game
+           */
           graphic = asteroid.entity.get(Display).graphic;
           this.creator.destroyEntity(asteroid.entity);
           graphic.dispose();
@@ -2322,7 +2295,7 @@
     EntityCreator.prototype.createGame = function() {
       var gameEntity, hud;
       hud = new HudView(this.game);
-      gameEntity = new Entity('game').add(new GameState()).add(new Leaderboard()).add(new Hud(hud)).add(new Display(hud)).add(new Position(0, 0, 0, 0));
+      gameEntity = new Entity('game').add(new GameState()).add(new Hud(hud)).add(new Display(hud)).add(new Position(0, 0, 0, 0));
       this.engine.addEntity(gameEntity);
       return gameEntity;
     };
@@ -2339,14 +2312,6 @@
       this.waitEntity.get(WaitForStart).startGame = false;
       this.engine.addEntity(this.waitEntity);
       return this.waitEntity;
-    };
-
-    EntityCreator.prototype.createLeaderboard = function() {
-      var leaderboard;
-      leaderboard = new Entity('leaderboard').add(new Leaderboard(0)).add(new Display(new LeaderboardView(this.game))).add(new Position(0, 0, 0, 0));
-      leaderboard.get(Leaderboard).show = false;
-      this.engine.addEntity(leaderboard);
-      return leaderboard;
     };
 
 
@@ -2554,24 +2519,44 @@
      */
 
     function Asteroids() {
+      this.initializeDb = __bind(this.initializeDb, this);
       this.setBulletLinearVelocity = __bind(this.setBulletLinearVelocity, this);
+      this.getBulletLinearVelocity = __bind(this.getBulletLinearVelocity, this);
       this.setBulletDamping = __bind(this.setBulletDamping, this);
+      this.getBulletDamping = __bind(this.getBulletDamping, this);
       this.setBulletRestitution = __bind(this.setBulletRestitution, this);
+      this.getBulletRestitution = __bind(this.getBulletRestitution, this);
       this.setBulletFriction = __bind(this.setBulletFriction, this);
+      this.getBulletFriction = __bind(this.getBulletFriction, this);
       this.setBulletDensity = __bind(this.setBulletDensity, this);
+      this.getBulletDensity = __bind(this.getBulletDensity, this);
       this.setSpaceshipDamping = __bind(this.setSpaceshipDamping, this);
+      this.getSpaceshipDamping = __bind(this.getSpaceshipDamping, this);
       this.setSpaceshipRestitution = __bind(this.setSpaceshipRestitution, this);
+      this.getSpaceshipRestitution = __bind(this.getSpaceshipRestitution, this);
       this.setSpaceshipFriction = __bind(this.setSpaceshipFriction, this);
+      this.getSpaceshipFriction = __bind(this.getSpaceshipFriction, this);
       this.setSpaceshipDensity = __bind(this.setSpaceshipDensity, this);
+      this.getSpaceshipDensity = __bind(this.getSpaceshipDensity, this);
       this.setAsteroidAngularVelocity = __bind(this.setAsteroidAngularVelocity, this);
+      this.getAsteroidAngularVelocity = __bind(this.getAsteroidAngularVelocity, this);
       this.setAsteroidLinearVelocity = __bind(this.setAsteroidLinearVelocity, this);
+      this.getAsteroidLinearVelocity = __bind(this.getAsteroidLinearVelocity, this);
       this.setAsteroidDamping = __bind(this.setAsteroidDamping, this);
+      this.getAsteroidDamping = __bind(this.getAsteroidDamping, this);
       this.setAsteroidRestitution = __bind(this.setAsteroidRestitution, this);
+      this.getAsteroidRestitution = __bind(this.getAsteroidRestitution, this);
       this.setAsteroidFriction = __bind(this.setAsteroidFriction, this);
+      this.getAsteroidFriction = __bind(this.getAsteroidFriction, this);
       this.setAsteroidDensity = __bind(this.setAsteroidDensity, this);
+      this.getAsteroidDensity = __bind(this.getAsteroidDensity, this);
       this.setPlaySfx = __bind(this.setPlaySfx, this);
+      this.getPlaySfx = __bind(this.getPlaySfx, this);
       this.setPlayMusic = __bind(this.setPlayMusic, this);
+      this.getPlayMusic = __bind(this.getPlayMusic, this);
       this.setBackground = __bind(this.setBackground, this);
+      this.getBackground = __bind(this.getBackground, this);
+      this.displayLeaderboard = __bind(this.displayLeaderboard, this);
       this.pause = __bind(this.pause, this);
       this.fade = __bind(this.fade, this);
       this.create = __bind(this.create, this);
@@ -2582,6 +2567,11 @@
         preload: this.preload,
         create: this.create
       });
+      window.rnd = new MersenneTwister();
+      window.Db = new localStorageDB('asteroids', localStorage);
+      if (Db.isNew()) {
+        this.initializeDb();
+      }
       Cocoon.App.WebView.on("load", {
         success: (function(_this) {
           return function() {
@@ -2623,6 +2613,7 @@
       this.game.load.image('settings', 'res/icons/b_Parameters.png');
       this.game.load.image('round', 'res/round48.png');
       this.game.load.image('square', 'res/square48.png');
+      this.game.load.image('button', 'res/standard-button-on.png');
       this.game.load.audio('asteroid', [ExplodeAsteroid.prototype.src]);
       this.game.load.audio('ship', [ExplodeShip.prototype.src]);
       this.game.load.audio('shoot', [ShootGun.prototype.src]);
@@ -2652,7 +2643,7 @@
       this.game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
         return function() {
           _this.pause(function() {
-            return Cocoon.App.loadInTheWebView("settings.html");
+            return _this.displayLeaderboard();
           });
         };
       })(this));
@@ -2679,7 +2670,6 @@
       this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
       this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
       this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
-      this.engine.addSystem(new LeaderboardSystem(this.game, this.config), SystemPriorities.animate);
       this.engine.addSystem(new RenderSystem(), SystemPriorities.render);
       this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
       this.creator.createWaitForClick();
@@ -2700,7 +2690,7 @@
         this.faderSprite = this.game.add.sprite(0, 0, this.faderBitmap);
         this.faderSprite.alpha = 0;
       }
-      return this.faderSprite;
+      return this.faderSprite.bringToTop();
     };
 
 
@@ -2738,6 +2728,7 @@
 
     Asteroids.prototype.pause = function(next) {
       if (next != null) {
+        this.faderSprite = null;
         this.physics.enabled = false;
         this.fade(next);
       } else {
@@ -2749,32 +2740,119 @@
       }
     };
 
+    Asteroids.prototype.displayLeaderboard = function() {
+      var big, board, button, dialog, label, mmddyyyy, normal, row, title, y, _i, _len, _ref;
+      board = this.game.add.group();
+      dialog = new Phaser.Sprite(this.game, 0, 0, 'dialog');
+      dialog.width = this.config.width;
+      dialog.height = this.config.height;
+      board.add(dialog);
+      big = {
+        font: 'bold 30px opendyslexic',
+        fill: '#ffffff'
+      };
+      normal = {
+        font: 'bold 20px opendyslexic',
+        fill: '#ffffff'
+      };
+      title = new Phaser.Text(this.game, this.config.width / 2, 0, 'Asteroids', big);
+      title.anchor.x = 0.5;
+      board.add(title);
+      y = 100;
+      _ref = Db.queryAll('leaderboard', {
+        limit: 10,
+        sort: [['score', 'DESC']]
+      });
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        row = _ref[_i];
+        mmddyyyy = row.date.substr(4, 2) + '/' + row.date.substr(6, 2) + '/' + row.date.substr(0, 4);
+        board.add(new Phaser.Text(this.game, 200, y, mmddyyyy, normal));
+        board.add(new Phaser.Text(this.game, 400, y, row.score, normal));
+        y += 20;
+      }
+      button = new Phaser.Button(this.game, this.config.width / 2, this.config.height - 64, 'button', (function(_this) {
+        return function() {
+          board.destroy();
+          board = null;
+          return _this.pause();
+        };
+      })(this));
+      button.anchor.x = 0.5;
+      board.add(button);
+      label = new Phaser.Text(this.game, 0, button.height / 2, 'continue', big);
+      label.anchor.x = 0.5;
+      label.anchor.y = 0.5;
+      return button.addChild(label);
+    };
+
 
     /*
-      * Set Properties:
+      * Properties:
      */
 
-    Asteroids.prototype.setBackground = function(value) {
-      if (value === 1) {
-        this.background.alpha = 1.0;
-        this.optBgd = 'star';
-        localStorage.background = 'star';
+    Asteroids.prototype.getBackground = function() {
+      if ('blue' === Db.queryAll('settings', {
+        query: {
+          name: 'playMusic'
+        }
+      })[0].value) {
+        return 0;
       } else {
-        this.background.alpha = 0.0;
-        this.optBgd = 'blue';
-        localStorage.background = 'blue';
+        return 1;
       }
     };
 
+    Asteroids.prototype.setBackground = function(value) {
+      var background;
+      background = ['blue', 'star'];
+      this.background.alpha = value;
+      this.optBgd = background[value];
+      Db.update('settings', {
+        name: 'background'
+      }, function(row) {
+        row.value = background[value];
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getPlayMusic = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'playMusic'
+        }
+      })[0].value;
+    };
+
     Asteroids.prototype.setPlayMusic = function(value) {
+      Db.update('settings', {
+        name: 'playMusic'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
       this.playMusic = value;
-      localStorage.playMusic = value;
+    };
+
+    Asteroids.prototype.getPlaySfx = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'playSfx'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setPlaySfx = function(value) {
+      Db.update('settings', {
+        name: 'playSfx'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
       this.playSfx = value;
       Sound.volume = value / 100;
-      localStorage.playSfx = value;
     };
 
 
@@ -2782,28 +2860,112 @@
      * Asteroid Options
      */
 
+    Asteroids.prototype.getAsteroidDensity = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'asteroidDensity'
+        }
+      })[0].value;
+    };
+
     Asteroids.prototype.setAsteroidDensity = function(value) {
-      EntityCreator.ASTEROID_DENSITY = value;
+      Db.update('settings', {
+        name: 'asteroidDensity'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getAsteroidFriction = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'asteroidFriction'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setAsteroidFriction = function(value) {
-      EntityCreator.ASTEROID_FRICTION = value;
+      Db.update('settings', {
+        name: 'asteroidFriction'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getAsteroidRestitution = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'asteroidRestitution'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setAsteroidRestitution = function(value) {
-      EntityCreator.ASTEROID_RESTITUTION = value;
+      Db.update('settings', {
+        name: 'a'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getAsteroidDamping = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'asteroidDamping'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setAsteroidDamping = function(value) {
-      EntityCreator.ASTEROID_DAMPING = value;
+      Db.update('settings', {
+        name: 'asteroidDamping'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getAsteroidLinearVelocity = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'asteroidLinearVelocity'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setAsteroidLinearVelocity = function(value) {
-      EntityCreator.ASTEROID_LINEAR = value;
+      Db.update('settings', {
+        name: 'asteroidLinearVelocity'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getAsteroidAngularVelocity = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'asteroidAngularVelocity'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setAsteroidAngularVelocity = function(value) {
-      EntityCreator.ASTEROID_ANGULAR = value;
+      Db.update('settings', {
+        name: 'asteroidAngularVelocity'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
     };
 
 
@@ -2811,20 +2973,76 @@
      * Spaceship Options
      */
 
+    Asteroids.prototype.getSpaceshipDensity = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'spaceshipDensity'
+        }
+      })[0].value;
+    };
+
     Asteroids.prototype.setSpaceshipDensity = function(value) {
-      EntityCreator.SPACESHIP_DENSITY = value;
+      Db.update('settings', {
+        name: 'spaceshipDensity'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getSpaceshipFriction = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'spaceshipFriction'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setSpaceshipFriction = function(value) {
-      EntityCreator.SPACESHIP_FRICTION = value;
+      Db.update('settings', {
+        name: 'spaceshipFriction'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getSpaceshipRestitution = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'spaceshipRestitution'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setSpaceshipRestitution = function(value) {
-      EntityCreator.SPACESHIP_RESTITUTION = value;
+      Db.update('settings', {
+        name: 'spaceshipRestitution'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getSpaceshipDamping = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'spaceshipDamping'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setSpaceshipDamping = function(value) {
-      EntityCreator.SPACESHIP_DAMPING = value;
+      Db.update('settings', {
+        name: 'spaceshipDamping'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
     };
 
 
@@ -2832,24 +3050,176 @@
      * Bullet Options
      */
 
+    Asteroids.prototype.getBulletDensity = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'bulletDensity'
+        }
+      })[0].value;
+    };
+
     Asteroids.prototype.setBulletDensity = function(value) {
-      EntityCreator.BULLET_DENSITY = value;
+      Db.update('settings', {
+        name: 'bulletDensity'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getBulletFriction = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'bulletFriction'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setBulletFriction = function(value) {
-      EntityCreator.BULLET_FRICTION = value;
+      Db.update('settings', {
+        name: 'bulletFriction'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getBulletRestitution = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'bulletRestitution'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setBulletRestitution = function(value) {
-      EntityCreator.BULLET_RESTITUTION = value;
+      Db.update('settings', {
+        name: 'bulletRestitution'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getBulletDamping = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'bulletDamping'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setBulletDamping = function(value) {
-      EntityCreator.BULLET_DAMPING = value;
+      Db.update('settings', {
+        name: 'bulletDamping'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.getBulletLinearVelocity = function() {
+      return Db.queryAll('settings', {
+        query: {
+          name: 'bulletLinearVelocity'
+        }
+      })[0].value;
     };
 
     Asteroids.prototype.setBulletLinearVelocity = function(value) {
-      EntityCreator.BULLET_LINEAR = value;
+      Db.update('settings', {
+        name: 'bulletLinearVelocity'
+      }, function(row) {
+        row.value = value;
+        return row;
+      });
+      Db.commit();
+    };
+
+    Asteroids.prototype.initializeDb = function() {
+      Db.createTable('leaderboard', ['date', 'score']);
+      Db.createTable('settings', ['name', 'value']);
+
+      /*
+       * Default Settings:
+       */
+      Db.insert('settings', {
+        name: 'background',
+        value: 'blue'
+      });
+      Db.insert('settings', {
+        name: 'playMusic',
+        value: '50'
+      });
+      Db.insert('settings', {
+        name: 'playSfx',
+        value: '50'
+      });
+      Db.insert('settings', {
+        name: 'asteroidDensity',
+        value: '1.0'
+      });
+      Db.insert('settings', {
+        name: 'asteroidFriction',
+        value: '1.0'
+      });
+      Db.insert('settings', {
+        name: 'asteroidRestitution',
+        value: '0.2'
+      });
+      Db.insert('settings', {
+        name: 'asteroidDamping',
+        value: '0.0'
+      });
+      Db.insert('settings', {
+        name: 'asteroidLinearVelocity',
+        value: '4.0'
+      });
+      Db.insert('settings', {
+        name: 'asteroidAngularVelocity',
+        value: '2.0'
+      });
+      Db.insert('settings', {
+        name: 'spaceshipDensity',
+        value: '1.0'
+      });
+      Db.insert('settings', {
+        name: 'spaceshipFriction',
+        value: '1.0'
+      });
+      Db.insert('settings', {
+        name: 'spaceshipRestitution',
+        value: '0.2'
+      });
+      Db.insert('settings', {
+        name: 'spaceshipDamping',
+        value: '0.75'
+      });
+      Db.insert('settings', {
+        name: 'bulletDensity',
+        value: '1.0'
+      });
+      Db.insert('settings', {
+        name: 'bulletFriction',
+        value: '1.0'
+      });
+      Db.insert('settings', {
+        name: 'bulletRestitution',
+        value: '0.2'
+      });
+      Db.insert('settings', {
+        name: 'bulletDamping',
+        value: '0.0'
+      });
+      Db.insert('settings', {
+        name: 'bulletLinearVelocity',
+        value: '150'
+      });
+      Db.commit();
     };
 
     return Asteroids;
@@ -2964,8 +3334,7 @@
 
   (function() {
     return window.addEventListener('load', function() {
-      window.rnd = new MersenneTwister();
-      window.asteroids = new Asteroids();
+      return window.asteroids = new Asteroids();
     });
   })();
 
