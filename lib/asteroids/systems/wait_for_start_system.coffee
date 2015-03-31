@@ -29,8 +29,9 @@ class WaitForStartSystem extends ash.core.System
 
       asteroid = @asteroids.head
       while asteroid
-
-        # todo: graphics undefined
+        ###
+         * Clean up asteroids left from prior game
+        ###
         graphic = asteroid.entity.get(Display).graphic
         @creator.destroyEntity(asteroid.entity)
         graphic.dispose()

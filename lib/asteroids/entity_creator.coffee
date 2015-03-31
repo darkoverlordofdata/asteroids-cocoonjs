@@ -73,7 +73,6 @@ class EntityCreator
     hud = new HudView(@game)
     gameEntity = new Entity('game')
     .add(new GameState())
-    .add(new Leaderboard())
     .add(new Hud(hud))
     .add(new Display(hud))
     .add(new Position(0, 0, 0, 0))
@@ -95,16 +94,6 @@ class EntityCreator
     @engine.addEntity(@waitEntity)
     return @waitEntity
 
-
-  createLeaderboard: ->
-    leaderboard = new Entity('leaderboard')
-    .add(new Leaderboard(0))
-    .add(new Display(new LeaderboardView(@game)))
-    .add(new Position(0, 0, 0, 0))
-
-    leaderboard.get(Leaderboard).show = false
-    @engine.addEntity(leaderboard)
-    return leaderboard
 
   ###
    * Create an Asteroid with FSM Animation

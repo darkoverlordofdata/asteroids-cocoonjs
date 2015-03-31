@@ -34,7 +34,28 @@ class GameManager extends ash.core.System
             @creator.createSpaceship()
         else
           node.state.playing = false
-          node.leader.show = true
+
+          ###
+           * Save the highest score for today
+          ###
+          today = new Date()
+          mm = (today.getMonth()+1).toString()
+          if mm.length is 1 then mm = '0'+mm
+          dd = today.getDate().toString()
+          if dd.length is 1 then dd = '0'+dd
+          yyyy = today.getFullYear().toString()
+          yyyymmdd = yyyy+mm+dd
+
+          if 0 is Db.queryAll('leaderboard', query: date: yyyymmdd).length
+            Db.insert 'leaderboard', date: yyyymmdd, score: node.state.hits
+          else
+            Db.update 'leaderboard', date: yyyymmdd, (row) ->
+              if node.state.hits > row.score
+                row.score = node.state.hits
+              row.value = value;
+              return row
+
+          Db.commit()
           @creator.createWaitForClick()
   
       # game over

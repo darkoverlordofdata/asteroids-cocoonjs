@@ -3,22 +3,26 @@
 #   Release version
 #
 cd ./build/web
-vulcanize --output example.html --strip --inline --csp example.html
+# embedded version for cocoon Canvas+:
 vulcanize --output index.html --strip --inline --csp index.html
+# browser version for cocoon WebView:
+vulcanize --output asteroids.html --strip --inline --csp asteroids.html
+# settings dialog
 vulcanize --output settings.html --strip --inline --csp settings.html
 #
-# clean up
-#
+# clean up stuff no longer needed after vulcanization
 rm -fr ./packages
 rm -fr ./css
-rm -fr ./fonts/eot
-rm -fr ./fonts/otf
-rm -fr ./fonts/screenshots
-rm -fr ./fonts/sources
-rm -fr ./fonts/svg
-rm -fr ./fonts/woff
 rm -fr ./themes/js
 rm -f  ./themes/*.css
+## fonts not used for cocoon
+#rm -fr ./fonts/eot
+#rm -fr ./fonts/otf
+#rm -fr ./fonts/svg
+#rm -fr ./fonts/woff
+# excess resources not used in game
+rm -fr ./fonts/screenshots
+rm -fr ./fonts/sources
 rm -f  ./res/icons/b_Background.png
 rm -f  ./res/icons/b_Forward1.png
 rm -f  ./res/icons/b_Forward2.png

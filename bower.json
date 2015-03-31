@@ -23,7 +23,8 @@
     "box2d": "git://github.com/darkoverlordofdata/Box2dWeb",
     "stats.js": "*",
     "pixi.js": "~2.2.8",
-    "phaser": "2.3.0"
+    "phaser": "2.3.0",
+    "localstoragedb": "~2.3.1"
   },
   "packages": {
     "cocoonjs": "cocoonjs/build/*.*",
@@ -31,6 +32,7 @@
     "box2d": "box2d/dist/*.js",
     "stats.js": "stats.js/build/*.js",
     "pixi.js": "pixi.js/bin/*.*",
-    "phaser": "phaser/build/custom/*.*"
+    "phaser": "phaser/build/custom/*.*",
+    "localstoragedb": "localstoragedb/*.js"
   }
 }

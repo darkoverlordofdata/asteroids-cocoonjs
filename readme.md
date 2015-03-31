@@ -13,7 +13,7 @@
 
 Using [ash.coffee](https://github.com/darkoverlordofdata/ash.coffee)
 
-and Box2D
+Box2D and Phaser.io
 
 # Install
 
