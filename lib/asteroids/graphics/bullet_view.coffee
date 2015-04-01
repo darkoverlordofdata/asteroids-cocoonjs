@@ -13,13 +13,12 @@ class BulletView
       get: -> @graphics.rotation
       set: (rotation) -> @graphics.rotation = rotation
 
-  constructor: (@stage) ->
+  constructor: (game) ->
 
-    @graphics = new PIXI.Graphics()
+    @graphics = game.add.graphics(0, 0)
     @graphics.beginFill(0xffffff)
-    @graphics.drawCircle(0, 0, 2 * window.devicePixelRatio)
+    @graphics.drawCircle(0, 0, 2)
     @graphics.endFill()
-    @stage.addChild(@graphics)
 
   dispose: ->
-    @stage.removeChild(@graphics)
+    @graphics.destroy()

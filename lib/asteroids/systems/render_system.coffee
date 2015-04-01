@@ -4,7 +4,7 @@ class RenderSystem extends ash.core.System
   renderer  : null
   nodes     : null  # NodeList
 
-  constructor: (@stage, @renderer) ->
+  constructor: (@stage) ->
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(RenderNode)
@@ -39,6 +39,5 @@ class RenderSystem extends ash.core.System
       graphic.rotation = position.rotation
       node = node.next
 
-    @renderer.render(@stage)
     return
 

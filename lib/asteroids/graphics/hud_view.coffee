@@ -8,42 +8,36 @@ class HudView
   rotation: 0
 
 
-  constructor: (stage) ->
+  constructor: (game, stage) ->
 
-    @graphics = new PIXI.Graphics()
-    @graphics.x = 0
-    @graphics.y = 200
+    @graphics = game.add.graphics(0, 100)
     @graphics.beginFill(0xc0c0c0)
-    @graphics.drawRect(0, 0, 60, 80)
+    @graphics.drawRect(0, 0, 30, 40)
     @graphics.endFill()
     @graphics.alpha = 0.5
-    stage.addChild(@graphics)
 
-    @score = @createTextField()
-    @score.x = window.innerWidth*window.devicePixelRatio-130
-    @score.y = 20
-    stage.addChild(@score)
+    @score = game.add.text(window.innerWidth-130, 20, '', font: 'bold 18px opendyslexic', fill: 'white')
 
     @setScore(0)
     @setLives(3)
 
   dispose: ->
-    @stage.removeChild(@graphics)
-    @stage.removeChild(@score)
+    @graphics.destroy()
+    @score.destroy()
 
   setLives: (lives) =>
     @graphics.clear()
     @graphics.beginFill(0xc0c0c0)
-    @graphics.drawRect(0, 0, 60, 80)
+    @graphics.drawRect(0, 0, 30, 40)
     @graphics.endFill()
     @graphics.beginFill( 0x000000 )
     for i in [0...lives]
-      c = i*20+20
-      @graphics.moveTo( 10 * window.devicePixelRatio + 20, 0 + c)
-      @graphics.lineTo( -7 * window.devicePixelRatio + 20, 7 * window.devicePixelRatio + c)
-      @graphics.lineTo( -4 * window.devicePixelRatio + 20, 0 + c)
-      @graphics.lineTo( -7 * window.devicePixelRatio + 20, -7 * window.devicePixelRatio + c)
-      @graphics.lineTo( 10 * window.devicePixelRatio + 20, 0 + c)
+      c = i*10+10
+      @graphics.moveTo( 10 + 10, c)
+      @graphics.lineTo( -7 + 10, 7 + c)
+      @graphics.lineTo( -4 + 10, c)
+      @graphics.lineTo( -7 + 10, -7 + c)
+      @graphics.lineTo( 10 + 10, c)
 
     @graphics.endFill()
     @graphics.alpha = 0.5
@@ -52,8 +46,5 @@ class HudView
   setScore: (score) =>
     @score.setText("SCORE: #{score}")
     return
-
-  createTextField: ->
-    new PIXI.Text('', font: 'bold 22px opendyslexic', fill: '#00ffff')
 
 

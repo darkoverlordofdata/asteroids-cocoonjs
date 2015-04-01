@@ -4,9 +4,9 @@
 #| Copyright DarkOverlordOfData (c) 2015
 #+--------------------------------------------------------------------+
 #|
-#| This file is a part of ash.coffee
+#| This file is a part of asteroids.coffee
 #|
-#| ash.coffee is free software; you can copy, modify, and distribute
+#| asteroids.coffee is free software; you can copy, modify, and distribute
 #| it under the terms of the MIT License
 #|
 #+--------------------------------------------------------------------+
@@ -14,6 +14,30 @@
 # EntityCreator
 #
 class EntityCreator
+
+  ASTEROID_DENSITY        : localStorage.asteroidDensity          ? 1.0
+  ASTEROID_FRICTION       : localStorage.asteroidFriction         ? 1.0
+  ASTEROID_RESTITUTION    : localStorage.asteroidRestitution      ? 0.2
+  ASTEROID_DAMPING        : localStorage.asteroidDamping          ? 0.0
+  ASTEROID_LINEAR         : localStorage.asteroidLinearVelocity   ? 4.0
+  ASTEROID_ANGULAR        : localStorage.asteroidAngularVelocity  ? 2.0
+
+  SPACESHIP_DENSITY       : localStorage.spaceshipDensity         ? 1.0
+  SPACESHIP_FRICTION      : localStorage.spaceshipFriction        ? 1.0
+  SPACESHIP_RESTITUTION   : localStorage.spaceshipRestitution     ? 0.2
+  SPACESHIP_DAMPING       : localStorage.spaceshipDamping         ? 0.75
+
+  BULLET_DENSITY          : localStorage.bulletDensity            ? 1.0
+  BULLET_FRICTION         : localStorage.bulletFriction           ? 1.0
+  BULLET_RESTITUTION      : localStorage.bulletRestitution        ? 0.2
+  BULLET_DAMPING          : localStorage.bulletDamping            ? 0.0
+  BULLET_LINEAR           : localStorage.bulletLinearVelocity     ? 150.0
+
+  LEFT                    : KeyPoll.KEY_LEFT
+  RIGHT                   : KeyPoll.KEY_RIGHT
+  THRUST                  : KeyPoll.KEY_UP
+  FIRE                    : KeyPoll.KEY_Z
+  WARP                    : KeyPoll.KEY_SPACE
 
   Entity                = ash.core.Entity
   EntityStateMachine    = ash.fsm.EntityStateMachine
@@ -28,6 +52,7 @@ class EntityCreator
   b2PolygonShape        = Box2D.Collision.Shapes.b2PolygonShape
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
+  game            : null  # Phaser.io
   engine          : null  # Ash Engine
   world           : null  # Box2D World
   waitEntity      : null
@@ -35,7 +60,7 @@ class EntityCreator
   asteroidId      : 0
   spaceshipId     : 0
 
-  constructor: (@engine, @world, @config, @stage) ->
+  constructor: (@game, @engine, @world, @config) ->
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -45,7 +70,7 @@ class EntityCreator
    * Game State
   ###
   createGame: () ->
-    hud = new HudView(@stage)
+    hud = new HudView(@game)
     gameEntity = new Entity('game')
     .add(new GameState())
     .add(new Hud(hud))
@@ -59,7 +84,7 @@ class EntityCreator
   ###
   createWaitForClick: () ->
 #    if not @waitEntity
-    waitView = new WaitForStartView(@stage)
+    waitView = new WaitForStartView(@game)
     @waitEntity = new Entity('wait')
     .add(new WaitForStart(waitView))
     .add(new Display(waitView))
@@ -68,6 +93,7 @@ class EntityCreator
     @waitEntity.get(WaitForStart).startGame = false
     @engine.addEntity(@waitEntity)
     return @waitEntity
+
 
   ###
    * Create an Asteroid with FSM Animation
@@ -82,16 +108,17 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    v1 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2 * window.devicePixelRatio
-    v2 = (rnd.nextDouble() - 0.5) * 4 * (50 - radius) * 2 * window.devicePixelRatio
+    v1 = (rnd.nextDouble() - 0.5) * @ASTEROID_LINEAR * (50 - radius) * 2
+    v2 = (rnd.nextDouble() - 0.5) * @ASTEROID_LINEAR * (50 - radius) * 2
 
     bodyDef.linearVelocity.Set(v1, v2)
-    bodyDef.angularVelocity = rnd.nextDouble() * 2 - 1
+    bodyDef.angularVelocity = rnd.nextDouble() * @ASTEROID_ANGULAR - 1
+    bodyDef.linearDamping = @ASTEROID_DAMPING
 
     fixDef = new b2FixtureDef()
-    fixDef.density = 1.0
-    fixDef.friction = 1.0
-    fixDef.restitution = 0.2
+    fixDef.density = @ASTEROID_DENSITY
+    fixDef.friction = @ASTEROID_FRICTION
+    fixDef.restitution = @ASTEROID_RESTITUTION
     fixDef.shape = new b2CircleShape(radius)
 
     body = @world.CreateBody(bodyDef)
@@ -103,13 +130,13 @@ class EntityCreator
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
-    liveView = new AsteroidView(@stage, radius)
+    liveView = new AsteroidView(@game, radius)
     fsm.createState('alive')
     .add(Physics).withInstance(new Physics(body))
     .add(Collision).withInstance(new Collision(radius))
     .add(Display).withInstance(new Display(liveView))
 
-    deathView = new AsteroidDeathView(@stage, radius)
+    deathView = new AsteroidDeathView(@game, radius)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(3))
     .add(Display).withInstance(new Display(deathView))
@@ -142,17 +169,17 @@ class EntityCreator
     bodyDef.position.y = y
     bodyDef.linearVelocity.Set(0, 0)
     bodyDef.angularVelocity = 0
-    bodyDef.linearDamping = 0.75
+    bodyDef.linearDamping = @SPACESHIP_DAMPING
 
     fixDef = new b2FixtureDef()
-    fixDef.density = 1.0
-    fixDef.friction = 1.0
-    fixDef.restitution = 0.2
+    fixDef.density = @SPACESHIP_DENSITY
+    fixDef.friction = @SPACESHIP_FRICTION
+    fixDef.restitution = @SPACESHIP_RESTITUTION
     fixDef.shape = new b2PolygonShape()
     fixDef.shape.SetAsArray([
-      new b2Vec2(0.45 * window.devicePixelRatio, 0)
-      new b2Vec2(-0.25 * window.devicePixelRatio, 0.25 * window.devicePixelRatio)
-      new b2Vec2(-0.25 * window.devicePixelRatio, -0.25 * window.devicePixelRatio)
+      new b2Vec2(0.45, 0)
+      new b2Vec2(-0.25, 0.25)
+      new b2Vec2(-0.25, -0.25)
     ], 3)
 
     body = @world.CreateBody(bodyDef)
@@ -164,16 +191,17 @@ class EntityCreator
     spaceship = new Entity()
     fsm = new EntityStateMachine(spaceship)
 
-    liveView = new SpaceshipView(@stage)
+
+    liveView = new SpaceshipView(@game)
     fsm.createState('playing')
     .add(Physics).withInstance(new Physics(body))
-    .add(MotionControls).withInstance(new MotionControls(KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_UP, 100, 3))
+    .add(MotionControls).withInstance(new MotionControls(@LEFT, @RIGHT, @THRUST, @WARP, 100, 3))
     .add(Gun).withInstance(new Gun(8, 0, 0.3, 2 ))
-    .add(GunControls).withInstance(new GunControls(KeyPoll.KEY_Z))
-    .add(Collision).withInstance(new Collision(9 * window.devicePixelRatio))
+    .add(GunControls).withInstance(new GunControls(@FIRE))
+    .add(Collision).withInstance(new Collision(9))
     .add(Display).withInstance(new Display(liveView))
 
-    deathView = new SpaceshipDeathView(@stage)
+    deathView = new SpaceshipDeathView(@game)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(5))
     .add(Display).withInstance(new Display(deathView))
@@ -210,13 +238,14 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set(cos * 150 * window.devicePixelRatio, sin * 150 * window.devicePixelRatio)
+    bodyDef.linearVelocity.Set(cos * @BULLET_LINEAR, sin * @BULLET_LINEAR)
     bodyDef.angularVelocity = 0
+    bodyDef.linearDamping = @BULLET_DAMPING
 
     fixDef = new b2FixtureDef()
-    fixDef.density = 1.0
-    fixDef.friction = 0.0
-    fixDef.restitution = 0.2
+    fixDef.density = @BULLET_DENSITY
+    fixDef.friction = @BULLET_FRICTION
+    fixDef.restitution = @BULLET_RESTITUTION
     fixDef.shape = new b2CircleShape(0)
 
     body = @world.CreateBody(bodyDef)
@@ -225,9 +254,9 @@ class EntityCreator
     ###
      * Bullet entity
     ###
-    bulletView = new BulletView(@stage)
+    bulletView = new BulletView(@game)
     bullet = new Entity()
-    .add(new Bullet(gun.bulletLifetime * window.devicePixelRatio))
+    .add(new Bullet(gun.bulletLifetime))
     .add(new Position(x, y, 0))
     .add(new Collision(0))
     .add(new Physics(body))
