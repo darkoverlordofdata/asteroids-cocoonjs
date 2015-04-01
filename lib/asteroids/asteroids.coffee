@@ -22,6 +22,8 @@ class Asteroids
   b2Vec2            = Box2D.Common.Math.b2Vec2
   b2World           = Box2D.Dynamics.b2World
 
+  ucfirst           = (s) -> s.charAt(0).toUpperCase() + s.substr(1)
+
   game              : null  #  Phaser.io game object
   engine            : null  #  Ash Engine
   tickProvider      : null  #  FrameTickProvider
@@ -31,12 +33,12 @@ class Asteroids
   world             : null  #  b2World
   background        : null  #  background image
   physics           : null  #  physics system
+  faderBitmap       : null  # for screen fade
+  faderSprite       : null  # for screen fade
+  bgdColor          : 0x6A5ACD
   playMusic         : localStorage.playMusic
   playSfx           : localStorage.playSfx
   optBgd            : localStorage.background || 'blue'
-  bgdColor          : 0x6A5ACD
-  faderBitmap       : null  # for screen fade
-  faderSprite       : null  # for screen fade
 
   ###
    * Create the phaser game component
@@ -46,8 +48,8 @@ class Asteroids
       init: @init, preload: @preload, create: @create)
 
     window.rnd = new MersenneTwister()
-    window.Db = new localStorageDB('asteroids', localStorage)
-    if Db.isNew() then @initializeDb()
+    @initializeDb()
+    @optBgd = Db.queryAll('settings', query: name: 'background')[0].value
 
       # show the web view when it loads
     Cocoon.App.WebView.on "load",
@@ -72,13 +74,15 @@ class Asteroids
    * Load assets
   ###
   preload: =>
-    @game.load.image 'dialog', 'res/dialog-box.png'
+    @game.load.image 'dialog-blue', 'res/dialog-box.png'
+    @game.load.image 'dialog-star', 'res/black-dialog.png'
+    @game.load.image 'button-blue', 'res/standard-button-on.png'
+    @game.load.image 'button-star', 'res/black-button-on.png'
     @game.load.image 'background', 'res/starfield.png'
     @game.load.image 'leaderboard', 'res/icons/b_Leaderboard.png'
     @game.load.image 'settings', 'res/icons/b_Parameters.png'
     @game.load.image 'round', 'res/round48.png'
     @game.load.image 'square', 'res/square48.png'
-    @game.load.image 'button', 'res/standard-button-on.png'
     @game.load.audio 'asteroid', [ExplodeAsteroid::src]
     @game.load.audio 'ship', [ExplodeShip::src]
     @game.load.audio 'shoot', [ShootGun::src]
@@ -89,7 +93,7 @@ class Asteroids
   ###
   create: =>
     # install the profiler first
-    @game.plugins.add(Phaser.Plugin.PerformanceMonitor, mode:1)
+    @game.plugins.add(Phaser.Plugin.PerformanceMonitor, profiler: @get('profiler'))
 
     # set the background
     @game.stage.backgroundColor = @bgdColor
@@ -105,7 +109,7 @@ class Asteroids
 
     # leaderboard
     @game.add.button width - 50, 125, 'leaderboard', =>
-      @pause => @displayLeaderboard()
+      @pause => @showLeaderboard()
       return
 
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
@@ -146,7 +150,7 @@ class Asteroids
    *
    * A screen sized black rectangle used for full screen fades
   ###
-  getFaderSprite: ->
+  getFaderSprite: =>
     unless @faderSprite?
       @faderBitmap = @game.make.bitmapData(@game.width, @game.height)
       @faderBitmap.rect(0, 0, @game.width, @game.height, 'rgb(0,0,0)')
@@ -187,10 +191,13 @@ class Asteroids
       @fade => @physics.enabled = true
     return
 
-  displayLeaderboard: =>
+  ###
+   * Create and display a leaderboard
+  ###
+  showLeaderboard: =>
     board = @game.add.group()
 
-    dialog = new Phaser.Sprite(@game, 0, 0, 'dialog')
+    dialog = new Phaser.Sprite(@game, 0, 0, "dialog-#{@optBgd}")
     dialog.width = @config.width
     dialog.height = @config.height
     board.add(dialog)
@@ -198,21 +205,27 @@ class Asteroids
     big = font: 'bold 30px opendyslexic', fill: '#ffffff'
     normal = font: 'bold 20px opendyslexic', fill: '#ffffff'
 
-    title = new Phaser.Text(@game, @config.width/2, 0, 'Asteroids', big)
+    title = new Phaser.Text(@game, @config.width/2, 20, 'Asteroids', big)
     title.anchor.x = 0.5
     board.add(title)
 
-    y = 100
+    board.add(new Phaser.Text(@game, 200, 80, 'Date', normal))
+    board.add(new Phaser.Text(@game, 400, 80, 'Score', normal))
+    board.add(new Phaser.Text(@game, 200, 100, '--------', normal))
+    board.add(new Phaser.Text(@game, 400, 100, '--------', normal))
+
+    y = 120
     for row in Db.queryAll('leaderboard', limit: 10, sort: [['score', 'DESC']])
       mmddyyyy = row.date.substr(4,2)+'/'+row.date.substr(6,2)+'/'+row.date.substr(0,4)
       board.add(new Phaser.Text(@game, 200, y, mmddyyyy, normal))
       board.add(new Phaser.Text(@game, 400, y, row.score, normal))
       y+= 20
 
-    button = new Phaser.Button(@game, @config.width/2, @config.height-64, 'button', =>
+    button = new Phaser.Button(@game, @config.width/2, @config.height-64, "button-#{@optBgd}", =>
       board.destroy()
       board = null
-      @pause())
+      @pause()
+      return)
     button.anchor.x = 0.5
     board.add(button)
 
@@ -221,13 +234,39 @@ class Asteroids
     label.anchor.y = 0.5
     button.addChild(label)
 
+  ### ============================================================>
+      A S T E R O I D  S E T T I N G S
+  <============================================================ ###
 
   ###
-   # Properties:
+   * Get Asteroid Property
+  ###
+  get: (prop) =>
+    n = 'get'+ucfirst(prop)
+    if @[n]? then return @[n]()
+    else
+      return Db.queryAll('settings', query: name: prop)[0].value
+
+  ###
+   * Set Asteroid Property
+  ###
+  set: (prop, value) =>
+    n = 'set'+ucfirst(prop)
+    if @[n]? then @[n](value)
+    else
+      Db.update('settings', name: prop, (row) -> row.value = value; return row)
+      Db.commit()
+    return
+
+  ###
+   * Sgt Asteroid Background
   ###
   getBackground: =>
-    return if 'blue' is Db.queryAll('settings', query: name: 'playMusic')[0].value then 0 else 1
+    return if 'blue' is Db.queryAll('settings', query: name: 'background')[0].value then 0 else 1
 
+  ###
+   * Set Asteroid Background
+  ###
   setBackground: (value) =>
     background = ['blue', 'star']
     @background.alpha = value
@@ -236,18 +275,18 @@ class Asteroids
     Db.commit()
     return
 
-  getPlayMusic: =>
-    return Db.queryAll('settings', query: name: 'playMusic')[0].value
-
+  ###
+   * Set Asteroid Play Music
+  ###
   setPlayMusic: (value) =>
     Db.update('settings', name: 'playMusic', (row) -> row.value = value; return row)
     Db.commit()
     @playMusic = value
     return
 
-  getPlaySfx: =>
-    return Db.queryAll('settings', query: name: 'playSfx')[0].value
-
+  ###
+   * Set Asteroid Play Sfx
+  ###
   setPlaySfx: (value) =>
     Db.update('settings', name: 'playSfx', (row) -> row.value = value; return row)
     Db.commit()
@@ -256,162 +295,46 @@ class Asteroids
     return
 
   ###
-   * Asteroid Options
+   * Initialize Asteroid Database
   ###
-  getAsteroidDensity: =>
-    return Db.queryAll('settings', query: name: 'asteroidDensity')[0].value
-
-  setAsteroidDensity: (value) =>
-    Db.update('settings', name: 'asteroidDensity', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getAsteroidFriction: =>
-    return Db.queryAll('settings', query: name: 'asteroidFriction')[0].value
-
-  setAsteroidFriction: (value) =>
-    Db.update('settings', name: 'asteroidFriction', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getAsteroidRestitution: =>
-    return Db.queryAll('settings', query: name: 'asteroidRestitution')[0].value
-
-  setAsteroidRestitution: (value) =>
-    Db.update('settings', name: 'a', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getAsteroidDamping: =>
-    return Db.queryAll('settings', query: name: 'asteroidDamping')[0].value
-
-  setAsteroidDamping: (value) =>
-    Db.update('settings', name: 'asteroidDamping', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-
-  getAsteroidLinearVelocity: =>
-    return Db.queryAll('settings', query: name: 'asteroidLinearVelocity')[0].value
-
-  setAsteroidLinearVelocity: (value) =>
-    Db.update('settings', name: 'asteroidLinearVelocity', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getAsteroidAngularVelocity: =>
-    return Db.queryAll('settings', query: name: 'asteroidAngularVelocity')[0].value
-
-  setAsteroidAngularVelocity: (value) =>
-    Db.update('settings', name: 'asteroidAngularVelocity', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-
-  ###
-   * Spaceship Options
-  ###
-  getSpaceshipDensity: =>
-    return Db.queryAll('settings', query: name: 'spaceshipDensity')[0].value
-
-  setSpaceshipDensity: (value) =>
-    Db.update('settings', name: 'spaceshipDensity', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getSpaceshipFriction: =>
-    return Db.queryAll('settings', query: name: 'spaceshipFriction')[0].value
-
-  setSpaceshipFriction: (value) =>
-    Db.update('settings', name: 'spaceshipFriction', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getSpaceshipRestitution: =>
-    return Db.queryAll('settings', query: name: 'spaceshipRestitution')[0].value
-
-  setSpaceshipRestitution: (value) =>
-    Db.update('settings', name: 'spaceshipRestitution', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getSpaceshipDamping: =>
-    return Db.queryAll('settings', query: name: 'spaceshipDamping')[0].value
-
-  setSpaceshipDamping: (value) =>
-    Db.update('settings', name: 'spaceshipDamping', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  ###
-   * Bullet Options
-  ###
-  getBulletDensity: =>
-    return Db.queryAll('settings', query: name: 'bulletDensity')[0].value
-
-  setBulletDensity: (value) =>
-    Db.update('settings', name: 'bulletDensity', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getBulletFriction: =>
-    return Db.queryAll('settings', query: name: 'bulletFriction')[0].value
-
-  setBulletFriction: (value) =>
-    Db.update('settings', name: 'bulletFriction', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getBulletRestitution: =>
-    return Db.queryAll('settings', query: name: 'bulletRestitution')[0].value
-
-  setBulletRestitution: (value) =>
-    Db.update('settings', name: 'bulletRestitution', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getBulletDamping: =>
-    return Db.queryAll('settings', query: name: 'bulletDamping')[0].value
-
-  setBulletDamping: (value) =>
-    Db.update('settings', name: 'bulletDamping', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
-  getBulletLinearVelocity: =>
-    return Db.queryAll('settings', query: name: 'bulletLinearVelocity')[0].value
-
-  setBulletLinearVelocity: (value) =>
-    Db.update('settings', name: 'bulletLinearVelocity', (row) -> row.value = value; return row)
-    Db.commit()
-    return
-
   initializeDb: =>
-    Db.createTable 'leaderboard', ['date','score']
-    Db.createTable 'settings', ['name', 'value']
-    ###
-     * Default Settings:
-    ###
-    Db.insert 'settings', name: 'background', value: 'blue'
-    Db.insert 'settings', name: 'playMusic', value: '50'
-    Db.insert 'settings', name: 'playSfx', value: '50'
-    Db.insert 'settings', name: 'asteroidDensity', value: '1.0'
-    Db.insert 'settings', name: 'asteroidFriction', value: '1.0'
-    Db.insert 'settings', name: 'asteroidRestitution', value: '0.2'
-    Db.insert 'settings', name: 'asteroidDamping', value: '0.0'
-    Db.insert 'settings', name: 'asteroidLinearVelocity', value: '4.0'
-    Db.insert 'settings', name: 'asteroidAngularVelocity', value: '2.0'
-    Db.insert 'settings', name: 'spaceshipDensity', value: '1.0'
-    Db.insert 'settings', name: 'spaceshipFriction', value: '1.0'
-    Db.insert 'settings', name: 'spaceshipRestitution', value: '0.2'
-    Db.insert 'settings', name: 'spaceshipDamping', value: '0.75'
-    Db.insert 'settings', name: 'bulletDensity', value: '1.0'
-    Db.insert 'settings', name: 'bulletFriction', value: '1.0'
-    Db.insert 'settings', name: 'bulletRestitution', value: '0.2'
-    Db.insert 'settings', name: 'bulletDamping', value: '0.0'
-    Db.insert 'settings', name: 'bulletLinearVelocity', value: '150'
+    window.Db = new localStorageDB('asteroids', localStorage)
 
-    Db.commit()
+    if Db.isNew()
+
+      Db.createTable 'leaderboard', ['date','score']
+      Db.createTable 'settings', ['name', 'value']
+      ###
+       * Default Property Settings:
+      ###
+      Db.insert 'settings', name: 'profiler', value: 'on'
+      Db.insert 'settings', name: 'background', value: 'blue'
+      Db.insert 'settings', name: 'playMusic', value: '50'
+      Db.insert 'settings', name: 'playSfx', value: '50'
+      Db.insert 'settings', name: 'asteroidDensity', value: '1.0'
+      Db.insert 'settings', name: 'asteroidFriction', value: '1.0'
+      Db.insert 'settings', name: 'asteroidRestitution', value: '0.2'
+      Db.insert 'settings', name: 'asteroidDamping', value: '0.0'
+      Db.insert 'settings', name: 'asteroidLinearVelocity', value: '4.0'
+      Db.insert 'settings', name: 'asteroidAngularVelocity', value: '2.0'
+      Db.insert 'settings', name: 'spaceshipDensity', value: '1.0'
+      Db.insert 'settings', name: 'spaceshipFriction', value: '1.0'
+      Db.insert 'settings', name: 'spaceshipRestitution', value: '0.2'
+      Db.insert 'settings', name: 'spaceshipDamping', value: '0.75'
+      Db.insert 'settings', name: 'bulletDensity', value: '1.0'
+      Db.insert 'settings', name: 'bulletFriction', value: '1.0'
+      Db.insert 'settings', name: 'bulletRestitution', value: '0.2'
+      Db.insert 'settings', name: 'bulletDamping', value: '0.0'
+      Db.insert 'settings', name: 'bulletLinearVelocity', value: '150'
+
+      Db.commit()
+
+    ###
+     * check upgrade
+    ###
+    if Db.queryAll('settings', query: name: 'profiler').length is 0
+      Db.insert 'settings', name: 'profiler', value: 'on'
+
     return
     
 

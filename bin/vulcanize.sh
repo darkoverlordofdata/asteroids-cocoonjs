@@ -13,6 +13,7 @@ vulcanize --output settings.html --strip --inline --csp settings.html
 # clean up stuff no longer needed after vulcanization
 rm -fr ./packages
 rm -fr ./css
+rm -fr ./js
 rm -fr ./themes/js
 rm -f  ./themes/*.css
 ## fonts not used for cocoon

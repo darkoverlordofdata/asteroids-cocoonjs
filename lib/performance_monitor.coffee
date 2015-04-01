@@ -18,16 +18,19 @@ class Phaser.Plugin.PerformanceMonitor extends Phaser.Plugin
   ###
    * @param   game    current phaser game context
    * @param   parent  current phaser state context
+  ###
+  constructor: (game, parent) ->
+    super game, parent
+
+  ###
    * @param   options:
    *            x           position.x
    *            y           position.y
    *            container   DOM Element
    *            mode        initial stats mode
   ###
-  constructor: (game, parent, options = {}) ->
-    super game, parent
-
-    if navigator.isCocoonJS
+  init: (options) ->
+    if navigator.isCocoonJS or options.profiler is 'off'
       @preUpdate = @nop   # even with the flags set to false
       @postRender = @nop  # these get called anyway
     else

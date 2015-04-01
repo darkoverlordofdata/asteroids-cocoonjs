@@ -16,6 +16,7 @@
 <body>
 	<div data-role="page" data-theme="b">
 		<div data-role="header" data-position="inline">
+            <canvas id="icon" height="48" width="48"></canvas>
 			<h1>Asteroid Simulator Settings</h1>
             <a href="javascript:javascript: void(0);" onclick="resumeGame();"
                class="ui-btn ui-icon-back ui-btn-icon-left"></a>
@@ -32,24 +33,41 @@
             </div>
             <div role="main" class="ui-content">
                 <div id="general">
-                    <div data-role="controlgroup" data-type="horizontal" align="right">
-                        <input id="blueBgd" name="background" type="radio" onclick="setBackground(0);" />
-                        <label for="blueBgd"> Blue Background</label>
-                        <input id="starBgd" name="background" type="radio" onclick="setBackground(1);" />
-                        <label for="starBgd"> Starfield Background</label>
-                    </div>
+                    <table width="100%">
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="70%">
+                        <tr>
+                            <td><label for="profiler">Profiler</label></td>
+                            <td>
+                                <div data-role="controlgroup" data-type="horizontal" align="left">
+                                    <select name="profiler" id="profiler" data-role="slider" onchange="setProfiler(this.value);">
+                                        <option value="off">Off</option>
+                                        <option value="on">On</option>
+                                    </select>
 
-                    <p>
-                        <label for="playMusic"><img src="res/icons/b_Music.png" /> Music Volume</label>
-                        <input type="range" id="playMusic" min="0" max="100" value="42" data-highlight="true" onchange="setPlayMusic(this.value);" />
-                    </p>
+                                </div>
+                            </td>
+                            <td>
+                                <div data-role="controlgroup" data-type="horizontal" align="right">
+                                    <input id="blueBgd" name="background" type="radio" onclick="setBackground(0);" />
+                                    <label for="blueBgd"> Blue Background</label>
+                                    <input id="starBgd" name="background" type="radio" onclick="setBackground(1);" />
+                                    <label for="starBgd"> Starfield Background</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><label for="playMusic"><img src="res/icons/b_Music.png" /> Music Volume</label></td>
+                            <td><input type="range" id="playMusic" min="0" max="100" value="42" data-highlight="true" onchange="setPlayMusic(this.value);" /></td>
 
+                        </tr>
+                        <tr>
+                            <td colspan="2"><label for="playSfx"><img src="res/icons/b_Sound1.png" /> Sound FX Volume</label></td>
+                            <td><input type="range" id="playSfx" min="0" max="100" value="42" data-highlight="true" onchange="setPlaySfx(this.value);"/></td>
 
-                    <p>
-                        <label for="playSfx"><img src="res/icons/b_Sound1.png" /> Sound FX Volume</label>
-                        <input type="range" id="playSfx" min="0" max="100" value="42" data-highlight="true" onchange="setPlaySfx(this.value);"/>
-                    </p>
-
+                        </tr>
+                    </table>
                 </div>
                 <div id="asteroids">
                     <table width="100%">
