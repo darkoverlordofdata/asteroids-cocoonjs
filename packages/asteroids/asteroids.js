@@ -2471,7 +2471,7 @@
   })();
 
   Asteroids = (function() {
-    var b2Vec2, b2World, height, scale, width;
+    var b2Vec2, b2World, height, scale, ucfirst, width;
 
     width = window.innerWidth;
 
@@ -2482,6 +2482,10 @@
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
     b2World = Box2D.Dynamics.b2World;
+
+    ucfirst = function(s) {
+      return s.charAt(0).toUpperCase() + s.substr(1);
+    };
 
     Asteroids.prototype.game = null;
 
@@ -2501,17 +2505,17 @@
 
     Asteroids.prototype.physics = null;
 
+    Asteroids.prototype.faderBitmap = null;
+
+    Asteroids.prototype.faderSprite = null;
+
+    Asteroids.prototype.bgdColor = 0x6A5ACD;
+
     Asteroids.prototype.playMusic = localStorage.playMusic;
 
     Asteroids.prototype.playSfx = localStorage.playSfx;
 
     Asteroids.prototype.optBgd = localStorage.background || 'blue';
-
-    Asteroids.prototype.bgdColor = 0x6A5ACD;
-
-    Asteroids.prototype.faderBitmap = null;
-
-    Asteroids.prototype.faderSprite = null;
 
 
     /*
@@ -2520,45 +2524,16 @@
 
     function Asteroids() {
       this.initializeDb = __bind(this.initializeDb, this);
-      this.setBulletLinearVelocity = __bind(this.setBulletLinearVelocity, this);
-      this.getBulletLinearVelocity = __bind(this.getBulletLinearVelocity, this);
-      this.setBulletDamping = __bind(this.setBulletDamping, this);
-      this.getBulletDamping = __bind(this.getBulletDamping, this);
-      this.setBulletRestitution = __bind(this.setBulletRestitution, this);
-      this.getBulletRestitution = __bind(this.getBulletRestitution, this);
-      this.setBulletFriction = __bind(this.setBulletFriction, this);
-      this.getBulletFriction = __bind(this.getBulletFriction, this);
-      this.setBulletDensity = __bind(this.setBulletDensity, this);
-      this.getBulletDensity = __bind(this.getBulletDensity, this);
-      this.setSpaceshipDamping = __bind(this.setSpaceshipDamping, this);
-      this.getSpaceshipDamping = __bind(this.getSpaceshipDamping, this);
-      this.setSpaceshipRestitution = __bind(this.setSpaceshipRestitution, this);
-      this.getSpaceshipRestitution = __bind(this.getSpaceshipRestitution, this);
-      this.setSpaceshipFriction = __bind(this.setSpaceshipFriction, this);
-      this.getSpaceshipFriction = __bind(this.getSpaceshipFriction, this);
-      this.setSpaceshipDensity = __bind(this.setSpaceshipDensity, this);
-      this.getSpaceshipDensity = __bind(this.getSpaceshipDensity, this);
-      this.setAsteroidAngularVelocity = __bind(this.setAsteroidAngularVelocity, this);
-      this.getAsteroidAngularVelocity = __bind(this.getAsteroidAngularVelocity, this);
-      this.setAsteroidLinearVelocity = __bind(this.setAsteroidLinearVelocity, this);
-      this.getAsteroidLinearVelocity = __bind(this.getAsteroidLinearVelocity, this);
-      this.setAsteroidDamping = __bind(this.setAsteroidDamping, this);
-      this.getAsteroidDamping = __bind(this.getAsteroidDamping, this);
-      this.setAsteroidRestitution = __bind(this.setAsteroidRestitution, this);
-      this.getAsteroidRestitution = __bind(this.getAsteroidRestitution, this);
-      this.setAsteroidFriction = __bind(this.setAsteroidFriction, this);
-      this.getAsteroidFriction = __bind(this.getAsteroidFriction, this);
-      this.setAsteroidDensity = __bind(this.setAsteroidDensity, this);
-      this.getAsteroidDensity = __bind(this.getAsteroidDensity, this);
       this.setPlaySfx = __bind(this.setPlaySfx, this);
-      this.getPlaySfx = __bind(this.getPlaySfx, this);
       this.setPlayMusic = __bind(this.setPlayMusic, this);
-      this.getPlayMusic = __bind(this.getPlayMusic, this);
       this.setBackground = __bind(this.setBackground, this);
       this.getBackground = __bind(this.getBackground, this);
-      this.displayLeaderboard = __bind(this.displayLeaderboard, this);
+      this.set = __bind(this.set, this);
+      this.get = __bind(this.get, this);
+      this.showLeaderboard = __bind(this.showLeaderboard, this);
       this.pause = __bind(this.pause, this);
       this.fade = __bind(this.fade, this);
+      this.getFaderSprite = __bind(this.getFaderSprite, this);
       this.create = __bind(this.create, this);
       this.preload = __bind(this.preload, this);
       this.init = __bind(this.init, this);
@@ -2568,10 +2543,12 @@
         create: this.create
       });
       window.rnd = new MersenneTwister();
-      window.Db = new localStorageDB('asteroids', localStorage);
-      if (Db.isNew()) {
-        this.initializeDb();
-      }
+      this.initializeDb();
+      this.optBgd = Db.queryAll('settings', {
+        query: {
+          name: 'background'
+        }
+      })[0].value;
       Cocoon.App.WebView.on("load", {
         success: (function(_this) {
           return function() {
@@ -2607,13 +2584,15 @@
      */
 
     Asteroids.prototype.preload = function() {
-      this.game.load.image('dialog', 'res/dialog-box.png');
-      this.game.load.image('background', 'res/starfield.png');
+      this.game.load.image('dialog-blue', 'res/dialog-box.png');
+      this.game.load.image('dialog-star', 'res/black-dialog.png');
+      this.game.load.image('button-blue', 'res/standard-button-on.png');
+      this.game.load.image('button-star', 'res/black-button-on.png');
+      this.game.load.image('background', 'res/BackdropBlackLittleSparkBlack.png');
       this.game.load.image('leaderboard', 'res/icons/b_Leaderboard.png');
       this.game.load.image('settings', 'res/icons/b_Parameters.png');
       this.game.load.image('round', 'res/round48.png');
       this.game.load.image('square', 'res/square48.png');
-      this.game.load.image('button', 'res/standard-button-on.png');
       this.game.load.audio('asteroid', [ExplodeAsteroid.prototype.src]);
       this.game.load.audio('ship', [ExplodeShip.prototype.src]);
       this.game.load.audio('shoot', [ShootGun.prototype.src]);
@@ -2626,7 +2605,7 @@
 
     Asteroids.prototype.create = function() {
       this.game.plugins.add(Phaser.Plugin.PerformanceMonitor, {
-        mode: 1
+        profiler: this.get('profiler')
       });
       this.game.stage.backgroundColor = this.bgdColor;
       this.background = this.game.add.sprite(0, 0, 'background');
@@ -2643,7 +2622,7 @@
       this.game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
         return function() {
           _this.pause(function() {
-            return _this.displayLeaderboard();
+            return _this.showLeaderboard();
           });
         };
       })(this));
@@ -2740,10 +2719,15 @@
       }
     };
 
-    Asteroids.prototype.displayLeaderboard = function() {
+
+    /*
+     * Create and display a leaderboard
+     */
+
+    Asteroids.prototype.showLeaderboard = function() {
       var big, board, button, dialog, label, mmddyyyy, normal, row, title, y, _i, _len, _ref;
       board = this.game.add.group();
-      dialog = new Phaser.Sprite(this.game, 0, 0, 'dialog');
+      dialog = new Phaser.Sprite(this.game, 0, 0, "dialog-" + this.optBgd);
       dialog.width = this.config.width;
       dialog.height = this.config.height;
       board.add(dialog);
@@ -2755,10 +2739,14 @@
         font: 'bold 20px opendyslexic',
         fill: '#ffffff'
       };
-      title = new Phaser.Text(this.game, this.config.width / 2, 0, 'Asteroids', big);
+      title = new Phaser.Text(this.game, this.config.width / 2, 20, 'Asteroids', big);
       title.anchor.x = 0.5;
       board.add(title);
-      y = 100;
+      board.add(new Phaser.Text(this.game, 200, 80, 'Date', normal));
+      board.add(new Phaser.Text(this.game, 400, 80, 'Score', normal));
+      board.add(new Phaser.Text(this.game, 200, 100, '--------', normal));
+      board.add(new Phaser.Text(this.game, 400, 100, '--------', normal));
+      y = 120;
       _ref = Db.queryAll('leaderboard', {
         limit: 10,
         sort: [['score', 'DESC']]
@@ -2770,11 +2758,11 @@
         board.add(new Phaser.Text(this.game, 400, y, row.score, normal));
         y += 20;
       }
-      button = new Phaser.Button(this.game, this.config.width / 2, this.config.height - 64, 'button', (function(_this) {
+      button = new Phaser.Button(this.game, this.config.width / 2, this.config.height - 64, "button-" + this.optBgd, (function(_this) {
         return function() {
           board.destroy();
           board = null;
-          return _this.pause();
+          _this.pause();
         };
       })(this));
       button.anchor.x = 0.5;
@@ -2786,14 +2774,60 @@
     };
 
 
+    /* ============================================================>
+        A S T E R O I D  S E T T I N G S
+    <============================================================
+     */
+
+
     /*
-      * Properties:
+     * Get Asteroid Property
+     */
+
+    Asteroids.prototype.get = function(prop) {
+      var n;
+      n = 'get' + ucfirst(prop);
+      if (this[n] != null) {
+        return this[n]();
+      } else {
+        return Db.queryAll('settings', {
+          query: {
+            name: prop
+          }
+        })[0].value;
+      }
+    };
+
+
+    /*
+     * Set Asteroid Property
+     */
+
+    Asteroids.prototype.set = function(prop, value) {
+      var n;
+      n = 'set' + ucfirst(prop);
+      if (this[n] != null) {
+        this[n](value);
+      } else {
+        Db.update('settings', {
+          name: prop
+        }, function(row) {
+          row.value = value;
+          return row;
+        });
+        Db.commit();
+      }
+    };
+
+
+    /*
+     * Sgt Asteroid Background
      */
 
     Asteroids.prototype.getBackground = function() {
       if ('blue' === Db.queryAll('settings', {
         query: {
-          name: 'playMusic'
+          name: 'background'
         }
       })[0].value) {
         return 0;
@@ -2801,6 +2835,11 @@
         return 1;
       }
     };
+
+
+    /*
+     * Set Asteroid Background
+     */
 
     Asteroids.prototype.setBackground = function(value) {
       var background;
@@ -2816,13 +2855,10 @@
       Db.commit();
     };
 
-    Asteroids.prototype.getPlayMusic = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'playMusic'
-        }
-      })[0].value;
-    };
+
+    /*
+     * Set Asteroid Play Music
+     */
 
     Asteroids.prototype.setPlayMusic = function(value) {
       Db.update('settings', {
@@ -2835,13 +2871,10 @@
       this.playMusic = value;
     };
 
-    Asteroids.prototype.getPlaySfx = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'playSfx'
-        }
-      })[0].value;
-    };
+
+    /*
+     * Set Asteroid Play Sfx
+     */
 
     Asteroids.prototype.setPlaySfx = function(value) {
       Db.update('settings', {
@@ -2857,369 +2890,110 @@
 
 
     /*
-     * Asteroid Options
+     * Initialize Asteroid Database
      */
-
-    Asteroids.prototype.getAsteroidDensity = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'asteroidDensity'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setAsteroidDensity = function(value) {
-      Db.update('settings', {
-        name: 'asteroidDensity'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getAsteroidFriction = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'asteroidFriction'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setAsteroidFriction = function(value) {
-      Db.update('settings', {
-        name: 'asteroidFriction'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getAsteroidRestitution = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'asteroidRestitution'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setAsteroidRestitution = function(value) {
-      Db.update('settings', {
-        name: 'a'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getAsteroidDamping = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'asteroidDamping'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setAsteroidDamping = function(value) {
-      Db.update('settings', {
-        name: 'asteroidDamping'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getAsteroidLinearVelocity = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'asteroidLinearVelocity'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setAsteroidLinearVelocity = function(value) {
-      Db.update('settings', {
-        name: 'asteroidLinearVelocity'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getAsteroidAngularVelocity = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'asteroidAngularVelocity'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setAsteroidAngularVelocity = function(value) {
-      Db.update('settings', {
-        name: 'asteroidAngularVelocity'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-
-    /*
-     * Spaceship Options
-     */
-
-    Asteroids.prototype.getSpaceshipDensity = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'spaceshipDensity'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setSpaceshipDensity = function(value) {
-      Db.update('settings', {
-        name: 'spaceshipDensity'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getSpaceshipFriction = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'spaceshipFriction'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setSpaceshipFriction = function(value) {
-      Db.update('settings', {
-        name: 'spaceshipFriction'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getSpaceshipRestitution = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'spaceshipRestitution'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setSpaceshipRestitution = function(value) {
-      Db.update('settings', {
-        name: 'spaceshipRestitution'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getSpaceshipDamping = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'spaceshipDamping'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setSpaceshipDamping = function(value) {
-      Db.update('settings', {
-        name: 'spaceshipDamping'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-
-    /*
-     * Bullet Options
-     */
-
-    Asteroids.prototype.getBulletDensity = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'bulletDensity'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setBulletDensity = function(value) {
-      Db.update('settings', {
-        name: 'bulletDensity'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getBulletFriction = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'bulletFriction'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setBulletFriction = function(value) {
-      Db.update('settings', {
-        name: 'bulletFriction'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getBulletRestitution = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'bulletRestitution'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setBulletRestitution = function(value) {
-      Db.update('settings', {
-        name: 'bulletRestitution'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getBulletDamping = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'bulletDamping'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setBulletDamping = function(value) {
-      Db.update('settings', {
-        name: 'bulletDamping'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
-
-    Asteroids.prototype.getBulletLinearVelocity = function() {
-      return Db.queryAll('settings', {
-        query: {
-          name: 'bulletLinearVelocity'
-        }
-      })[0].value;
-    };
-
-    Asteroids.prototype.setBulletLinearVelocity = function(value) {
-      Db.update('settings', {
-        name: 'bulletLinearVelocity'
-      }, function(row) {
-        row.value = value;
-        return row;
-      });
-      Db.commit();
-    };
 
     Asteroids.prototype.initializeDb = function() {
-      Db.createTable('leaderboard', ['date', 'score']);
-      Db.createTable('settings', ['name', 'value']);
+      window.Db = new localStorageDB('asteroids', localStorage);
+      if (Db.isNew()) {
+        Db.createTable('leaderboard', ['date', 'score']);
+        Db.createTable('settings', ['name', 'value']);
+
+        /*
+         * Default Property Settings:
+         */
+        Db.insert('settings', {
+          name: 'profiler',
+          value: 'on'
+        });
+        Db.insert('settings', {
+          name: 'background',
+          value: 'blue'
+        });
+        Db.insert('settings', {
+          name: 'playMusic',
+          value: '50'
+        });
+        Db.insert('settings', {
+          name: 'playSfx',
+          value: '50'
+        });
+        Db.insert('settings', {
+          name: 'asteroidDensity',
+          value: '1.0'
+        });
+        Db.insert('settings', {
+          name: 'asteroidFriction',
+          value: '1.0'
+        });
+        Db.insert('settings', {
+          name: 'asteroidRestitution',
+          value: '0.2'
+        });
+        Db.insert('settings', {
+          name: 'asteroidDamping',
+          value: '0.0'
+        });
+        Db.insert('settings', {
+          name: 'asteroidLinearVelocity',
+          value: '4.0'
+        });
+        Db.insert('settings', {
+          name: 'asteroidAngularVelocity',
+          value: '2.0'
+        });
+        Db.insert('settings', {
+          name: 'spaceshipDensity',
+          value: '1.0'
+        });
+        Db.insert('settings', {
+          name: 'spaceshipFriction',
+          value: '1.0'
+        });
+        Db.insert('settings', {
+          name: 'spaceshipRestitution',
+          value: '0.2'
+        });
+        Db.insert('settings', {
+          name: 'spaceshipDamping',
+          value: '0.75'
+        });
+        Db.insert('settings', {
+          name: 'bulletDensity',
+          value: '1.0'
+        });
+        Db.insert('settings', {
+          name: 'bulletFriction',
+          value: '1.0'
+        });
+        Db.insert('settings', {
+          name: 'bulletRestitution',
+          value: '0.2'
+        });
+        Db.insert('settings', {
+          name: 'bulletDamping',
+          value: '0.0'
+        });
+        Db.insert('settings', {
+          name: 'bulletLinearVelocity',
+          value: '150'
+        });
+        Db.commit();
+      }
 
       /*
-       * Default Settings:
+       * check upgrade
        */
-      Db.insert('settings', {
-        name: 'background',
-        value: 'blue'
-      });
-      Db.insert('settings', {
-        name: 'playMusic',
-        value: '50'
-      });
-      Db.insert('settings', {
-        name: 'playSfx',
-        value: '50'
-      });
-      Db.insert('settings', {
-        name: 'asteroidDensity',
-        value: '1.0'
-      });
-      Db.insert('settings', {
-        name: 'asteroidFriction',
-        value: '1.0'
-      });
-      Db.insert('settings', {
-        name: 'asteroidRestitution',
-        value: '0.2'
-      });
-      Db.insert('settings', {
-        name: 'asteroidDamping',
-        value: '0.0'
-      });
-      Db.insert('settings', {
-        name: 'asteroidLinearVelocity',
-        value: '4.0'
-      });
-      Db.insert('settings', {
-        name: 'asteroidAngularVelocity',
-        value: '2.0'
-      });
-      Db.insert('settings', {
-        name: 'spaceshipDensity',
-        value: '1.0'
-      });
-      Db.insert('settings', {
-        name: 'spaceshipFriction',
-        value: '1.0'
-      });
-      Db.insert('settings', {
-        name: 'spaceshipRestitution',
-        value: '0.2'
-      });
-      Db.insert('settings', {
-        name: 'spaceshipDamping',
-        value: '0.75'
-      });
-      Db.insert('settings', {
-        name: 'bulletDensity',
-        value: '1.0'
-      });
-      Db.insert('settings', {
-        name: 'bulletFriction',
-        value: '1.0'
-      });
-      Db.insert('settings', {
-        name: 'bulletRestitution',
-        value: '0.2'
-      });
-      Db.insert('settings', {
-        name: 'bulletDamping',
-        value: '0.0'
-      });
-      Db.insert('settings', {
-        name: 'bulletLinearVelocity',
-        value: '150'
-      });
-      Db.commit();
+      if (Db.queryAll('settings', {
+        query: {
+          name: 'profiler'
+        }
+      }).length === 0) {
+        Db.insert('settings', {
+          name: 'profiler',
+          value: 'off'
+        });
+      }
     };
 
     return Asteroids;
@@ -3254,6 +3028,14 @@
     /*
      * @param   game    current phaser game context
      * @param   parent  current phaser state context
+     */
+
+    function PerformanceMonitor(game, parent) {
+      PerformanceMonitor.__super__.constructor.call(this, game, parent);
+    }
+
+
+    /*
      * @param   options:
      *            x           position.x
      *            y           position.y
@@ -3261,15 +3043,11 @@
      *            mode        initial stats mode
      */
 
-    function PerformanceMonitor(game, parent, options) {
+    PerformanceMonitor.prototype.init = function(options) {
       var container, x, y, _ref, _ref1, _ref2;
-      if (options == null) {
-        options = {};
-      }
-      PerformanceMonitor.__super__.constructor.call(this, game, parent);
-      if (navigator.isCocoonJS) {
+      if (navigator.isCocoonJS || options.profiler === 'off') {
         this.preUpdate = this.nop;
-        this.postRender = this.nop;
+        return this.postRender = this.nop;
       } else {
         if (typeof Stats !== "undefined" && Stats !== null) {
           if (options.container != null) {
@@ -3290,13 +3068,13 @@
           this.active = true;
           this.visible = true;
           this.hasPreUpdate = true;
-          this.hasPostRender = true;
+          return this.hasPostRender = true;
         } else {
           this.preUpdate = this.nop;
-          this.postRender = this.nop;
+          return this.postRender = this.nop;
         }
       }
-    }
+    };
 
 
     /*
