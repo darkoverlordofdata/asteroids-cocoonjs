@@ -9,6 +9,8 @@
 'Back on Arcturus, this was our flight simulator'
   - Dark Overlord of Data
 
+[![Get it on Google Play](assets/en_generic_rgb_wo_45.png)] (https://play.google.com/store/apps/details?id=com.darkoverlordofdata.asteroids)
+
 #Asteroids
 
 Using [ash.coffee](https://github.com/darkoverlordofdata/ash.coffee)
