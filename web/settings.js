@@ -127,8 +127,8 @@ setBulletLinearVelocity = function(value) {
 
 window.addEventListener("load", function() {
   var e;
+  $("body").css("visibility", "visible");
   try {
-    $("body").css("visibility", "visible");
     Cocoon.App.forwardAsync("asteroids.get('profiler');", function(value) {
       $("#profiler").val(value).slider("refresh");
     });
@@ -191,10 +191,11 @@ window.addEventListener("load", function() {
     Cocoon.App.forwardAsync("asteroids.get('bulletLinearVelocity');", function(value) {
       $("#bulletLinearVelocity").val(value).slider("refresh");
     });
-    Cocoon.Touch.disable();
   } catch (_error) {
     e = _error;
-    alert(e.toString());
+    console.log(e.toString());
+  } finally {
+    Cocoon.Touch.disable();
   }
 });
 

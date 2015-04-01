@@ -24,17 +24,17 @@ class Asteroids
 
   ucfirst           = (s) -> s.charAt(0).toUpperCase() + s.substr(1)
 
-  game              : null  #  Phaser.io game object
-  engine            : null  #  Ash Engine
-  tickProvider      : null  #  FrameTickProvider
-  creator           : null  #  EntityCreator
-  keyPoll           : null  #  KeyPoll
-  config            : null  #  GameConfig
-  world             : null  #  b2World
-  background        : null  #  background image
-  physics           : null  #  physics system
-  faderBitmap       : null  # for screen fade
-  faderSprite       : null  # for screen fade
+  game              : null  #   Phaser.io game object
+  engine            : null  #   Ash Engine
+  tickProvider      : null  #   FrameTickProvider
+  creator           : null  #   EntityCreator
+  keyPoll           : null  #   KeyPoll
+  config            : null  #   GameConfig
+  world             : null  #   b2World
+  background        : null  #   background image
+  physics           : null  #   physics system
+  faderBitmap       : null  #   for screen fade
+  faderSprite       : null  #   for screen fade
   bgdColor          : 0x6A5ACD
   playMusic         : localStorage.playMusic
   playSfx           : localStorage.playSfx
@@ -78,7 +78,7 @@ class Asteroids
     @game.load.image 'dialog-star', 'res/black-dialog.png'
     @game.load.image 'button-blue', 'res/standard-button-on.png'
     @game.load.image 'button-star', 'res/black-button-on.png'
-    @game.load.image 'background', 'res/starfield.png'
+    @game.load.image 'background', 'res/BackdropBlackLittleSparkBlack.png'
     @game.load.image 'leaderboard', 'res/icons/b_Leaderboard.png'
     @game.load.image 'settings', 'res/icons/b_Parameters.png'
     @game.load.image 'round', 'res/round48.png'
@@ -333,7 +333,7 @@ class Asteroids
      * check upgrade
     ###
     if Db.queryAll('settings', query: name: 'profiler').length is 0
-      Db.insert 'settings', name: 'profiler', value: 'on'
+      Db.insert 'settings', name: 'profiler', value: 'off'
 
     return
     

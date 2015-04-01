@@ -83,8 +83,9 @@ setBulletLinearVelocity = (value) ->
 
 
 window.addEventListener "load", ->
+  $("body").css "visibility", "visible"
+
   try
-    $("body").css "visibility", "visible"
 
     Cocoon.App.forwardAsync "asteroids.get('profiler');", (value) ->
       $("#profiler").val(value).slider "refresh"
@@ -166,7 +167,10 @@ window.addEventListener "load", ->
       $("#bulletLinearVelocity").val(value).slider "refresh"
       return
 
-    Cocoon.Touch.disable()
   catch e
-    alert e.toString()
+    console.log e.toString()
+
+  finally
+    Cocoon.Touch.disable()
+
   return
