@@ -1912,7 +1912,6 @@
                 if (node.state.hits > row.score) {
                   row.score = node.state.hits;
                 }
-                row.value = value;
                 return row;
               });
             }
@@ -1973,7 +1972,6 @@
       gun.timeSinceLastShot += time;
       if (gun.shooting && gun.timeSinceLastShot >= gun.minimumShotInterval) {
         this.creator.createUserBullet(gun, position);
-        node.audio.play(ShootGun);
         gun.timeSinceLastShot = 0;
       }
     };
@@ -2059,9 +2057,7 @@
         v = body.GetLinearVelocity();
         v.x += Math.cos(rotation) * control.accelerationRate * time * R;
         v.y += Math.sin(rotation) * control.accelerationRate * time * R;
-        if (!IDTK) {
-          body.SetAwake(true);
-        }
+        body.SetAwake(true);
         body.SetLinearVelocity(v);
       }
     };
@@ -2199,37 +2195,7 @@
   })(ash.core.System);
 
   EntityCreator = (function() {
-    var Entity, EntityStateMachine, b2Body, b2BodyDef, b2CircleShape, b2FixtureDef, b2PolygonShape, b2Vec2, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
-
-    EntityCreator.prototype.ASTEROID_DENSITY = (_ref = localStorage.asteroidDensity) != null ? _ref : 1.0;
-
-    EntityCreator.prototype.ASTEROID_FRICTION = (_ref1 = localStorage.asteroidFriction) != null ? _ref1 : 1.0;
-
-    EntityCreator.prototype.ASTEROID_RESTITUTION = (_ref2 = localStorage.asteroidRestitution) != null ? _ref2 : 0.2;
-
-    EntityCreator.prototype.ASTEROID_DAMPING = (_ref3 = localStorage.asteroidDamping) != null ? _ref3 : 0.0;
-
-    EntityCreator.prototype.ASTEROID_LINEAR = (_ref4 = localStorage.asteroidLinearVelocity) != null ? _ref4 : 4.0;
-
-    EntityCreator.prototype.ASTEROID_ANGULAR = (_ref5 = localStorage.asteroidAngularVelocity) != null ? _ref5 : 2.0;
-
-    EntityCreator.prototype.SPACESHIP_DENSITY = (_ref6 = localStorage.spaceshipDensity) != null ? _ref6 : 1.0;
-
-    EntityCreator.prototype.SPACESHIP_FRICTION = (_ref7 = localStorage.spaceshipFriction) != null ? _ref7 : 1.0;
-
-    EntityCreator.prototype.SPACESHIP_RESTITUTION = (_ref8 = localStorage.spaceshipRestitution) != null ? _ref8 : 0.2;
-
-    EntityCreator.prototype.SPACESHIP_DAMPING = (_ref9 = localStorage.spaceshipDamping) != null ? _ref9 : 0.75;
-
-    EntityCreator.prototype.BULLET_DENSITY = (_ref10 = localStorage.bulletDensity) != null ? _ref10 : 1.0;
-
-    EntityCreator.prototype.BULLET_FRICTION = (_ref11 = localStorage.bulletFriction) != null ? _ref11 : 1.0;
-
-    EntityCreator.prototype.BULLET_RESTITUTION = (_ref12 = localStorage.bulletRestitution) != null ? _ref12 : 0.2;
-
-    EntityCreator.prototype.BULLET_DAMPING = (_ref13 = localStorage.bulletDamping) != null ? _ref13 : 0.0;
-
-    EntityCreator.prototype.BULLET_LINEAR = (_ref14 = localStorage.bulletLinearVelocity) != null ? _ref14 : 150.0;
+    var Entity, EntityStateMachine, b2Body, b2BodyDef, b2CircleShape, b2FixtureDef, b2PolygonShape, b2Vec2, get;
 
     EntityCreator.prototype.LEFT = KeyPoll.KEY_LEFT;
 
@@ -2244,6 +2210,10 @@
     Entity = ash.core.Entity;
 
     EntityStateMachine = ash.fsm.EntityStateMachine;
+
+    get = function(prop) {
+      return parseFloat(asteroids.get(prop));
+    };
 
 
     /*
@@ -2330,15 +2300,15 @@
       bodyDef.fixedRotation = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      v1 = (rnd.nextDouble() - 0.5) * this.ASTEROID_LINEAR * (50 - radius) * 2;
-      v2 = (rnd.nextDouble() - 0.5) * this.ASTEROID_LINEAR * (50 - radius) * 2;
+      v1 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius) * 2;
+      v2 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius) * 2;
       bodyDef.linearVelocity.Set(v1, v2);
-      bodyDef.angularVelocity = rnd.nextDouble() * this.ASTEROID_ANGULAR - 1;
-      bodyDef.linearDamping = this.ASTEROID_DAMPING;
+      bodyDef.angularVelocity = rnd.nextDouble() * get('asteroidAngularVelocity') - 1;
+      bodyDef.linearDamping = get('asteroidDamping');
       fixDef = new b2FixtureDef();
-      fixDef.density = this.ASTEROID_DENSITY;
-      fixDef.friction = this.ASTEROID_FRICTION;
-      fixDef.restitution = this.ASTEROID_RESTITUTION;
+      fixDef.density = get('asteroidDensity');
+      fixDef.friction = get('asteroidFriction');
+      fixDef.restitution = get('asteroidRestitution');
       fixDef.shape = new b2CircleShape(radius);
       body = this.world.CreateBody(bodyDef);
       body.CreateFixture(fixDef);
@@ -2382,11 +2352,11 @@
       bodyDef.position.y = y;
       bodyDef.linearVelocity.Set(0, 0);
       bodyDef.angularVelocity = 0;
-      bodyDef.linearDamping = this.SPACESHIP_DAMPING;
+      bodyDef.linearDamping = get('spaceshipDamping');
       fixDef = new b2FixtureDef();
-      fixDef.density = this.SPACESHIP_DENSITY;
-      fixDef.friction = this.SPACESHIP_FRICTION;
-      fixDef.restitution = this.SPACESHIP_RESTITUTION;
+      fixDef.density = get('spaceshipDensity');
+      fixDef.friction = get('spaceshipFriction');
+      fixDef.restitution = get('spaceshipRestitution');
       fixDef.shape = new b2PolygonShape();
       fixDef.shape.SetAsArray([new b2Vec2(0.45, 0), new b2Vec2(-0.25, 0.25), new b2Vec2(-0.25, -0.25)], 3);
       body = this.world.CreateBody(bodyDef);
@@ -2429,15 +2399,16 @@
       bodyDef = new b2BodyDef();
       bodyDef.type = b2Body.b2_dynamicBody;
       bodyDef.fixedRotation = true;
+      bodyDef.bullet = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      bodyDef.linearVelocity.Set(cos * this.BULLET_LINEAR, sin * this.BULLET_LINEAR);
+      bodyDef.linearVelocity.Set(cos * 10000, sin * 10000);
       bodyDef.angularVelocity = 0;
-      bodyDef.linearDamping = this.BULLET_DAMPING;
+      bodyDef.linearDamping = 0;
       fixDef = new b2FixtureDef();
-      fixDef.density = this.BULLET_DENSITY;
-      fixDef.friction = this.BULLET_FRICTION;
-      fixDef.restitution = this.BULLET_RESTITUTION;
+      fixDef.density = 1.0;
+      fixDef.friction = 0;
+      fixDef.restitution = 0;
       fixDef.shape = new b2CircleShape(0);
       body = this.world.CreateBody(bodyDef);
       body.CreateFixture(fixDef);
@@ -2964,11 +2935,11 @@
         });
         Db.insert('settings', {
           name: 'bulletFriction',
-          value: '1.0'
+          value: '0.0'
         });
         Db.insert('settings', {
           name: 'bulletRestitution',
-          value: '0.2'
+          value: '0.0'
         });
         Db.insert('settings', {
           name: 'bulletDamping',
