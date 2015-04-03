@@ -15,23 +15,9 @@
 #
 class EntityCreator
 
-  ASTEROID_DENSITY        : localStorage.asteroidDensity          ? 1.0
-  ASTEROID_FRICTION       : localStorage.asteroidFriction         ? 1.0
-  ASTEROID_RESTITUTION    : localStorage.asteroidRestitution      ? 0.2
-  ASTEROID_DAMPING        : localStorage.asteroidDamping          ? 0.0
-  ASTEROID_LINEAR         : localStorage.asteroidLinearVelocity   ? 4.0
-  ASTEROID_ANGULAR        : localStorage.asteroidAngularVelocity  ? 2.0
-
-  SPACESHIP_DENSITY       : localStorage.spaceshipDensity         ? 1.0
-  SPACESHIP_FRICTION      : localStorage.spaceshipFriction        ? 1.0
-  SPACESHIP_RESTITUTION   : localStorage.spaceshipRestitution     ? 0.2
-  SPACESHIP_DAMPING       : localStorage.spaceshipDamping         ? 0.75
-
-  BULLET_DENSITY          : localStorage.bulletDensity            ? 1.0
-  BULLET_FRICTION         : localStorage.bulletFriction           ? 1.0
-  BULLET_RESTITUTION      : localStorage.bulletRestitution        ? 0.2
-  BULLET_DAMPING          : localStorage.bulletDamping            ? 0.0
-  BULLET_LINEAR           : localStorage.bulletLinearVelocity     ? 150.0
+  @ASTEROID :   1
+  @SPACESHIP:   2
+  @BULLET:      3
 
   LEFT                    : KeyPoll.KEY_LEFT
   RIGHT                   : KeyPoll.KEY_RIGHT
@@ -41,6 +27,9 @@ class EntityCreator
 
   Entity                = ash.core.Entity
   EntityStateMachine    = ash.fsm.EntityStateMachine
+  
+  get = (prop) -> parseFloat(asteroids.get(prop))
+     
 
   ###
    * Box2D classes
@@ -108,17 +97,17 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    v1 = (rnd.nextDouble() - 0.5) * @ASTEROID_LINEAR * (50 - radius) * 2
-    v2 = (rnd.nextDouble() - 0.5) * @ASTEROID_LINEAR * (50 - radius) * 2
+    v1 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius)
+    v2 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius)
 
     bodyDef.linearVelocity.Set(v1, v2)
-    bodyDef.angularVelocity = rnd.nextDouble() * @ASTEROID_ANGULAR - 1
-    bodyDef.linearDamping = @ASTEROID_DAMPING
+    bodyDef.angularVelocity = rnd.nextDouble() * get('asteroidAngularVelocity') - 1
+    bodyDef.linearDamping = get('asteroidDamping')
 
     fixDef = new b2FixtureDef()
-    fixDef.density = @ASTEROID_DENSITY
-    fixDef.friction = @ASTEROID_FRICTION
-    fixDef.restitution = @ASTEROID_RESTITUTION
+    fixDef.density = get('asteroidDensity')
+    fixDef.friction = get('asteroidFriction')
+    fixDef.restitution = get('asteroidRestitution')
     fixDef.shape = new b2CircleShape(radius)
 
     body = @world.CreateBody(bodyDef)
@@ -147,7 +136,7 @@ class EntityCreator
     .add(new Position(x, y, 0))
     .add(new Audio())
 
-    body.SetUserData(type: 'asteroid', entity: asteroid)
+    body.SetUserData(type: EntityCreator.ASTEROID, entity: asteroid)
     fsm.changeState('alive')
     @engine.addEntity asteroid
     return asteroid
@@ -169,12 +158,12 @@ class EntityCreator
     bodyDef.position.y = y
     bodyDef.linearVelocity.Set(0, 0)
     bodyDef.angularVelocity = 0
-    bodyDef.linearDamping = @SPACESHIP_DAMPING
+    bodyDef.linearDamping = get('spaceshipDamping')
 
     fixDef = new b2FixtureDef()
-    fixDef.density = @SPACESHIP_DENSITY
-    fixDef.friction = @SPACESHIP_FRICTION
-    fixDef.restitution = @SPACESHIP_RESTITUTION
+    fixDef.density = get('spaceshipDensity')
+    fixDef.friction = get('spaceshipFriction')
+    fixDef.restitution = get('spaceshipRestitution')
     fixDef.shape = new b2PolygonShape()
     fixDef.shape.SetAsArray([
       new b2Vec2(0.45, 0)
@@ -212,7 +201,7 @@ class EntityCreator
     .add(new Position(x, y, 0))
     .add(new Audio())
 
-    body.SetUserData(type: 'spaceship', entity: spaceship)
+    body.SetUserData(type: EntityCreator.SPACESHIP, entity: spaceship)
     fsm.changeState('playing')
     @engine.addEntity spaceship
 
@@ -236,16 +225,17 @@ class EntityCreator
     bodyDef = new b2BodyDef()
     bodyDef.type = b2Body.b2_dynamicBody
     bodyDef.fixedRotation = true
+    bodyDef.bullet = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    bodyDef.linearVelocity.Set(cos * @BULLET_LINEAR, sin * @BULLET_LINEAR)
+    bodyDef.linearVelocity.Set(cos * get('bulletLinearVelocity'), sin * get('bulletLinearVelocity'))
     bodyDef.angularVelocity = 0
-    bodyDef.linearDamping = @BULLET_DAMPING
+    bodyDef.linearDamping = get('bulletDamping')
 
     fixDef = new b2FixtureDef()
-    fixDef.density = @BULLET_DENSITY
-    fixDef.friction = @BULLET_FRICTION
-    fixDef.restitution = @BULLET_RESTITUTION
+    fixDef.density = get('bulletDensity')
+    fixDef.friction = get('bulletFriction')
+    fixDef.restitution = get('bulletRestitution')
     fixDef.shape = new b2CircleShape(0)
 
     body = @world.CreateBody(bodyDef)
@@ -262,7 +252,7 @@ class EntityCreator
     .add(new Physics(body))
     .add(new Display(bulletView))
 
-    body.SetUserData(type: 'bullet', entity: bullet)
+    body.SetUserData(type: EntityCreator.BULLET, entity: bullet)
     @engine.addEntity(bullet)
 
     return bullet

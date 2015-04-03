@@ -54,7 +54,7 @@ class Asteroids
       # show the web view when it loads
     Cocoon.App.WebView.on "load",
       success : => Cocoon.App.showTheWebView()
-      error : => console.log("Cannot show the Webview: #{JSON.stringify(arguments)}")
+      error   : => console.log("Cannot show the Webview: #{JSON.stringify(arguments)}")
 
 
   ###
@@ -126,6 +126,7 @@ class Asteroids
     @keyPoll = new KeyPoll(@game, @config)
     @engine = @game.plugins.add(ash.core.PhaserEngine)
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
+    @world.SetContinuousPhysics(true)
     @creator = new EntityCreator(@game, @engine, @world, @config)
 
     @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate)
@@ -134,7 +135,7 @@ class Asteroids
     @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
     @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
     @engine.addSystem(new DeathThroesSystem(@creator), SystemPriorities.update)
-    @engine.addSystem(@physics = new PhysicsSystem(@config, @world), SystemPriorities.move)
+    @engine.addSystem(@physics = new PhysicsSystem(@config, @world, @game), SystemPriorities.move)
     @engine.addSystem(new CollisionSystem(@world, @creator), SystemPriorities.resolveCollisions)
     @engine.addSystem(new AnimationSystem(), SystemPriorities.animate)
     @engine.addSystem(new HudSystem(), SystemPriorities.animate)
@@ -322,8 +323,8 @@ class Asteroids
       Db.insert 'settings', name: 'spaceshipRestitution', value: '0.2'
       Db.insert 'settings', name: 'spaceshipDamping', value: '0.75'
       Db.insert 'settings', name: 'bulletDensity', value: '1.0'
-      Db.insert 'settings', name: 'bulletFriction', value: '1.0'
-      Db.insert 'settings', name: 'bulletRestitution', value: '0.2'
+      Db.insert 'settings', name: 'bulletFriction', value: '0.0'
+      Db.insert 'settings', name: 'bulletRestitution', value: '0.0'
       Db.insert 'settings', name: 'bulletDamping', value: '0.0'
       Db.insert 'settings', name: 'bulletLinearVelocity', value: '150'
 

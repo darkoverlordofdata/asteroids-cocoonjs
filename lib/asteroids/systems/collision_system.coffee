@@ -74,18 +74,18 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
     b = contact.GetFixtureB().GetBody().GetUserData()
 
     switch (a.type)
-      when 'asteroid'
+      when EntityCreator.ASTEROID
         switch(b.type)
-          when 'bullet'
+          when EntityCreator.BULLET
             @collisions.push(type: BulletHitAsteroid, a: b.entity, b: a.entity)
-          when 'spaceship'
+          when EntityCreator.SPACESHIP
             @collisions.push(type: AsteroidHitShip, a: a.entity, b: b.entity)
-      when 'bullet'
-        if (b.type is 'asteroid')
+      when EntityCreator.BULLET
+        if (b.type is EntityCreator.ASTEROID)
           @collisions.push(type: BulletHitAsteroid, a: a.entity, b: b.entity)
 
-      when 'spaceship'
-        if (b.type is 'asteroid')
+      when EntityCreator.SPACESHIP
+        if (b.type is EntityCreator.ASTEROID)
           @collisions.push(type: AsteroidHitShip, a: b.entity, b: a.entity)
     return
     ###

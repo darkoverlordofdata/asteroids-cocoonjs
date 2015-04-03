@@ -4,28 +4,38 @@ class PhysicsSystem extends ash.core.System
   b2Body                = Box2D.Dynamics.b2Body
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
+  stepValue = 1/60
+
+  handle      : 0     # handle for setInterval
   config      : null  # GameConfig
   world       : null  # Box2D World
-  stage       : null  # Displayables
   creator     : null  # EntityCreator
   nodes       : null  # PhysicsNode
   enabled     : true
+  game        : null
   @deadPool   : []    # dead bodies waiting to recycle
 
-  constructor: (@config, @world, @stage) ->
+  constructor: (@config, @world, @game) ->
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(PhysicsNode)
+    @handle = setInterval( =>
+      return if @game.paused
+      return unless @enabled
+      @world.Step(stepValue, 10, 10)
+      @world.ClearForces()
+    , stepValue)
     return # Void
 
   removeFromEngine: (engine) ->
+    clearInterval(@handle) if @handle isnt 0
+    @handle = 0
     @nodes = null
     return # Void
 
   update: (time) =>
+    return if @game.paused
     return unless @enabled
-    @world.Step(time, 10, 10)
-    @world.ClearForces()
 
     node = @nodes.head
     while node
@@ -40,8 +50,6 @@ class PhysicsSystem extends ash.core.System
       delete ud.entity if ud.entity?
       body.SetUserData(ud)
       @world.DestroyBody(body)
-#      ud = body.GetUserData()
-#      console.log "DeadPool: #{ud.type}"
 
     return # Void
 

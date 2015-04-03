@@ -52,7 +52,6 @@ class GameManager extends ash.core.System
             Db.update 'leaderboard', date: yyyymmdd, (row) ->
               if node.state.hits > row.score
                 row.score = node.state.hits
-              row.value = value;
               return row
 
           Db.commit()
