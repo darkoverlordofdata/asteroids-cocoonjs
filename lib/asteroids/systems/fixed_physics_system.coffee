@@ -1,7 +1,8 @@
 ###
  * Fixed Step Physics System
  *
- * Run the physics step every 1/60 second
+ * Run the physics step every 1/60 second.
+ * Used with CocoonJS Canvas+ Box2d plugin
  *
 ###
 class FixedPhysicsSystem extends ash.core.System
@@ -40,6 +41,7 @@ class FixedPhysicsSystem extends ash.core.System
     return unless @enabled
     @world.Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS)
     @world.ClearForces()
+    return # Void
 
   update: (time) =>
     return if @game.paused

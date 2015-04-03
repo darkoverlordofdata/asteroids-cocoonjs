@@ -80,17 +80,16 @@ class SmoothPhysicsSystem extends ash.core.System
       physics = node.physics
       body = physics.body
 
-      ###
-       * Update the position component from Box2D model
-       * Asteroids uses wraparound space coordinates
-      ###
-      {x, y} = body.GetPosition()
-
       # Reset previous
+      {x, y} = body.GetPosition()
       position.position.x = physics.previousX = x
       position.position.y = physics.previousY  = y
       position.rotation = physics.previousAngle  = body.GetAngularVelocity()
 
+      ###
+       * Update the position component from Box2D model
+       * Asteroids uses wraparound space coordinates
+      ###
       x1 = if x > @config.width then 0 else if x < 0 then @config.width else x
       y1 = if y > @config.height then 0 else if y < 0 then @config.height else y
       body.SetPosition(new b2Vec2(x1,y1)) if x1 isnt x or y1 isnt y
@@ -109,16 +108,16 @@ class SmoothPhysicsSystem extends ash.core.System
       physics = node.physics
       body = physics.body
 
-      ###
-       * Update the position component from Box2D model
-       * Asteroids uses wraparound space coordinates
-      ###
-      {x, y} = body.GetPosition()
       # Correction
+      {x, y} = body.GetPosition()
       position.position.x = @fixedTimestepAccumulatorRatio * x + (oneMinusRatio * physics.previousX)
       position.position.y = @fixedTimestepAccumulatorRatio * y + (oneMinusRatio * physics.previousY)
       position.rotation = body.GetAngularVelocity() * @fixedTimestepAccumulatorRatio + oneMinusRatio * physics.previousAngle
 
+      ###
+       * Update the position component from Box2D model
+       * Asteroids uses wraparound space coordinates
+      ###
       x1 = if x > @config.width then 0 else if x < 0 then @config.width else x
       y1 = if y > @config.height then 0 else if y < 0 then @config.height else y
       body.SetPosition(new b2Vec2(x1,y1)) if x1 isnt x or y1 isnt y
