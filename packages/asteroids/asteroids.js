@@ -19,7 +19,7 @@
 
   /*
    */
-  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, PhysicsSystem, Point, Position, RenderNode, RenderSystem, ShootGun, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
+  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, FixedPhysicsSystem, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, Point, Position, RenderNode, RenderSystem, ShootGun, SmoothPhysicsSystem, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1142,6 +1142,12 @@
   Physics = (function() {
     Physics.prototype.body = null;
 
+    Physics.prototype.previousX = 0;
+
+    Physics.prototype.previousY = 0;
+
+    Physics.prototype.previousAngle = 0;
+
     function Physics(body) {
       this.body = body;
     }
@@ -1501,58 +1507,52 @@
 
   })(ash.core.Node);
 
-  PhysicsSystem = (function(_super) {
-    var b2Body, b2Vec2, stepValue;
+  FixedPhysicsSystem = (function(_super) {
+    var POSITION_ITERATIONS, TIME_STEP, VELOCITY_ITERATIONS, b2Body, b2Vec2;
 
-    __extends(PhysicsSystem, _super);
+    __extends(FixedPhysicsSystem, _super);
 
     b2Body = Box2D.Dynamics.b2Body;
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
-    stepValue = 1 / 60;
+    TIME_STEP = 1 / 60;
 
-    PhysicsSystem.prototype.handle = 0;
+    VELOCITY_ITERATIONS = 8;
 
-    PhysicsSystem.prototype.config = null;
+    POSITION_ITERATIONS = 3;
 
-    PhysicsSystem.prototype.world = null;
+    FixedPhysicsSystem.prototype.handle = 0;
 
-    PhysicsSystem.prototype.creator = null;
+    FixedPhysicsSystem.prototype.config = null;
 
-    PhysicsSystem.prototype.nodes = null;
+    FixedPhysicsSystem.prototype.world = null;
 
-    PhysicsSystem.prototype.enabled = true;
+    FixedPhysicsSystem.prototype.creator = null;
 
-    PhysicsSystem.prototype.game = null;
+    FixedPhysicsSystem.prototype.nodes = null;
 
-    PhysicsSystem.deadPool = [];
+    FixedPhysicsSystem.prototype.enabled = true;
 
-    function PhysicsSystem(config, world, game) {
+    FixedPhysicsSystem.prototype.game = null;
+
+    FixedPhysicsSystem.deadPool = [];
+
+    function FixedPhysicsSystem(config, world, game) {
       this.config = config;
       this.world = world;
       this.game = game;
       this.updateNode = __bind(this.updateNode, this);
       this.update = __bind(this.update, this);
+      this.process = __bind(this.process, this);
     }
 
-    PhysicsSystem.prototype.addToEngine = function(engine) {
+    FixedPhysicsSystem.prototype.addToEngine = function(engine) {
       this.nodes = engine.getNodeList(PhysicsNode);
-      this.handle = setInterval((function(_this) {
-        return function() {
-          if (_this.game.paused) {
-            return;
-          }
-          if (!_this.enabled) {
-            return;
-          }
-          _this.world.Step(stepValue, 10, 10);
-          return _this.world.ClearForces();
-        };
-      })(this), stepValue);
+      this.handle = setInterval(this.process, TIME_STEP);
     };
 
-    PhysicsSystem.prototype.removeFromEngine = function(engine) {
+    FixedPhysicsSystem.prototype.removeFromEngine = function(engine) {
       if (this.handle !== 0) {
         clearInterval(this.handle);
       }
@@ -1560,7 +1560,18 @@
       this.nodes = null;
     };
 
-    PhysicsSystem.prototype.update = function(time) {
+    FixedPhysicsSystem.prototype.process = function() {
+      if (this.game.paused) {
+        return;
+      }
+      if (!this.enabled) {
+        return;
+      }
+      this.world.Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+      return this.world.ClearForces();
+    };
+
+    FixedPhysicsSystem.prototype.update = function(time) {
       var body, node, ud;
       if (this.game.paused) {
         return;
@@ -1577,7 +1588,7 @@
       /*
        * Clean up the dead bodies
        */
-      while ((body = PhysicsSystem.deadPool.pop())) {
+      while ((body = FixedPhysicsSystem.deadPool.pop())) {
         ud = body.GetUserData();
         if (ud.entity != null) {
           delete ud.entity;
@@ -1592,7 +1603,7 @@
      * Process the physics for this node
      */
 
-    PhysicsSystem.prototype.updateNode = function(node, time) {
+    FixedPhysicsSystem.prototype.updateNode = function(node, time) {
       var body, physics, position, x, x1, y, y1, _ref;
       position = node.position;
       physics = node.physics;
@@ -1613,7 +1624,151 @@
       position.rotation = body.GetAngularVelocity();
     };
 
-    return PhysicsSystem;
+    return FixedPhysicsSystem;
+
+  })(ash.core.System);
+
+  SmoothPhysicsSystem = (function(_super) {
+    var FIXED_TIMESTEP, MAX_STEPS, b2Body, b2Vec2, positionIterations, velocityIterations;
+
+    __extends(SmoothPhysicsSystem, _super);
+
+    b2Body = Box2D.Dynamics.b2Body;
+
+    b2Vec2 = Box2D.Common.Math.b2Vec2;
+
+    FIXED_TIMESTEP = 1 / 60;
+
+    MAX_STEPS = 5;
+
+    velocityIterations = 8;
+
+    positionIterations = 1;
+
+    SmoothPhysicsSystem.prototype.fixedTimestepAccumulator = 0;
+
+    SmoothPhysicsSystem.prototype.fixedTimestepAccumulatorRatio = 0;
+
+    SmoothPhysicsSystem.prototype.config = null;
+
+    SmoothPhysicsSystem.prototype.world = null;
+
+    SmoothPhysicsSystem.prototype.creator = null;
+
+    SmoothPhysicsSystem.prototype.nodes = null;
+
+    SmoothPhysicsSystem.prototype.enabled = true;
+
+    SmoothPhysicsSystem.prototype.game = null;
+
+    SmoothPhysicsSystem.deadPool = [];
+
+    function SmoothPhysicsSystem(config, world, game) {
+      this.config = config;
+      this.world = world;
+      this.game = game;
+      this.smoothStates = __bind(this.smoothStates, this);
+      this.resetSmoothStates = __bind(this.resetSmoothStates, this);
+      this.update = __bind(this.update, this);
+    }
+
+    SmoothPhysicsSystem.prototype.addToEngine = function(engine) {
+      this.nodes = engine.getNodeList(PhysicsNode);
+    };
+
+    SmoothPhysicsSystem.prototype.removeFromEngine = function(engine) {
+      this.nodes = null;
+    };
+
+    SmoothPhysicsSystem.prototype.update = function(dt) {
+      var body, i, nSteps, nStepsClamped, ud;
+      if (this.game.paused) {
+        return;
+      }
+      if (!this.enabled) {
+        return;
+      }
+      this.fixedTimestepAccumulator += dt;
+      nSteps = Math.floor(this.fixedTimestepAccumulator / FIXED_TIMESTEP);
+      if (nSteps > 0) {
+        this.fixedTimestepAccumulator -= nSteps * FIXED_TIMESTEP;
+      }
+      this.fixedTimestepAccumulatorRatio = this.fixedTimestepAccumulator / FIXED_TIMESTEP;
+      nStepsClamped = Math.min(nSteps, MAX_STEPS);
+      i = 0;
+      while (i < nStepsClamped) {
+        this.resetSmoothStates();
+        this.world.Step(dt, velocityIterations, positionIterations);
+        i++;
+      }
+      this.world.ClearForces();
+      this.smoothStates();
+
+      /*
+       * Clean up the dead bodies
+       */
+      while ((body = SmoothPhysicsSystem.deadPool.pop())) {
+        ud = body.GetUserData();
+        if (ud.entity != null) {
+          delete ud.entity;
+        }
+        body.SetUserData(ud);
+        this.world.DestroyBody(body);
+      }
+    };
+
+    SmoothPhysicsSystem.prototype.resetSmoothStates = function() {
+      var body, node, physics, position, x, x1, y, y1, _ref;
+      node = this.nodes.head;
+      while (node) {
+        position = node.position;
+        physics = node.physics;
+        body = physics.body;
+
+        /*
+         * Update the position component from Box2D model
+         * Asteroids uses wraparound space coordinates
+         */
+        _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
+        position.position.x = physics.previousX = x;
+        position.position.y = physics.previousY = y;
+        position.rotation = physics.previousAngle = body.GetAngularVelocity();
+        x1 = x > this.config.width ? 0 : x < 0 ? this.config.width : x;
+        y1 = y > this.config.height ? 0 : y < 0 ? this.config.height : y;
+        if (x1 !== x || y1 !== y) {
+          body.SetPosition(new b2Vec2(x1, y1));
+        }
+        node = node.next;
+      }
+    };
+
+    SmoothPhysicsSystem.prototype.smoothStates = function() {
+      var body, node, oneMinusRatio, physics, position, x, x1, y, y1, _ref;
+      oneMinusRatio = 1.0 - this.fixedTimestepAccumulatorRatio;
+      node = this.nodes.head;
+      while (node) {
+        position = node.position;
+        physics = node.physics;
+        body = physics.body;
+
+        /*
+         * Update the position component from Box2D model
+         * Asteroids uses wraparound space coordinates
+         */
+        _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
+        position.position.x = this.fixedTimestepAccumulatorRatio * x + (oneMinusRatio * physics.previousX);
+        position.position.y = this.fixedTimestepAccumulatorRatio * y + (oneMinusRatio * physics.previousY);
+        position.rotation = body.GetAngularVelocity() * this.fixedTimestepAccumulatorRatio + oneMinusRatio * physics.previousAngle;
+        x1 = x > this.config.width ? 0 : x < 0 ? this.config.width : x;
+        y1 = y > this.config.height ? 0 : y < 0 ? this.config.height : y;
+        if (x1 !== x || y1 !== y) {
+          body.SetPosition(new b2Vec2(x1, y1));
+        }
+        node = node.next;
+      }
+    };
+
+    return SmoothPhysicsSystem;
 
   })(ash.core.System);
 
@@ -2646,7 +2801,13 @@
       this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
       this.engine.addSystem(new BulletAgeSystem(this.creator), SystemPriorities.update);
       this.engine.addSystem(new DeathThroesSystem(this.creator), SystemPriorities.update);
-      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
+      if (!window.ext || typeof window.ext.IDTK_SRV_BOX2D === 'undefined') {
+        console.log('using Smooth Step Physics');
+        this.engine.addSystem(this.physics = new SmoothPhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
+      } else {
+        console.log('using Fixed Step Physics');
+        this.engine.addSystem(this.physics = new FixedPhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
+      }
       this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
       this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
       this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
