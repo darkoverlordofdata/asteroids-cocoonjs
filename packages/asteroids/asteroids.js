@@ -1507,6 +1507,14 @@
 
   })(ash.core.Node);
 
+
+  /*
+   * Fixed Step Physics System
+   *
+   * Run the physics step every 1/60 second
+   *
+   */
+
   FixedPhysicsSystem = (function(_super) {
     var POSITION_ITERATIONS, TIME_STEP, VELOCITY_ITERATIONS, b2Body, b2Vec2;
 
@@ -1627,6 +1635,17 @@
     return FixedPhysicsSystem;
 
   })(ash.core.System);
+
+
+  /*
+   * Smooth Step Physics System
+   *
+   * Smooth the physics and align step
+   * with frame rate
+   *
+   * @see http://blog.allanbishop.com/box-2d-2-1a-tutorial-part-10-fixed-time-step/
+   *
+   */
 
   SmoothPhysicsSystem = (function(_super) {
     var FIXED_TIMESTEP, MAX_STEPS, b2Body, b2Vec2, positionIterations, velocityIterations;
@@ -1816,8 +1835,11 @@
 
     BulletAgeSystem.prototype.creator = null;
 
-    function BulletAgeSystem(creator) {
+    BulletAgeSystem.prototype.PhysicsSystem = null;
+
+    function BulletAgeSystem(creator, PhysicsSystem) {
       this.creator = creator;
+      this.PhysicsSystem = PhysicsSystem;
       this.updateNode = __bind(this.updateNode, this);
       BulletAgeSystem.__super__.constructor.call(this, BulletAgeNode, this.updateNode);
     }
@@ -1828,7 +1850,7 @@
       bullet.lifeRemaining -= time;
       if (bullet.lifeRemaining <= 0) {
         node.display.graphic.dispose();
-        PhysicsSystem.deadPool.push(node.physics.body);
+        this.PhysicsSystem.deadPool.push(node.physics.body);
         this.creator.destroyEntity(node.entity);
       }
     };
@@ -1856,9 +1878,12 @@
 
     CollisionSystem.prototype.collisions = null;
 
-    function CollisionSystem(world, creator) {
+    CollisionSystem.prototype.PhysicsSystem = null;
+
+    function CollisionSystem(world, creator, PhysicsSystem) {
       this.world = world;
       this.creator = creator;
+      this.PhysicsSystem = PhysicsSystem;
       this.PostSolve = __bind(this.PostSolve, this);
       this.PreSolve = __bind(this.PreSolve, this);
       this.EndContact = __bind(this.EndContact, this);
@@ -1876,7 +1901,7 @@
           if ((a.get(Physics) != null)) {
             this.creator.destroyEntity(a);
             a.get(Display).graphic.dispose();
-            PhysicsSystem.deadPool.push(a.get(Physics).body);
+            this.PhysicsSystem.deadPool.push(a.get(Physics).body);
           }
           if ((b.get(Physics) != null)) {
             radius = b.get(Collision).radius;
@@ -1987,8 +2012,11 @@
 
     DeathThroesSystem.prototype.creator = null;
 
-    function DeathThroesSystem(creator) {
+    DeathThroesSystem.prototype.PhysicsSystem = null;
+
+    function DeathThroesSystem(creator, PhysicsSystem) {
       this.creator = creator;
+      this.PhysicsSystem = PhysicsSystem;
       this.updateNode = __bind(this.updateNode, this);
       DeathThroesSystem.__super__.constructor.call(this, DeathThroesNode, this.updateNode);
     }
@@ -2000,7 +2028,7 @@
       if (dead.countdown <= 0) {
         this.creator.destroyEntity(node.entity);
         node.display.graphic.dispose();
-        PhysicsSystem.deadPool.push(dead.body);
+        this.PhysicsSystem.deadPool.push(dead.body);
       }
     };
 
@@ -2759,6 +2787,7 @@
      */
 
     Asteroids.prototype.create = function() {
+      var PhysicsSystem;
       this.game.plugins.add(Phaser.Plugin.PerformanceMonitor, {
         profiler: this.get('profiler')
       });
@@ -2795,20 +2824,15 @@
       this.world = new b2World(new b2Vec2(0, 0), true);
       this.world.SetContinuousPhysics(true);
       this.creator = new EntityCreator(this.game, this.engine, this.world, this.config);
+      PhysicsSystem = !window.ext || typeof window.ext.IDTK_SRV_BOX2D === 'undefined' ? SmoothPhysicsSystem : FixedPhysicsSystem;
       this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
       this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
       this.engine.addSystem(new PhysicsControlSystem(this.keyPoll, this.config), SystemPriorities.update);
       this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
-      this.engine.addSystem(new BulletAgeSystem(this.creator), SystemPriorities.update);
-      this.engine.addSystem(new DeathThroesSystem(this.creator), SystemPriorities.update);
-      if (!window.ext || typeof window.ext.IDTK_SRV_BOX2D === 'undefined') {
-        console.log('using Smooth Step Physics');
-        this.engine.addSystem(this.physics = new SmoothPhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
-      } else {
-        console.log('using Fixed Step Physics');
-        this.engine.addSystem(this.physics = new FixedPhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
-      }
-      this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
+      this.engine.addSystem(new BulletAgeSystem(this.creator, PhysicsSystem), SystemPriorities.update);
+      this.engine.addSystem(new DeathThroesSystem(this.creator, PhysicsSystem), SystemPriorities.update);
+      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
+      this.engine.addSystem(new CollisionSystem(this.world, this.creator, PhysicsSystem), SystemPriorities.resolveCollisions);
       this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
       this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
       this.engine.addSystem(new RenderSystem(), SystemPriorities.render);
