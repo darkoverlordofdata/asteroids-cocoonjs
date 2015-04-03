@@ -11,8 +11,9 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
   creator         : null #  EntityCreator
   games           : null #  NodeList
   collisions      : null #  collision que
+  PhysicsSystem   : null
 
-  constructor: (@world, @creator) ->
+  constructor: (@world, @creator, @PhysicsSystem) ->
     @collisions = []
     @world.SetContactListener(this)
 
@@ -25,7 +26,7 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
         if (a.get(Physics)?) # already been killed?
           @creator.destroyEntity a
           a.get(Display).graphic.dispose()
-          PhysicsSystem.deadPool.push(a.get(Physics).body)
+          @PhysicsSystem.deadPool.push(a.get(Physics).body)
 
         if (b.get(Physics)?) # already been killed?
           radius = b.get(Collision).radius

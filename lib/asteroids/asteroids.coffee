@@ -129,14 +129,17 @@ class Asteroids
     @world.SetContinuousPhysics(true)
     @creator = new EntityCreator(@game, @engine, @world, @config)
 
+    PhysicsSystem = if not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined' then SmoothPhysicsSystem
+    else FixedPhysicsSystem
+
     @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate)
     @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
     @engine.addSystem(new PhysicsControlSystem(@keyPoll, @config), SystemPriorities.update)
     @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
-    @engine.addSystem(new BulletAgeSystem(@creator), SystemPriorities.update)
-    @engine.addSystem(new DeathThroesSystem(@creator), SystemPriorities.update)
+    @engine.addSystem(new BulletAgeSystem(@creator, PhysicsSystem), SystemPriorities.update)
+    @engine.addSystem(new DeathThroesSystem(@creator, PhysicsSystem), SystemPriorities.update)
     @engine.addSystem(@physics = new PhysicsSystem(@config, @world, @game), SystemPriorities.move)
-    @engine.addSystem(new CollisionSystem(@world, @creator), SystemPriorities.resolveCollisions)
+    @engine.addSystem(new CollisionSystem(@world, @creator, PhysicsSystem), SystemPriorities.resolveCollisions)
     @engine.addSystem(new AnimationSystem(), SystemPriorities.animate)
     @engine.addSystem(new HudSystem(), SystemPriorities.animate)
     @engine.addSystem(new RenderSystem(), SystemPriorities.render)

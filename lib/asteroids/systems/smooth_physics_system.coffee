@@ -1,10 +1,17 @@
-
-class PhysicsSystem2 extends ash.core.System
+###
+ * Smooth Step Physics System
+ *
+ * Smooth the physics and align step
+ * with frame rate
+ *
+ * @see http://blog.allanbishop.com/box-2d-2-1a-tutorial-part-10-fixed-time-step/
+ *
+###
+class SmoothPhysicsSystem extends ash.core.System
 
   b2Body                = Box2D.Dynamics.b2Body
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
-  # http://blog.allanbishop.com/box-2d-2-1a-tutorial-part-10-fixed-time-step/
   FIXED_TIMESTEP        = 1/60
   MAX_STEPS             = 5
   velocityIterations    = 8
@@ -58,7 +65,7 @@ class PhysicsSystem2 extends ash.core.System
     ###
      * Clean up the dead bodies
     ###
-    while (body = PhysicsSystem.deadPool.pop())
+    while (body = SmoothPhysicsSystem.deadPool.pop())
       ud = body.GetUserData()
       delete ud.entity if ud.entity?
       body.SetUserData(ud)

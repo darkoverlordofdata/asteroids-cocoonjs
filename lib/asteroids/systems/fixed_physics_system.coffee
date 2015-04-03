@@ -1,4 +1,10 @@
-class PhysicsSystem extends ash.core.System
+###
+ * Fixed Step Physics System
+ *
+ * Run the physics step every 1/60 second
+ *
+###
+class FixedPhysicsSystem extends ash.core.System
 
   b2Body                = Box2D.Dynamics.b2Body
   b2Vec2                = Box2D.Common.Math.b2Vec2
@@ -47,7 +53,7 @@ class PhysicsSystem extends ash.core.System
     ###
      * Clean up the dead bodies
     ###
-    while (body = PhysicsSystem.deadPool.pop())
+    while (body = FixedPhysicsSystem.deadPool.pop())
       ud = body.GetUserData()
       delete ud.entity if ud.entity?
       body.SetUserData(ud)

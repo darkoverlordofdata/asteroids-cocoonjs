@@ -1,8 +1,9 @@
 class DeathThroesSystem extends ash.tools.ListIteratingSystem
 
   creator: null
+  PhysicsSystem: null
 
-  constructor: (@creator) ->
+  constructor: (@creator, @PhysicsSystem) ->
 
     super(DeathThroesNode, @updateNode)
 
@@ -13,6 +14,6 @@ class DeathThroesSystem extends ash.tools.ListIteratingSystem
     if (dead.countdown <= 0)
       @creator.destroyEntity(node.entity)
       node.display.graphic.dispose()
-      PhysicsSystem.deadPool.push(dead.body)
+      @PhysicsSystem.deadPool.push(dead.body)
 
     return # Void

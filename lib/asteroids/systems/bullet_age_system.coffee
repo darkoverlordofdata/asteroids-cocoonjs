@@ -1,8 +1,9 @@
 class BulletAgeSystem extends ash.tools.ListIteratingSystem
 
   creator: null
+  PhysicsSystem: null
 
-  constructor: (@creator) ->
+  constructor: (@creator, @PhysicsSystem) ->
 
     super(BulletAgeNode, @updateNode)
 
@@ -12,7 +13,7 @@ class BulletAgeSystem extends ash.tools.ListIteratingSystem
     bullet.lifeRemaining -= time
     if bullet.lifeRemaining <= 0
       node.display.graphic.dispose()
-      PhysicsSystem.deadPool.push(node.physics.body)
+      @PhysicsSystem.deadPool.push(node.physics.body)
       @creator.destroyEntity node.entity
     return # Void
 

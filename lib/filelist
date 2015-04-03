@@ -44,7 +44,8 @@ lib/asteroids/nodes/physics_node.coffee
 lib/asteroids/nodes/render_node.coffee
 lib/asteroids/nodes/spaceship_node.coffee
 lib/asteroids/nodes/wait_for_start_node.coffee
-lib/asteroids/systems/physics_system.coffee
+lib/asteroids/systems/fixed_physics_system.coffee
+lib/asteroids/systems/smooth_physics_system.coffee
 lib/asteroids/systems/animation_system.coffee
 lib/asteroids/systems/audio_system.coffee
 lib/asteroids/systems/bullet_age_system.coffee
