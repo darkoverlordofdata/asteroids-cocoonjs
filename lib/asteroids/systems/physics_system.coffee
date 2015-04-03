@@ -1,10 +1,11 @@
-
 class PhysicsSystem extends ash.core.System
 
   b2Body                = Box2D.Dynamics.b2Body
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
-  stepValue = 1/60
+  TIME_STEP = 1/60
+  VELOCITY_ITERATIONS = 8 # 10
+  POSITION_ITERATIONS = 3 # 10
 
   handle      : 0     # handle for setInterval
   config      : null  # GameConfig
@@ -19,19 +20,20 @@ class PhysicsSystem extends ash.core.System
 
   addToEngine: (engine) ->
     @nodes = engine.getNodeList(PhysicsNode)
-    @handle = setInterval( =>
-      return if @game.paused
-      return unless @enabled
-      @world.Step(stepValue, 10, 10)
-      @world.ClearForces()
-    , stepValue)
+    @handle = setInterval(@process, TIME_STEP)
     return # Void
 
   removeFromEngine: (engine) ->
-    clearInterval(@handle) if @handle isnt 0
+    clearInterval(@handle) unless @handle is 0
     @handle = 0
     @nodes = null
     return # Void
+
+  process: =>
+    return if @game.paused
+    return unless @enabled
+    @world.Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS)
+    @world.ClearForces()
 
   update: (time) =>
     return if @game.paused
