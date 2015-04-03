@@ -1502,7 +1502,7 @@
   })(ash.core.Node);
 
   PhysicsSystem = (function(_super) {
-    var b2Body, b2Vec2;
+    var b2Body, b2Vec2, stepValue;
 
     __extends(PhysicsSystem, _super);
 
@@ -1510,11 +1510,13 @@
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
+    stepValue = 1 / 60;
+
+    PhysicsSystem.prototype.handle = 0;
+
     PhysicsSystem.prototype.config = null;
 
     PhysicsSystem.prototype.world = null;
-
-    PhysicsSystem.prototype.stage = null;
 
     PhysicsSystem.prototype.creator = null;
 
@@ -1522,31 +1524,50 @@
 
     PhysicsSystem.prototype.enabled = true;
 
+    PhysicsSystem.prototype.game = null;
+
     PhysicsSystem.deadPool = [];
 
-    function PhysicsSystem(config, world, stage) {
+    function PhysicsSystem(config, world, game) {
       this.config = config;
       this.world = world;
-      this.stage = stage;
+      this.game = game;
       this.updateNode = __bind(this.updateNode, this);
       this.update = __bind(this.update, this);
     }
 
     PhysicsSystem.prototype.addToEngine = function(engine) {
       this.nodes = engine.getNodeList(PhysicsNode);
+      this.handle = setInterval((function(_this) {
+        return function() {
+          if (_this.game.paused) {
+            return;
+          }
+          if (!_this.enabled) {
+            return;
+          }
+          _this.world.Step(stepValue, 10, 10);
+          return _this.world.ClearForces();
+        };
+      })(this), stepValue);
     };
 
     PhysicsSystem.prototype.removeFromEngine = function(engine) {
+      if (this.handle !== 0) {
+        clearInterval(this.handle);
+      }
+      this.handle = 0;
       this.nodes = null;
     };
 
     PhysicsSystem.prototype.update = function(time) {
       var body, node, ud;
+      if (this.game.paused) {
+        return;
+      }
       if (!this.enabled) {
         return;
       }
-      this.world.Step(time, 10, 10);
-      this.world.ClearForces();
       node = this.nodes.head;
       while (node) {
         this.updateNode(node, time);
@@ -1753,16 +1774,16 @@
       a = contact.GetFixtureA().GetBody().GetUserData();
       b = contact.GetFixtureB().GetBody().GetUserData();
       switch (a.type) {
-        case 'asteroid':
+        case EntityCreator.ASTEROID:
           switch (b.type) {
-            case 'bullet':
+            case EntityCreator.BULLET:
               this.collisions.push({
                 type: BulletHitAsteroid,
                 a: b.entity,
                 b: a.entity
               });
               break;
-            case 'spaceship':
+            case EntityCreator.SPACESHIP:
               this.collisions.push({
                 type: AsteroidHitShip,
                 a: a.entity,
@@ -1770,8 +1791,8 @@
               });
           }
           break;
-        case 'bullet':
-          if (b.type === 'asteroid') {
+        case EntityCreator.BULLET:
+          if (b.type === EntityCreator.ASTEROID) {
             this.collisions.push({
               type: BulletHitAsteroid,
               a: a.entity,
@@ -1779,8 +1800,8 @@
             });
           }
           break;
-        case 'spaceship':
-          if (b.type === 'asteroid') {
+        case EntityCreator.SPACESHIP:
+          if (b.type === EntityCreator.ASTEROID) {
             this.collisions.push({
               type: AsteroidHitShip,
               a: b.entity,
@@ -2057,7 +2078,9 @@
         v = body.GetLinearVelocity();
         v.x += Math.cos(rotation) * control.accelerationRate * time * R;
         v.y += Math.sin(rotation) * control.accelerationRate * time * R;
-        body.SetAwake(true);
+        if (!IDTK) {
+          body.SetAwake(true);
+        }
         body.SetLinearVelocity(v);
       }
     };
@@ -2197,6 +2220,12 @@
   EntityCreator = (function() {
     var Entity, EntityStateMachine, b2Body, b2BodyDef, b2CircleShape, b2FixtureDef, b2PolygonShape, b2Vec2, get;
 
+    EntityCreator.ASTEROID = 1;
+
+    EntityCreator.SPACESHIP = 2;
+
+    EntityCreator.BULLET = 3;
+
     EntityCreator.prototype.LEFT = KeyPoll.KEY_LEFT;
 
     EntityCreator.prototype.RIGHT = KeyPoll.KEY_RIGHT;
@@ -2300,8 +2329,8 @@
       bodyDef.fixedRotation = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      v1 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius) * 2;
-      v2 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius) * 2;
+      v1 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius);
+      v2 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius);
       bodyDef.linearVelocity.Set(v1, v2);
       bodyDef.angularVelocity = rnd.nextDouble() * get('asteroidAngularVelocity') - 1;
       bodyDef.linearDamping = get('asteroidDamping');
@@ -2324,7 +2353,7 @@
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(3)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       asteroid.add(new Asteroid(fsm)).add(new Position(x, y, 0)).add(new Audio());
       body.SetUserData({
-        type: 'asteroid',
+        type: EntityCreator.ASTEROID,
         entity: asteroid
       });
       fsm.changeState('alive');
@@ -2373,7 +2402,7 @@
       fsm.createState('destroyed').add(DeathThroes).withInstance(new DeathThroes(5)).add(Display).withInstance(new Display(deathView)).add(Animation).withInstance(new Animation(deathView));
       spaceship.add(new Spaceship(fsm)).add(new Position(x, y, 0)).add(new Audio());
       body.SetUserData({
-        type: 'spaceship',
+        type: EntityCreator.SPACESHIP,
         entity: spaceship
       });
       fsm.changeState('playing');
@@ -2402,13 +2431,13 @@
       bodyDef.bullet = true;
       bodyDef.position.x = x;
       bodyDef.position.y = y;
-      bodyDef.linearVelocity.Set(cos * 10000, sin * 10000);
+      bodyDef.linearVelocity.Set(cos * get('bulletLinearVelocity'), sin * get('bulletLinearVelocity'));
       bodyDef.angularVelocity = 0;
-      bodyDef.linearDamping = 0;
+      bodyDef.linearDamping = get('bulletDamping');
       fixDef = new b2FixtureDef();
-      fixDef.density = 1.0;
-      fixDef.friction = 0;
-      fixDef.restitution = 0;
+      fixDef.density = get('bulletDensity');
+      fixDef.friction = get('bulletFriction');
+      fixDef.restitution = get('bulletRestitution');
       fixDef.shape = new b2CircleShape(0);
       body = this.world.CreateBody(bodyDef);
       body.CreateFixture(fixDef);
@@ -2419,7 +2448,7 @@
       bulletView = new BulletView(this.game);
       bullet = new Entity().add(new Bullet(gun.bulletLifetime)).add(new Position(x, y, 0)).add(new Collision(0)).add(new Physics(body)).add(new Display(bulletView));
       body.SetUserData({
-        type: 'bullet',
+        type: EntityCreator.BULLET,
         entity: bullet
       });
       this.engine.addEntity(bullet);
@@ -2609,6 +2638,7 @@
       this.keyPoll = new KeyPoll(this.game, this.config);
       this.engine = this.game.plugins.add(ash.core.PhaserEngine);
       this.world = new b2World(new b2Vec2(0, 0), true);
+      this.world.SetContinuousPhysics(true);
       this.creator = new EntityCreator(this.game, this.engine, this.world, this.config);
       this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
       this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
@@ -2616,7 +2646,7 @@
       this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
       this.engine.addSystem(new BulletAgeSystem(this.creator), SystemPriorities.update);
       this.engine.addSystem(new DeathThroesSystem(this.creator), SystemPriorities.update);
-      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world), SystemPriorities.move);
+      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
       this.engine.addSystem(new CollisionSystem(this.world, this.creator), SystemPriorities.resolveCollisions);
       this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
       this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
