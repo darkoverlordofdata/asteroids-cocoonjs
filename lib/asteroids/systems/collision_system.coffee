@@ -13,7 +13,9 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
   collisions      : null #  collision que
   PhysicsSystem   : null
 
-  constructor: (@world, @creator, @PhysicsSystem) ->
+  constructor: (parent, @PhysicsSystem) ->
+    @world = parent.world
+    @creator = parent.creator
     @collisions = []
     @world.SetContactListener(this)
 

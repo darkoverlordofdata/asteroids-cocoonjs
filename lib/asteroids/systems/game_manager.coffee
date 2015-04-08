@@ -7,8 +7,13 @@ class GameManager extends ash.core.System
   spaceships    : null  # NodeList of SpaceshipNode
   asteroids     : null  # NodeList of AsteroidCollisionNode
   bullets       : null  # NodeList of BulletCollisionNode
+  width         : 0
+  height        : 0
 
-  constructor: (@creator, @config) ->
+  constructor: (parent) ->
+    @creator = parent.creator
+    @width = parent.width
+    @height = parent.height
 
   addToEngine: (engine) ->
     @gameNodes  = engine.getNodeList(GameNode)
@@ -22,7 +27,7 @@ class GameManager extends ash.core.System
     if node and node.state.playing
       if @spaceships.empty
         if node.state.lives > 0
-          newSpaceshipPosition = new Point(@config.width * 0.5, @config.height * 0.5)
+          newSpaceshipPosition = new Point(@width * 0.5, @height * 0.5)
           clearToAddSpaceship = true
           asteroid = @asteroids.head
           while asteroid
@@ -69,7 +74,7 @@ class GameManager extends ash.core.System
   
           # check not on top of spaceship
           loop
-            position = new Point(rnd.nextDouble() * @config.width, rnd.nextDouble() * @config.height)
+            position = new Point(rnd.nextDouble() * @width, rnd.nextDouble() * @height)
             break unless Point.distance(position, spaceship.position.position) <= 80
 
           @creator.createAsteroid 30, position.x, position.y

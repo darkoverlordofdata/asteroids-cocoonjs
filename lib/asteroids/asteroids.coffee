@@ -15,18 +15,15 @@
 #
 class Asteroids
 
-  width             = window.innerWidth
-  height            = window.innerHeight
-  scale             = window.devicePixelRatio
-
   b2Vec2            = Box2D.Common.Math.b2Vec2
   b2World           = Box2D.Dynamics.b2World
 
   ucfirst           = (s) -> s.charAt(0).toUpperCase() + s.substr(1)
 
   game              : null  #   Phaser.io game object
+  pad               : null  #   On Screen Controller
+  profiler          : null  #   performance profiler
   engine            : null  #   Ash Engine
-  tickProvider      : null  #   FrameTickProvider
   creator           : null  #   EntityCreator
   keyPoll           : null  #   KeyPoll
   config            : null  #   GameConfig
@@ -36,6 +33,9 @@ class Asteroids
   faderBitmap       : null  #   for screen fade
   faderSprite       : null  #   for screen fade
   bgdColor          : 0x6A5ACD
+  height            : window.innerHeight
+  width             : window.innerWidth
+  scale             : window.devicePixelRatio
   playMusic         : localStorage.playMusic
   playSfx           : localStorage.playSfx
   optBgd            : localStorage.background || 'blue'
@@ -44,7 +44,7 @@ class Asteroids
    * Create the phaser game component
   ###
   constructor: () ->
-    @game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '',
+    @game = new Phaser.Game(@width * @scale, @height * @scale, Phaser.CANVAS, '',
       init: @init, preload: @preload, create: @create)
 
     window.rnd = new MersenneTwister()
@@ -62,10 +62,10 @@ class Asteroids
   ###
   init: =>
     @game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
-    @game.scale.minWidth = width * scale
-    @game.scale.minHeight = height * scale
-    @game.scale.maxWidth = width * scale
-    @game.scale.maxHeight = height * scale
+    @game.scale.minWidth = @width * @scale
+    @game.scale.minHeight = @height * @scale
+    @game.scale.maxWidth = @width * @scale
+    @game.scale.maxHeight = @height * @scale
     @game.scale.pageAlignVertically = true
     @game.scale.pageAlignHorizontally = true
     return
@@ -83,9 +83,18 @@ class Asteroids
     @game.load.image 'settings', 'res/icons/b_Parameters.png'
     @game.load.image 'round', 'res/round48.png'
     @game.load.image 'square', 'res/square48.png'
+
     @game.load.audio 'asteroid', [ExplodeAsteroid::src]
     @game.load.audio 'ship', [ExplodeShip::src]
     @game.load.audio 'shoot', [ShootGun::src]
+    return
+
+  onSettings: =>
+    @pause => Cocoon.App.loadInTheWebView("settings.html")
+    return
+
+  onLeaderboard: =>
+    @pause => @showLeaderboard()
     return
 
   ###
@@ -93,24 +102,17 @@ class Asteroids
   ###
   create: =>
     # install the profiler first
-    @game.plugins.add(Phaser.Plugin.PerformanceMonitor, profiler: @get('profiler'))
+    @profiler = @game.plugins.add(Phaser.Plugin.PerformanceMonitor, profiler: @get('profiler'))
 
     # set the background
     @game.stage.backgroundColor = @bgdColor
     @background = @game.add.sprite(0, 0, 'background')
-    @background.width = width
-    @background.height = height
+    @background.width = @width
+    @background.height = @height
     @background.alpha = if @optBgd is 'blue' then 0 else 1
 
-    # settings
-    @game.add.button width - 50, 50, 'settings', =>
-      @pause => Cocoon.App.loadInTheWebView("settings.html")
-      return
-
-    # leaderboard
-    @game.add.button width - 50, 125, 'leaderboard', =>
-      @pause => @showLeaderboard()
-      return
+    @game.add.button(@width - 50, 50, 'settings', @onSettings)
+    @game.add.button(@width - 50, 125, 'leaderboard', @onLeaderboard)
 
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
     ExplodeAsteroid.audio.play('', 0, 0)
@@ -119,35 +121,47 @@ class Asteroids
     ShootGun.audio = @game.add.audio('shoot')
     ShootGun.audio.play('', 0, 0)
 
-    @config = new GameConfig()
-    @config.height = height
-    @config.width = width
+    useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
+    PhysicsSystem = if useBox2dPlugin then FixedPhysicsSystem else SmoothPhysicsSystem
 
-    @keyPoll = new KeyPoll(@game, @config)
+    @keyPoll = new KeyPoll(this)
     @engine = @game.plugins.add(ash.core.PhaserEngine)
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @world.SetContinuousPhysics(true)
-    @creator = new EntityCreator(@game, @engine, @world, @config)
+    if @game.device.touch
 
-    PhysicsSystem = if not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined' then SmoothPhysicsSystem
-    else FixedPhysicsSystem
+      # Set up a virtual gamepad
+      @pad = @game.plugins.add(Phaser.Plugin.GameControllerPlugin)
 
-    @engine.addSystem(new WaitForStartSystem(@creator), SystemPriorities.preUpdate)
-    @engine.addSystem(new GameManager(@creator, @config), SystemPriorities.preUpdate)
-    @engine.addSystem(new PhysicsControlSystem(@keyPoll, @config), SystemPriorities.update)
-    @engine.addSystem(new GunControlSystem(@keyPoll, @creator), SystemPriorities.update)
-    @engine.addSystem(new BulletAgeSystem(@creator, PhysicsSystem), SystemPriorities.update)
-    @engine.addSystem(new DeathThroesSystem(@creator, PhysicsSystem), SystemPriorities.update)
-    @engine.addSystem(@physics = new PhysicsSystem(@config, @world, @game), SystemPriorities.move)
-    @engine.addSystem(new CollisionSystem(@world, @creator, PhysicsSystem), SystemPriorities.resolveCollisions)
-    @engine.addSystem(new AnimationSystem(), SystemPriorities.animate)
-    @engine.addSystem(new HudSystem(), SystemPriorities.animate)
-    @engine.addSystem(new RenderSystem(), SystemPriorities.render)
-    @engine.addSystem(new AudioSystem(), SystemPriorities.render)
+      @pad.addSide('left', 60, @height-60)
+      @pad.addJoystick('left')
+
+      @pad.addSide('right', @width-180, @height-80)
+      @pad.addButton('right', 0, 'WARP', 'yellow')
+      @pad.addButton('right', 2, 'FIRE', 'red')
+
+    @creator = new EntityCreator(this)
+    @physics = new PhysicsSystem(this)
+
+    @engine.addSystem(@physics, SystemPriorities.move)
+    @engine.addSystem(new BulletAgeSystem(this, PhysicsSystem), SystemPriorities.update)
+    @engine.addSystem(new DeathThroesSystem(this, PhysicsSystem), SystemPriorities.update)
+    @engine.addSystem(new CollisionSystem(this, PhysicsSystem), SystemPriorities.resolveCollisions)
+
+    @engine.addSystem(new AnimationSystem(this), SystemPriorities.animate)
+    @engine.addSystem(new HudSystem(this), SystemPriorities.animate)
+    @engine.addSystem(new RenderSystem(this), SystemPriorities.render)
+    @engine.addSystem(new AudioSystem(this), SystemPriorities.render)
+
+    @engine.addSystem(new WaitForStartSystem(this), SystemPriorities.preUpdate)
+    @engine.addSystem(new GameManager(this), SystemPriorities.preUpdate)
+    @engine.addSystem(new ShipControlSystem(this), SystemPriorities.update)
+    @engine.addSystem(new GunControlSystem(this), SystemPriorities.update)
 
     @creator.createWaitForClick()
     @creator.createGame()
     return
+
 
   ###
    * Get Fader Sprite
@@ -202,14 +216,14 @@ class Asteroids
     board = @game.add.group()
 
     dialog = new Phaser.Sprite(@game, 0, 0, "dialog-#{@optBgd}")
-    dialog.width = @config.width
-    dialog.height = @config.height
+    dialog.width = @width
+    dialog.height = @height
     board.add(dialog)
 
     big = font: 'bold 30px opendyslexic', fill: '#ffffff'
     normal = font: 'bold 20px opendyslexic', fill: '#ffffff'
 
-    title = new Phaser.Text(@game, @config.width/2, 20, 'Asteroids', big)
+    title = new Phaser.Text(@game, @width/2, 20, 'Asteroids', big)
     title.anchor.x = 0.5
     board.add(title)
 
@@ -225,7 +239,7 @@ class Asteroids
       board.add(new Phaser.Text(@game, 400, y, row.score, normal))
       y+= 20
 
-    button = new Phaser.Button(@game, @config.width/2, @config.height-64, "button-#{@optBgd}", =>
+    button = new Phaser.Button(@game, @width/2, @height-64, "button-#{@optBgd}", =>
       board.destroy()
       board = null
       @pause()
@@ -237,6 +251,7 @@ class Asteroids
     label.anchor.x = 0.5
     label.anchor.y = 0.5
     button.addChild(label)
+    return
 
   ### ============================================================>
       A S T E R O I D  S E T T I N G S
@@ -340,6 +355,3 @@ class Asteroids
       Db.insert 'settings', name: 'profiler', value: 'off'
 
     return
-    
-
-

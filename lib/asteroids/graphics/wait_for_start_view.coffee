@@ -13,7 +13,7 @@ class WaitForStartView
 
   click: null
   
-  constructor: (@game) ->
+  constructor: (@game, @parent) ->
     @click = new Signal0()
 
     x = Math.floor(window.innerWidth/2)
@@ -59,3 +59,4 @@ class WaitForStartView
     fader.to(alpha: 0, 1000)
     fader.onComplete.add => @click.dispatch()
     fader.start()
+    @parent.pad.start() if @game.device.touch

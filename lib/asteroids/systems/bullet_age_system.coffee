@@ -3,9 +3,9 @@ class BulletAgeSystem extends ash.tools.ListIteratingSystem
   creator: null
   PhysicsSystem: null
 
-  constructor: (@creator, @PhysicsSystem) ->
-
+  constructor: (parent, @PhysicsSystem) ->
     super(BulletAgeNode, @updateNode)
+    @creator = parent.creator
 
   updateNode: (node, time) =>
 

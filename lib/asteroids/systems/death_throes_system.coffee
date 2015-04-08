@@ -3,9 +3,9 @@ class DeathThroesSystem extends ash.tools.ListIteratingSystem
   creator: null
   PhysicsSystem: null
 
-  constructor: (@creator, @PhysicsSystem) ->
-
+  constructor: (parent, @PhysicsSystem) ->
     super(DeathThroesNode, @updateNode)
+    @creator = parent.creator
 
   updateNode: (node, time) =>
 

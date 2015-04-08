@@ -49,7 +49,10 @@ class EntityCreator
   asteroidId      : 0
   spaceshipId     : 0
 
-  constructor: (@game, @engine, @world, @config) ->
+  constructor: (@parent) ->
+    @game = @parent.game
+    @engine = @parent.engine
+    @world = @parent.world
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -73,7 +76,7 @@ class EntityCreator
   ###
   createWaitForClick: () ->
 #    if not @waitEntity
-    waitView = new WaitForStartView(@game)
+    waitView = new WaitForStartView(@game, @parent)
     @waitEntity = new Entity('wait')
     .add(new WaitForStart(waitView))
     .add(new Display(waitView))
@@ -144,10 +147,10 @@ class EntityCreator
   ###
    * Create Player Spaceship with FSM Animation
   ###
-  createSpaceship: ->
+  createSpaceship: =>
 
-    x = rnd.nextInt(@config.width)
-    y = rnd.nextInt(@config.height)
+    x = rnd.nextInt(@parent.width)
+    y = rnd.nextInt(@parent.height)
     ###
      * Spaceship simulation
     ###
@@ -211,7 +214,7 @@ class EntityCreator
   ###
    * Create a Bullet
   ###
-  createUserBullet: (gun, parentPosition) ->
+  createUserBullet: (gun, parentPosition) =>
 
     cos = Math.cos(parentPosition.rotation)
     sin = Math.sin(parentPosition.rotation)

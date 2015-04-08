@@ -6,7 +6,8 @@ class WaitForStartSystem extends ash.core.System
   waitNodes   : null  # NodeList
   asteroids   : null  # NodeList
 
-  constructor: (@creator) ->
+  constructor: (parent) ->
+    @creator = parent.creator
 
   addToEngine: (engine) ->
     @engine = engine

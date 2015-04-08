@@ -37,6 +37,7 @@ class RenderSystem extends ash.core.System
       graphic.x = position.position.x
       graphic.y = position.position.y
       graphic.rotation = position.rotation
+
       node = node.next
 
     return
