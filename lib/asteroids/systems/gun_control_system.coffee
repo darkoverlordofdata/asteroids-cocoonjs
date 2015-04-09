@@ -14,7 +14,7 @@ class GunControlSystem extends ash.tools.ListIteratingSystem
     position = node.position
     gun = node.gun
     # Fire!
-    gun.shooting = @keyPoll.isDown(control.trigger) or @pad?.fire
+    gun.shooting = @keyPoll.isDown(control.trigger) or @pad?.buttons?.fire
     gun.timeSinceLastShot += time
     if gun.shooting and gun.timeSinceLastShot >= gun.minimumShotInterval
       @creator.createUserBullet gun, position

@@ -1,11 +1,13 @@
 class TouchableJoystick extends TouchableArea
 
-  constructor: (options) -> #x, y, radius, backgroundColor )
-    for i of options
-      this[i] = options[i]
-    @currentX = @currentX or @x
-    @currentY = @currentY or @y
-    return
+  constructor: (@controller, options) -> #x, y, radius, backgroundColor )
+    for property, value of options
+      @[property] = value
+    @originX = @currentX = @currentX or @x
+    @originY = @currentY = @currentY or @y
+    @base = @createBase(@controller.game)
+    @sprite = @createSprite(@controller.game)
+    super @controller
 
   type: 'joystick'
 
@@ -13,10 +15,13 @@ class TouchableJoystick extends TouchableArea
   Checks if the touch is within the bounds of this direction
   ###
   check: (touchX, touchY) ->
-    return true  if (Math.abs(touchX - @x) < @radius + (GameController.getPixels(GameController.options.touchRadius) / 2)) and (Math.abs(touchY - @y) < @radius + (GameController.getPixels(GameController.options.touchRadius) / 2))
+    return true  if (Math.abs(touchX - @x) < @radius + (@controller.getPixels(@controller.options.touchRadius) / 2)) and (Math.abs(touchY - @y) < @radius + (@controller.getPixels(@controller.options.touchRadius) / 2))
     false
 
 
+  setActive: (active) =>
+    @sprite.alpha = if active then 0.8 else 0.4
+    return
   ###
   details for the joystick move event, stored here so we're not constantly creating new objs for garbage. The object has params:
   dx - the number of pixels the current joystick center is from the base center in x direction
@@ -30,65 +35,80 @@ class TouchableJoystick extends TouchableArea
   ###
   Called when this joystick is moved
   ###
-  touchMoveWrapper: (e) ->
-    @currentX = GameController.normalizeTouchPositionX(e.clientX)
-    @currentY = GameController.normalizeTouchPositionY(e.clientY)
+  touchMoveWrapper: (pointer, x, y) ->
+    return unless @active
+
+    @currentX = @controller.normalizeTouchPositionX(x)
+    @currentY = @controller.normalizeTouchPositionY(y)
 
     # Fire the user specified callback
     if @touchMove
       if @moveDetails.dx isnt @currentX - @x and @moveDetails.dy isnt @y - @currentY
+        x = @currentX - @radius
+        y = @currentY - @radius
+        @sprite.x = x
+        @sprite.y = y
         @moveDetails.dx = @currentX - @x # reverse so right is positive
         @moveDetails.dy = @y - @currentY
-        @moveDetails.max = @radius + (GameController.options.touchRadius / 2)
+        @moveDetails.max = @radius + (@controller.options.touchRadius / 2)
         @moveDetails.normalizedX = @moveDetails.dx / @moveDetails.max
         @moveDetails.normalizedY = @moveDetails.dy / @moveDetails.max
         @touchMove @moveDetails
 
     # Mark this direction as inactive
-    @active = true
     return
+
+  touchEndWrapper: (e) ->
+    @sprite.x = @originX - @radius * 0.7
+    @sprite.y = @originY - @radius * 0.7
+    super e
 
   draw: ->
-    # wait until id is set
-    return false  unless @id
-    cacheId = @type + '' + @id + '' + @active
-    cached = GameController.cachedSprites[cacheId]
-    unless cached
-      @stroke = @stroke or 2
-      hw = 2 * (@radius + (GameController.options.touchRadius) + @stroke)
-      bitmap = GameController.game.add.bitmapData(hw, hw)
-      ctx = bitmap.context
-      gradient = null
-      ctx.lineWidth = @stroke
-      if @active # Direction currently being touched
-        gradient = ctx.createRadialGradient(0, 0, 1, 0, 0, @radius)
-        gradient.addColorStop 0, 'rgba( 200,200,200,.5 )'
-        gradient.addColorStop 1, 'rgba( 200,200,200,.9 )'
-        ctx.strokeStyle = '#000'
-      else
 
-        # STYLING FOR BUTTONS
-        gradient = ctx.createRadialGradient(0, 0, 1, 0, 0, @radius)
-        gradient.addColorStop 0, 'rgba( 200,200,200,.2 )'
-        gradient.addColorStop 1, 'rgba( 200,200,200,.4 )'
-        ctx.strokeStyle = 'rgba( 0,0,0,.4 )'
-      ctx.fillStyle = gradient
 
-      # Actual joystick part that is being moved
-      ctx.beginPath()
-      ctx.arc @radius, @radius, @radius, 0, 2 * Math.PI, false
-      ctx.fill()
-      ctx.stroke()
-      cached = GameController.cachedSprites[cacheId] = bitmap
-      GameController.game.add.sprite @currentX - @radius, @currentY - @radius, cached
-    base = GameController.game.add.bitmapData(hw, hw)
+  createSprite: (game) ->
 
-    # Draw the base that stays static
-    base.context.fillStyle = '#444'
-    base.context.beginPath()
-    base.context.arc 0, 0, @radius * 0.7, 0, 2 * Math.PI, false
-    base.context.fill()
-    base.context.stroke()
-    GameController.game.add.sprite @x, @y, base
-    return
+    @stroke = @stroke or 2
+    hw = 2 * (@radius + (@controller.options.touchRadius) + @stroke)
+
+    bitmap = game.add.bitmapData(hw, hw)
+
+    # Draw the bitmap that stays static
+    bitmap.context.fillStyle = '#444'
+    bitmap.context.beginPath()
+    bitmap.context.arc @radius * 0.7, @radius * 0.7, @radius * 0.7, 0, 2 * Math.PI, false
+    bitmap.context.fill()
+    bitmap.context.stroke()
+    sprite = game.add.sprite(@currentX - @radius * 0.7, @currentY - @radius * 0.7, bitmap)
+    sprite.alpha = 0.8
+    sprite.inputEnabled = true
+    sprite.events.onInputDown.add(@touchStartWrapper, this)
+    sprite.events.onInputUp.add(@touchEndWrapper, this)
+    game.input.addMoveCallback(@touchMoveWrapper, this)
+    return sprite
+
+  createBase: (game) ->
+
+    @stroke = @stroke or 2
+    hw = 2 * (@radius + (@controller.options.touchRadius) + @stroke)
+
+    bitmap = game.add.bitmapData(hw, hw)
+    ctx = bitmap.context
+    gradient = null
+    ctx.lineWidth = @stroke
+    gradient = ctx.createRadialGradient(0, 0, 1, 0, 0, @radius)
+    gradient.addColorStop 0, 'rgba( 200,200,200,.2 )'
+    gradient.addColorStop 1, 'rgba( 200,200,200,.4 )'
+    ctx.strokeStyle = 'rgba( 0,0,0,.4 )'
+    ctx.fillStyle = gradient
+
+    # Actual joystick part that is being moved
+    ctx.beginPath()
+    ctx.arc @radius, @radius, @radius, 0, 2 * Math.PI, false
+    ctx.fill()
+    ctx.stroke()
+    sprite = game.add.sprite(@currentX - @radius, @currentY - @radius, bitmap)
+    sprite.alpha = 0.4
+    return sprite
+
 

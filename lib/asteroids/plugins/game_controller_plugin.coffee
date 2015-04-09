@@ -14,13 +14,10 @@ class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
   ###
   document.documentElement['ontouchstart'] = ->
 
-  # reference to our game application
-  _instance = null
-
-  joystick: null
-  fire: false
-  warp: false
-  options: null
+  joystick  : null
+  buttons   : null
+  dpad      : null
+  options   : null
 
   ###
    * @param   game    current phaser game context
@@ -28,47 +25,94 @@ class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
   ###
   constructor: (game, parent) ->
     super game, parent
-    _instance = this
     @options = {}
+    @buttons = {}
+    @dpad =
+      up: false
+      down: false
+      left: false
+      right: false
 
+  ###
+   * Start
+  ###
   start: =>
     GameController.init(@game, @options)
     return
 
-  addSide: (side, x, y) =>
+  ###
+   * Add DPad
+   *
+   * @param   side
+   * @param   x
+   * @param   y
+   * @param   options
+  ###
+  addDPad: (side, x, y, directions) =>
+    @addSide side, x, y, 'dpad', background: true
+    for direction, options of directions
+      do (direction, options) => # create a closure for each set of options
+        if options is false
+          @options[side].dpad[direction] = false
+        else
+          @options[side].dpad[direction] =
+            width: options.width
+            height: options.height
+            touchStart: =>
+              @dpad[direction] = true
+              return
+            touchEnd: =>
+              @dpad[direction] = false
+              return
+
+  ###
+   * Add Joystick
+   *
+   * @param   side
+   * @param   x
+   * @param   y
+   * @param   radius
+  ###
+  addJoystick: (side, x, y, radius=60) =>
+    @addSide side, x, y, 'joystick',
+      touchStart: ->
+      touchEnd: =>
+        @joystick = null
+        return
+      touchMove: (joystick) =>
+        @joystick = joystick
+        return
+    @options[side].radius = radius
+    return
+
+  ###
+   * Add DPad
+   *
+   * @param   side
+   * @param   x
+   * @param   y
+   * @param   buttons
+  ###
+  addButtons: (side, x, y, buttons) =>
+    @addSide side, x, y, 'buttons', [false, false, false, false]
+    for index, options of buttons
+      do (index, options) => # create a closure for each set of options
+        @options[side].buttons[parseInt(index)-1] =
+          label: options.title
+          radius: "#{options.radius or 5}%"
+          fontSize: options.fontSize or 15
+          backgroundColor: options.color
+          touchStart: =>
+            @buttons[options.title.toLowerCase()] = true
+            return
+          touchEnd: =>
+            @buttons[options.title.toLowerCase()] = false
+            return
+
+  addSide: (side, x, y, type, options={}) =>
     @options[side] ?= {}
     @options[side].position = left: x, top:y
-    return
-
-  addJoystick: (side, radius=60) =>
-    @options[side].type = 'joystick'
-    @options[side].radius = radius
-    @options[side].joystick =
-        touchStart: ->
-        touchEnd: ->
-          _instance.joystick = null
-          @currentX = @x
-          @currentY = @y
-          @draw()
-          return
-        touchMove: (joystick) ->
-          _instance.joystick = joystick
-          return
-    return
-
-  addButton: (side, index, text, color, radius=5, fontSize=13) =>
-    @options[side].type = 'buttons'
-    @options[side].buttons ?= [false, false, false, false]
-    @options[side].buttons[index] =
-      label: text
-      radius: "#{radius}%"
-      fontSize: fontSize
-      backgroundColor: color
-      touchStart: ->
-        _instance[text.toLowerCase()] = true
-        return
-      touchEnd: ->
-        _instance[text.toLowerCase()] = false
-        return
+    @options[side].type = type
+    @options[side][type] = options
     return
 

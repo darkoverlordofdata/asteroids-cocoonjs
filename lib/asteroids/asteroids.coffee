@@ -133,12 +133,15 @@ class Asteroids
       # Set up a virtual gamepad
       @pad = @game.plugins.add(Phaser.Plugin.GameControllerPlugin)
 
-      @pad.addSide('left', 60, @height-60)
-      @pad.addJoystick('left')
+      @pad.addDPad 'left', 60, @height-60,
+        up: width: '7%', height: '7%'
+        down: false
+        left: width: '7%', height: '7%'
+        right: width: '7%', height: '7%'
 
-      @pad.addSide('right', @width-180, @height-80)
-      @pad.addButton('right', 0, 'WARP', 'yellow')
-      @pad.addButton('right', 2, 'FIRE', 'red')
+      @pad.addButtons 'right', @width-180, @height-80,
+        1: title: 'WARP', color: 'yellow'
+        3: title: 'FIRE', color: 'red'
 
     @creator = new EntityCreator(this)
     @physics = new PhysicsSystem(this)

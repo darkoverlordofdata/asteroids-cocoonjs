@@ -44,10 +44,35 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
       return
 
     # Warp outa here!
-    if @keyPoll.isDown(control.warp) or @pad?.warp
+    if @keyPoll.isDown(control.warp) or @pad?.buttons?.warp
       @pad.warp = false
       @warping = rnd.nextInt(30)+30
       return
+
+    dpad = @pad?.dpad
+    if dpad?
+      # Rotate Left
+      if dpad.left
+        rotation = body.GetAngularVelocity()
+        body.SetAngularVelocity(rotation - control.rotationRate * time)
+
+      # Rotate Right
+      if dpad.right
+        rotation = rotation || body.GetAngularVelocity()
+        body.SetAngularVelocity(rotation + control.rotationRate * time)
+
+      # Speed up
+      if dpad.up
+        rotation = rotation || body.GetAngularVelocity()
+        v = body.GetLinearVelocity()
+        v.x += (Math.cos(rotation) * control.accelerationRate * time * R)
+        v.y += (Math.sin(rotation) * control.accelerationRate * time * R)
+
+        body.SetAwake(true) unless IDTK # Cocoon Box2d
+        body.SetLinearVelocity(v)
+
+
+
 
     joystick = @pad?.joystick
     if joystick?

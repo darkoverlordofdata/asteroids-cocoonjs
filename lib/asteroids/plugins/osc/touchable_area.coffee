@@ -2,7 +2,6 @@
 Superclass for touchable stuff
 ###
 class TouchableArea
-  TouchableArea = ->
 
   # Called when this direction is being touched
   touchStart: null
@@ -16,6 +15,7 @@ class TouchableArea
   id: false
   active: false
 
+  constructor: (@controller) ->
   ###
   Sets the user-specified callback for this direction being touched
   @param {function} callback
@@ -34,6 +34,7 @@ class TouchableArea
     @touchStart()  if @touchStart
 
     # Mark this direction as active
+    @setActive?(true)
     @active = true
     return
 
@@ -62,6 +63,7 @@ class TouchableArea
 
     # Mark this direction as active
     @active = true
+    @setActive?(true)
     return
 
 
@@ -84,7 +86,8 @@ class TouchableArea
 
     # Mark this direction as inactive
     @active = false
-    GameController.render()
+    @setActive?(false)
+    @controller.render()
     return
 
 
