@@ -25,7 +25,7 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
     @width = @parent.width
     @height = @parent.height
     @game = @parent.game
-    @pad = @parent.pad
+    @controller = @parent.controller
 
   updateNode: (node, time) =>
 
@@ -44,12 +44,12 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
       return
 
     # Warp outa here!
-    if @keyPoll.isDown(control.warp) or @pad?.buttons?.warp
-      @pad.warp = false
+    if @keyPoll.isDown(control.warp) or @controller?.buttons?.warp
+      @controller.warp = false
       @warping = rnd.nextInt(30)+30
       return
 
-    dpad = @pad?.dpad
+    dpad = @controller?.dpad
     if dpad?
       # Rotate Left
       if dpad.left
@@ -74,7 +74,7 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
 
 
 
-    joystick = @pad?.joystick
+    joystick = @controller?.joystick
     if joystick?
 
       angle = Math.atan2(joystick.normalizedY, joystick.normalizedX) / Math.PI*180

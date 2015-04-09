@@ -59,4 +59,4 @@ class WaitForStartView
     fader.to(alpha: 0, 1000)
     fader.onComplete.add => @click.dispatch()
     fader.start()
-    @parent.pad.start() if @game.device.touch
+    @parent.controller?.start() # if @game.device.touch

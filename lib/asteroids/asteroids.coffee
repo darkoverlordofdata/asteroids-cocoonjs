@@ -128,20 +128,20 @@ class Asteroids
     @engine = @game.plugins.add(ash.core.PhaserEngine)
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @world.SetContinuousPhysics(true)
-    if @game.device.touch
+    #if @game.device.touch
 
-      # Set up a virtual gamepad
-      @pad = @game.plugins.add(Phaser.Plugin.GameControllerPlugin)
+    # Set up a virtual gamepad
+    @controller = @game.plugins.add(Phaser.Plugin.GameControllerPlugin, force: true)
 
-      @pad.addDPad 'left', 60, @height-60,
-        up: width: '7%', height: '7%'
-        down: false
-        left: width: '7%', height: '7%'
-        right: width: '7%', height: '7%'
+    @controller.addDPad 'left', 60, @height-60,
+      up: width: '7%', height: '7%'
+      down: false
+      left: width: '7%', height: '7%'
+      right: width: '7%', height: '7%'
 
-      @pad.addButtons 'right', @width-180, @height-80,
-        1: title: 'WARP', color: 'yellow'
-        3: title: 'FIRE', color: 'red'
+    @controller.addButtons 'right', @width-180, @height-80,
+      1: title: 'warp', color: 'yellow'
+      3: title: 'FIRE', color: 'red'
 
     @creator = new EntityCreator(this)
     @physics = new PhysicsSystem(this)

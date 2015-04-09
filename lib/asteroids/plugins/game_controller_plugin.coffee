@@ -9,10 +9,6 @@
 ###
 class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
 
-  ###
-   * So the virtual pad will display on desktop
-  ###
-  document.documentElement['ontouchstart'] = ->
 
   joystick  : null
   buttons   : null
@@ -33,11 +29,20 @@ class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
       left: false
       right: false
 
+  init: (options={}) =>
+    if options.force
+      ###
+       * So the virtual pad will display on desktop
+      ###
+      document.documentElement['ontouchstart'] = ->
+
+
   ###
    * Start
   ###
-  start: =>
-    GameController.init(@game, @options)
+  start: () =>
+    if 'ontouchstart' of document.documentElement
+      GameController.init(@game, @options)
     return
 
   ###
@@ -73,16 +78,49 @@ class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
    * @param   y
    * @param   radius
   ###
-  addJoystick: (side, x, y, radius=60) =>
-    @addSide side, x, y, 'joystick',
-      touchStart: ->
-      touchEnd: =>
-        @joystick = null
-        return
-      touchMove: (joystick) =>
-        @joystick = joystick
-        return
-    @options[side].radius = radius
+  addJoystick: (side, x, y, radius=x) =>
+
+    if 'string' is typeof side
+
+      @joystick = null
+
+      @addSide side, x, y, 'joystick',
+        touchStart: ->
+        touchEnd: =>
+          @joystick = null
+          return
+        touchMove: (joystick) =>
+          @joystick = joystick
+          return
+      @options[side].radius = radius
+
+    else
+
+      @joystick = [null, null]
+
+      options = side.left
+      options.radius ?= 60
+      @addSide options.side, options.x, options.y, 'joystick',
+        touchStart: ->
+        touchEnd: =>
+          @joystick[0] = null
+          return
+        touchMove: (joystick) =>
+          @joystick[0] = joystick
+          return
+      @options[side].radius = options.radius
+
+      options = side.right
+      options.radius ?= 60
+      @addSide options.side, options.x, options.y, 'joystick',
+        touchStart: ->
+        touchEnd: =>
+          @joystick[1] = null
+          return
+        touchMove: (joystick) =>
+          @joystick[1] = joystick
+          return
+      @options[side].radius = options.radius
     return
 
   ###
@@ -100,7 +138,7 @@ class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
         @options[side].buttons[parseInt(index)-1] =
           label: options.title
           radius: "#{options.radius or 5}%"
-          fontSize: options.fontSize or 15
+          fontSize: options.fontSize # or 15
           backgroundColor: options.color
           touchStart: =>
             @buttons[options.title.toLowerCase()] = true
@@ -109,10 +147,19 @@ class Phaser.Plugin.GameControllerPlugin extends Phaser.Plugin
             @buttons[options.title.toLowerCase()] = false
             return
 
-  addSide: (side, x, y, type, options={}) =>
+  ###
+   * Add Side
+   *
+   * @param   side
+   * @param   x
+   * @param   y
+   * @param   type
+   * @param   data
+  ###
+  addSide: (side, x, y, type, data={}) =>
     @options[side] ?= {}
     @options[side].position = left: x, top:y
     @options[side].type = type
-    @options[side][type] = options
+    @options[side][type] = data
     return
 
