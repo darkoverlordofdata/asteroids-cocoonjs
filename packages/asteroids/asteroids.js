@@ -19,7 +19,7 @@
 
   /*
    */
-  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, FixedPhysicsSystem, GameConfig, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsControlSystem, PhysicsNode, Point, Position, RenderNode, RenderSystem, ShootGun, SmoothPhysicsSystem, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
+  var Animation, AnimationNode, AnimationSystem, Asteroid, AsteroidCollisionNode, AsteroidDeathView, AsteroidView, Asteroids, Audio, AudioNode, AudioSystem, Bullet, BulletAgeNode, BulletAgeSystem, BulletCollisionNode, BulletView, Collision, CollisionSystem, DeathThroes, DeathThroesNode, DeathThroesSystem, Display, Dot, EntityCreator, ExplodeAsteroid, ExplodeShip, FixedPhysicsSystem, GameManager, GameNode, GameState, Gun, GunControlNode, GunControlSystem, GunControls, Hud, HudNode, HudSystem, HudView, KeyPoll, MersenneTwister, MotionControls, MovementNode, Physics, PhysicsControlNode, PhysicsNode, Point, Position, RenderNode, RenderSystem, ShipControlSystem, ShootGun, SmoothPhysicsSystem, Sound, Spaceship, SpaceshipDeathView, SpaceshipNode, SpaceshipView, SystemPriorities, WaitForStart, WaitForStartNode, WaitForStartSystem, WaitForStartView,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -296,7 +296,8 @@
 
     KeyPoll.prototype.keys = [KeyPoll.KEY_LEFT, KeyPoll.KEY_RIGHT, KeyPoll.KEY_Z, KeyPoll.KEY_UP, KeyPoll.KEY_SPACE];
 
-    function KeyPoll(game, config) {
+    function KeyPoll(parent) {
+      this.parent = parent;
       this.isUp = __bind(this.isUp, this);
       this.isDown = __bind(this.isDown, this);
       this.keyUpListener = __bind(this.keyUpListener, this);
@@ -304,9 +305,6 @@
       this.states = {};
       window.addEventListener('keydown', this.keyDownListener);
       window.addEventListener('keyup', this.keyUpListener);
-      if (game.device.touch) {
-        this.gamePad(game, config);
-      }
     }
 
     KeyPoll.prototype.keyDownListener = function(event) {
@@ -332,30 +330,8 @@
      * Build a virtual game pad for touch devices
      */
 
-    KeyPoll.prototype.gamePad = function(game, config) {
-      var btn0, btn1, btn2, btn3, btn4;
-      btn0 = game.add.button(0, config.height - 80, 'round');
-      btn0.onInputDown.add((function(_this) {
-        return function() {
-          _this.states[_this.keys[0]] = true;
-        };
-      })(this));
-      btn0.onInputUp.add((function(_this) {
-        return function() {
-          _this.states[_this.keys[0]] = false;
-        };
-      })(this));
-      btn1 = game.add.button(50, config.height - 50, 'round');
-      btn1.onInputDown.add((function(_this) {
-        return function() {
-          _this.states[_this.keys[1]] = true;
-        };
-      })(this));
-      btn1.onInputUp.add((function(_this) {
-        return function() {
-          _this.states[_this.keys[1]] = false;
-        };
-      })(this));
+    KeyPoll.prototype.buttons = function(game, config) {
+      var btn2, btn4;
       btn2 = game.add.button(config.width - 100, config.height - 50, 'round');
       btn2.onInputDown.add((function(_this) {
         return function() {
@@ -365,17 +341,6 @@
       btn2.onInputUp.add((function(_this) {
         return function() {
           _this.states[_this.keys[2]] = false;
-        };
-      })(this));
-      btn3 = game.add.button(config.width - 50, config.height - 80, 'round');
-      btn3.onInputDown.add((function(_this) {
-        return function() {
-          _this.states[_this.keys[3]] = true;
-        };
-      })(this));
-      btn3.onInputUp.add((function(_this) {
-        return function() {
-          _this.states[_this.keys[3]] = false;
         };
       })(this));
       btn4 = game.add.button(config.width / 2, config.height - 50, 'square');
@@ -876,9 +841,10 @@
 
     WaitForStartView.prototype.click = null;
 
-    function WaitForStartView(game) {
+    function WaitForStartView(game, parent) {
       var x, y;
       this.game = game;
+      this.parent = parent;
       this.start1 = __bind(this.start1, this);
       this.start = __bind(this.start, this);
       this.click = new Signal0();
@@ -940,7 +906,7 @@
     };
 
     WaitForStartView.prototype.start1 = function() {
-      var fader, _ref;
+      var fader, _ref, _ref1;
       this.text1.destroy();
       this.text2.destroy();
       if ((_ref = this.text3) != null) {
@@ -955,7 +921,8 @@
           return _this.click.dispatch();
         };
       })(this));
-      return fader.start();
+      fader.start();
+      return (_ref1 = this.parent.controller) != null ? _ref1.start() : void 0;
     };
 
     return WaitForStartView;
@@ -1511,7 +1478,8 @@
   /*
    * Fixed Step Physics System
    *
-   * Run the physics step every 1/60 second
+   * Run the physics step every 1/60 second.
+   * Used with CocoonJS Canvas+ Box2d plugin
    *
    */
 
@@ -1544,15 +1512,20 @@
 
     FixedPhysicsSystem.prototype.game = null;
 
+    FixedPhysicsSystem.prototype.width = 0;
+
+    FixedPhysicsSystem.prototype.height = 0;
+
     FixedPhysicsSystem.deadPool = [];
 
-    function FixedPhysicsSystem(config, world, game) {
-      this.config = config;
-      this.world = world;
-      this.game = game;
+    function FixedPhysicsSystem(parent) {
       this.updateNode = __bind(this.updateNode, this);
       this.update = __bind(this.update, this);
       this.process = __bind(this.process, this);
+      this.world = parent.world;
+      this.game = parent.game;
+      this.width = parent.width;
+      this.height = parent.height;
     }
 
     FixedPhysicsSystem.prototype.addToEngine = function(engine) {
@@ -1576,7 +1549,7 @@
         return;
       }
       this.world.Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-      return this.world.ClearForces();
+      this.world.ClearForces();
     };
 
     FixedPhysicsSystem.prototype.update = function(time) {
@@ -1622,8 +1595,8 @@
        * Asteroids uses wraparound space coordinates
        */
       _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
-      x1 = x > this.config.width ? 0 : x < 0 ? this.config.width : x;
-      y1 = y > this.config.height ? 0 : y < 0 ? this.config.height : y;
+      x1 = x > this.width ? 0 : x < 0 ? this.width : x;
+      y1 = y > this.height ? 0 : y < 0 ? this.height : y;
       if (x1 !== x || y1 !== y) {
         body.SetPosition(new b2Vec2(x1, y1));
       }
@@ -1680,15 +1653,20 @@
 
     SmoothPhysicsSystem.prototype.game = null;
 
+    SmoothPhysicsSystem.prototype.width = 0;
+
+    SmoothPhysicsSystem.prototype.height = 0;
+
     SmoothPhysicsSystem.deadPool = [];
 
-    function SmoothPhysicsSystem(config, world, game) {
-      this.config = config;
-      this.world = world;
-      this.game = game;
+    function SmoothPhysicsSystem(parent) {
       this.smoothStates = __bind(this.smoothStates, this);
       this.resetSmoothStates = __bind(this.resetSmoothStates, this);
       this.update = __bind(this.update, this);
+      this.width = parent.width;
+      this.height = parent.height;
+      this.world = parent.world;
+      this.game = parent.game;
     }
 
     SmoothPhysicsSystem.prototype.addToEngine = function(engine) {
@@ -1743,17 +1721,17 @@
         position = node.position;
         physics = node.physics;
         body = physics.body;
+        _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
+        position.position.x = physics.previousX = x;
+        position.position.y = physics.previousY = y;
+        position.rotation = physics.previousAngle = body.GetAngularVelocity();
 
         /*
          * Update the position component from Box2D model
          * Asteroids uses wraparound space coordinates
          */
-        _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
-        position.position.x = physics.previousX = x;
-        position.position.y = physics.previousY = y;
-        position.rotation = physics.previousAngle = body.GetAngularVelocity();
-        x1 = x > this.config.width ? 0 : x < 0 ? this.config.width : x;
-        y1 = y > this.config.height ? 0 : y < 0 ? this.config.height : y;
+        x1 = x > this.width ? 0 : x < 0 ? this.width : x;
+        y1 = y > this.height ? 0 : y < 0 ? this.height : y;
         if (x1 !== x || y1 !== y) {
           body.SetPosition(new b2Vec2(x1, y1));
         }
@@ -1769,17 +1747,17 @@
         position = node.position;
         physics = node.physics;
         body = physics.body;
+        _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
+        position.position.x = this.fixedTimestepAccumulatorRatio * x + (oneMinusRatio * physics.previousX);
+        position.position.y = this.fixedTimestepAccumulatorRatio * y + (oneMinusRatio * physics.previousY);
+        position.rotation = body.GetAngularVelocity() * this.fixedTimestepAccumulatorRatio + oneMinusRatio * physics.previousAngle;
 
         /*
          * Update the position component from Box2D model
          * Asteroids uses wraparound space coordinates
          */
-        _ref = body.GetPosition(), x = _ref.x, y = _ref.y;
-        position.position.x = this.fixedTimestepAccumulatorRatio * x + (oneMinusRatio * physics.previousX);
-        position.position.y = this.fixedTimestepAccumulatorRatio * y + (oneMinusRatio * physics.previousY);
-        position.rotation = body.GetAngularVelocity() * this.fixedTimestepAccumulatorRatio + oneMinusRatio * physics.previousAngle;
-        x1 = x > this.config.width ? 0 : x < 0 ? this.config.width : x;
-        y1 = y > this.config.height ? 0 : y < 0 ? this.config.height : y;
+        x1 = x > this.width ? 0 : x < 0 ? this.width : x;
+        y1 = y > this.height ? 0 : y < 0 ? this.height : y;
         if (x1 !== x || y1 !== y) {
           body.SetPosition(new b2Vec2(x1, y1));
         }
@@ -1837,11 +1815,11 @@
 
     BulletAgeSystem.prototype.PhysicsSystem = null;
 
-    function BulletAgeSystem(creator, PhysicsSystem) {
-      this.creator = creator;
+    function BulletAgeSystem(parent, PhysicsSystem) {
       this.PhysicsSystem = PhysicsSystem;
       this.updateNode = __bind(this.updateNode, this);
       BulletAgeSystem.__super__.constructor.call(this, BulletAgeNode, this.updateNode);
+      this.creator = parent.creator;
     }
 
     BulletAgeSystem.prototype.updateNode = function(node, time) {
@@ -1880,15 +1858,15 @@
 
     CollisionSystem.prototype.PhysicsSystem = null;
 
-    function CollisionSystem(world, creator, PhysicsSystem) {
-      this.world = world;
-      this.creator = creator;
+    function CollisionSystem(parent, PhysicsSystem) {
       this.PhysicsSystem = PhysicsSystem;
       this.PostSolve = __bind(this.PostSolve, this);
       this.PreSolve = __bind(this.PreSolve, this);
       this.EndContact = __bind(this.EndContact, this);
       this.BeginContact = __bind(this.BeginContact, this);
       this.update = __bind(this.update, this);
+      this.world = parent.world;
+      this.creator = parent.creator;
       this.collisions = [];
       this.world.SetContactListener(this);
     }
@@ -2014,11 +1992,11 @@
 
     DeathThroesSystem.prototype.PhysicsSystem = null;
 
-    function DeathThroesSystem(creator, PhysicsSystem) {
-      this.creator = creator;
+    function DeathThroesSystem(parent, PhysicsSystem) {
       this.PhysicsSystem = PhysicsSystem;
       this.updateNode = __bind(this.updateNode, this);
       DeathThroesSystem.__super__.constructor.call(this, DeathThroesNode, this.updateNode);
+      this.creator = parent.creator;
     }
 
     DeathThroesSystem.prototype.updateNode = function(node, time) {
@@ -2051,10 +2029,15 @@
 
     GameManager.prototype.bullets = null;
 
-    function GameManager(creator, config) {
-      this.creator = creator;
-      this.config = config;
+    GameManager.prototype.width = 0;
+
+    GameManager.prototype.height = 0;
+
+    function GameManager(parent) {
       this.update = __bind(this.update, this);
+      this.creator = parent.creator;
+      this.width = parent.width;
+      this.height = parent.height;
     }
 
     GameManager.prototype.addToEngine = function(engine) {
@@ -2070,7 +2053,7 @@
       if (node && node.state.playing) {
         if (this.spaceships.empty) {
           if (node.state.lives > 0) {
-            newSpaceshipPosition = new Point(this.config.width * 0.5, this.config.height * 0.5);
+            newSpaceshipPosition = new Point(this.width * 0.5, this.height * 0.5);
             clearToAddSpaceship = true;
             asteroid = this.asteroids.head;
             while (asteroid) {
@@ -2130,7 +2113,7 @@
           i = 0;
           while (i < asteroidCount) {
             while (true) {
-              position = new Point(rnd.nextDouble() * this.config.width, rnd.nextDouble() * this.config.height);
+              position = new Point(rnd.nextDouble() * this.width, rnd.nextDouble() * this.height);
               if (!(Point.distance(position, spaceship.position.position) <= 80)) {
                 break;
               }
@@ -2160,22 +2143,25 @@
 
     GunControlSystem.prototype.creator = null;
 
-    function GunControlSystem(keyPoll, creator) {
-      this.keyPoll = keyPoll;
-      this.creator = creator;
+    function GunControlSystem(parent) {
+      this.parent = parent;
       this.updateNode = __bind(this.updateNode, this);
       GunControlSystem.__super__.constructor.call(this, GunControlNode, this.updateNode);
+      this.keyPoll = this.parent.keyPoll;
+      this.creator = this.parent.creator;
+      this.controller = this.parent.controller;
     }
 
     GunControlSystem.prototype.updateNode = function(node, time) {
-      var control, gun, position;
+      var control, gun, position, _ref, _ref1;
       control = node.control;
       position = node.position;
       gun = node.gun;
-      gun.shooting = this.keyPoll.isDown(control.trigger);
+      gun.shooting = this.keyPoll.isDown(control.trigger) || ((_ref = this.controller) != null ? (_ref1 = _ref.buttons) != null ? _ref1.fire : void 0 : void 0);
       gun.timeSinceLastShot += time;
       if (gun.shooting && gun.timeSinceLastShot >= gun.minimumShotInterval) {
         this.creator.createUserBullet(gun, position);
+        node.audio.play(ShootGun);
         gun.timeSinceLastShot = 0;
       }
     };
@@ -2201,10 +2187,10 @@
 
   })(ash.tools.ListIteratingSystem);
 
-  PhysicsControlSystem = (function(_super) {
+  ShipControlSystem = (function(_super) {
     var IDTK, R, b2Vec2, colors, _ref;
 
-    __extends(PhysicsControlSystem, _super);
+    __extends(ShipControlSystem, _super);
 
     R = window.devicePixelRatio;
 
@@ -2214,25 +2200,35 @@
 
     colors = [0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffff00];
 
-    PhysicsControlSystem.prototype.keyPoll = null;
+    ShipControlSystem.prototype.keyPoll = null;
 
-    PhysicsControlSystem.prototype.warping = 0;
+    ShipControlSystem.prototype.warping = 0;
 
-    function PhysicsControlSystem(keyPoll, config) {
-      this.keyPoll = keyPoll;
-      this.config = config;
+    ShipControlSystem.prototype.kount = 0;
+
+    ShipControlSystem.prototype.width = 0;
+
+    ShipControlSystem.prototype.height = 0;
+
+    function ShipControlSystem(parent) {
+      this.parent = parent;
       this.updateNode = __bind(this.updateNode, this);
-      PhysicsControlSystem.__super__.constructor.call(this, PhysicsControlNode, this.updateNode);
+      ShipControlSystem.__super__.constructor.call(this, PhysicsControlNode, this.updateNode);
+      this.keyPoll = this.parent.keyPoll;
+      this.width = this.parent.width;
+      this.height = this.parent.height;
+      this.game = this.parent.game;
+      this.controller = this.parent.controller;
     }
 
-    PhysicsControlSystem.prototype.updateNode = function(node, time) {
-      var body, control, rotation, v, x, y;
+    ShipControlSystem.prototype.updateNode = function(node, time) {
+      var a1, angle, body, control, dpad, joystick, rotation, speed, v, x, y, _ref1, _ref2, _ref3, _ref4;
       control = node.control;
       body = node.physics.body;
       if (this.warping) {
         this.warping--;
-        x = rnd.nextInt(this.config.width);
-        y = rnd.nextInt(this.config.height);
+        x = rnd.nextInt(this.width);
+        y = rnd.nextInt(this.height);
         body.SetPosition({
           x: x,
           y: y
@@ -2244,9 +2240,51 @@
         }
         return;
       }
-      if (this.keyPoll.isDown(control.warp)) {
+      if (this.keyPoll.isDown(control.warp) || ((_ref1 = this.controller) != null ? (_ref2 = _ref1.buttons) != null ? _ref2.warp : void 0 : void 0)) {
+        this.controller.warp = false;
         this.warping = rnd.nextInt(30) + 30;
         return;
+      }
+      dpad = (_ref3 = this.controller) != null ? _ref3.dpad : void 0;
+      if (dpad != null) {
+        if (dpad.left) {
+          rotation = body.GetAngularVelocity();
+          body.SetAngularVelocity(rotation - control.rotationRate * time);
+        }
+        if (dpad.right) {
+          rotation = rotation || body.GetAngularVelocity();
+          body.SetAngularVelocity(rotation + control.rotationRate * time);
+        }
+        if (dpad.up) {
+          rotation = rotation || body.GetAngularVelocity();
+          v = body.GetLinearVelocity();
+          v.x += Math.cos(rotation) * control.accelerationRate * time * R;
+          v.y += Math.sin(rotation) * control.accelerationRate * time * R;
+          if (!IDTK) {
+            body.SetAwake(true);
+          }
+          body.SetLinearVelocity(v);
+        }
+      }
+      joystick = (_ref4 = this.controller) != null ? _ref4.joystick : void 0;
+      if (joystick != null) {
+        angle = Math.atan2(joystick.normalizedY, joystick.normalizedX) / Math.PI * 180;
+        a1 = Math.abs(angle);
+        rotation = body.GetAngularVelocity();
+        if (a1 > 135 && a1 < 179) {
+          body.SetAngularVelocity(rotation - control.rotationRate * time);
+        } else if (a1 > 1 && a1 < 45) {
+          body.SetAngularVelocity(rotation + control.rotationRate * time);
+        } else if (angle > 45 && angle < 135) {
+          speed = 127 / Math.sqrt(joystick.normalizedX * joystick.normalizedX + joystick.normalizedY * joystick.normalizedY);
+          v = body.GetLinearVelocity();
+          v.x += Math.cos(rotation) * speed * time * R;
+          v.y += Math.sin(rotation) * speed * time * R;
+          if (!IDTK) {
+            body.SetAwake(true);
+          }
+          body.SetLinearVelocity(v);
+        }
       }
       if (this.keyPoll.isDown(control.left)) {
         rotation = body.GetAngularVelocity();
@@ -2268,7 +2306,7 @@
       }
     };
 
-    return PhysicsControlSystem;
+    return ShipControlSystem;
 
   })(ash.tools.ListIteratingSystem);
 
@@ -2356,9 +2394,9 @@
 
     WaitForStartSystem.prototype.asteroids = null;
 
-    function WaitForStartSystem(creator) {
-      this.creator = creator;
+    function WaitForStartSystem(parent) {
       this.update = __bind(this.update, this);
+      this.creator = parent.creator;
     }
 
     WaitForStartSystem.prototype.addToEngine = function(engine) {
@@ -2458,11 +2496,13 @@
 
     EntityCreator.prototype.spaceshipId = 0;
 
-    function EntityCreator(game, engine, world, config) {
-      this.game = game;
-      this.engine = engine;
-      this.world = world;
-      this.config = config;
+    function EntityCreator(parent) {
+      this.parent = parent;
+      this.createUserBullet = __bind(this.createUserBullet, this);
+      this.createSpaceship = __bind(this.createSpaceship, this);
+      this.game = this.parent.game;
+      this.engine = this.parent.engine;
+      this.world = this.parent.world;
     }
 
     EntityCreator.prototype.destroyEntity = function(entity) {
@@ -2489,7 +2529,7 @@
 
     EntityCreator.prototype.createWaitForClick = function() {
       var waitView;
-      waitView = new WaitForStartView(this.game);
+      waitView = new WaitForStartView(this.game, this.parent);
       this.waitEntity = new Entity('wait').add(new WaitForStart(waitView)).add(new Display(waitView)).add(new Position(0, 0, 0, 0));
       this.waitEntity.get(WaitForStart).startGame = false;
       this.engine.addEntity(this.waitEntity);
@@ -2551,8 +2591,8 @@
 
     EntityCreator.prototype.createSpaceship = function() {
       var body, bodyDef, deathView, fixDef, fsm, liveView, spaceship, x, y;
-      x = rnd.nextInt(this.config.width);
-      y = rnd.nextInt(this.config.height);
+      x = rnd.nextInt(this.parent.width);
+      y = rnd.nextInt(this.parent.height);
 
       /*
        * Spaceship simulation
@@ -2642,25 +2682,8 @@
 
   })();
 
-  GameConfig = (function() {
-    function GameConfig() {}
-
-    GameConfig.prototype.width = 0;
-
-    GameConfig.prototype.height = 0;
-
-    return GameConfig;
-
-  })();
-
   Asteroids = (function() {
-    var b2Vec2, b2World, height, scale, ucfirst, width;
-
-    width = window.innerWidth;
-
-    height = window.innerHeight;
-
-    scale = window.devicePixelRatio;
+    var b2Vec2, b2World, ucfirst;
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
@@ -2672,9 +2695,11 @@
 
     Asteroids.prototype.game = null;
 
-    Asteroids.prototype.engine = null;
+    Asteroids.prototype.pad = null;
 
-    Asteroids.prototype.tickProvider = null;
+    Asteroids.prototype.profiler = null;
+
+    Asteroids.prototype.engine = null;
 
     Asteroids.prototype.creator = null;
 
@@ -2693,6 +2718,12 @@
     Asteroids.prototype.faderSprite = null;
 
     Asteroids.prototype.bgdColor = 0x6A5ACD;
+
+    Asteroids.prototype.height = window.innerHeight;
+
+    Asteroids.prototype.width = window.innerWidth;
+
+    Asteroids.prototype.scale = window.devicePixelRatio;
 
     Asteroids.prototype.playMusic = localStorage.playMusic;
 
@@ -2718,9 +2749,11 @@
       this.fade = __bind(this.fade, this);
       this.getFaderSprite = __bind(this.getFaderSprite, this);
       this.create = __bind(this.create, this);
+      this.onLeaderboard = __bind(this.onLeaderboard, this);
+      this.onSettings = __bind(this.onSettings, this);
       this.preload = __bind(this.preload, this);
       this.init = __bind(this.init, this);
-      this.game = new Phaser.Game(width * scale, height * scale, Phaser.CANVAS, '', {
+      this.game = new Phaser.Game(this.width * this.scale, this.height * this.scale, Phaser.CANVAS, '', {
         init: this.init,
         preload: this.preload,
         create: this.create
@@ -2753,10 +2786,10 @@
 
     Asteroids.prototype.init = function() {
       this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      this.game.scale.minWidth = width * scale;
-      this.game.scale.minHeight = height * scale;
-      this.game.scale.maxWidth = width * scale;
-      this.game.scale.maxHeight = height * scale;
+      this.game.scale.minWidth = this.width * this.scale;
+      this.game.scale.minHeight = this.height * this.scale;
+      this.game.scale.maxWidth = this.width * this.scale;
+      this.game.scale.maxHeight = this.height * this.scale;
       this.game.scale.pageAlignVertically = true;
       this.game.scale.pageAlignHorizontally = true;
     };
@@ -2781,62 +2814,93 @@
       this.game.load.audio('shoot', [ShootGun.prototype.src]);
     };
 
+    Asteroids.prototype.onSettings = function() {
+      this.pause((function(_this) {
+        return function() {
+          return Cocoon.App.loadInTheWebView("settings.html");
+        };
+      })(this));
+    };
+
+    Asteroids.prototype.onLeaderboard = function() {
+      this.pause((function(_this) {
+        return function() {
+          return _this.showLeaderboard();
+        };
+      })(this));
+    };
+
 
     /*
      * Start the game
      */
 
     Asteroids.prototype.create = function() {
-      var PhysicsSystem;
-      this.game.plugins.add(Phaser.Plugin.PerformanceMonitor, {
+      var PhysicsSystem, useBox2dPlugin;
+      this.profiler = this.game.plugins.add(Phaser.Plugin.PerformanceMonitor, {
         profiler: this.get('profiler')
       });
       this.game.stage.backgroundColor = this.bgdColor;
       this.background = this.game.add.sprite(0, 0, 'background');
-      this.background.width = width;
-      this.background.height = height;
+      this.background.width = this.width;
+      this.background.height = this.height;
       this.background.alpha = this.optBgd === 'blue' ? 0 : 1;
-      this.game.add.button(width - 50, 50, 'settings', (function(_this) {
-        return function() {
-          _this.pause(function() {
-            return Cocoon.App.loadInTheWebView("settings.html");
-          });
-        };
-      })(this));
-      this.game.add.button(width - 50, 125, 'leaderboard', (function(_this) {
-        return function() {
-          _this.pause(function() {
-            return _this.showLeaderboard();
-          });
-        };
-      })(this));
+      this.game.add.button(this.width - 50, 50, 'settings', this.onSettings);
+      this.game.add.button(this.width - 50, 125, 'leaderboard', this.onLeaderboard);
       ExplodeAsteroid.audio = this.game.add.audio('asteroid');
       ExplodeAsteroid.audio.play('', 0, 0);
       ExplodeShip.audio = this.game.add.audio('ship');
       ExplodeShip.audio.play('', 0, 0);
       ShootGun.audio = this.game.add.audio('shoot');
       ShootGun.audio.play('', 0, 0);
-      this.config = new GameConfig();
-      this.config.height = height;
-      this.config.width = width;
-      this.keyPoll = new KeyPoll(this.game, this.config);
+      useBox2dPlugin = !(!window.ext || typeof window.ext.IDTK_SRV_BOX2D === 'undefined');
+      PhysicsSystem = useBox2dPlugin ? FixedPhysicsSystem : SmoothPhysicsSystem;
+      this.keyPoll = new KeyPoll(this);
       this.engine = this.game.plugins.add(ash.core.PhaserEngine);
       this.world = new b2World(new b2Vec2(0, 0), true);
       this.world.SetContinuousPhysics(true);
-      this.creator = new EntityCreator(this.game, this.engine, this.world, this.config);
-      PhysicsSystem = !window.ext || typeof window.ext.IDTK_SRV_BOX2D === 'undefined' ? SmoothPhysicsSystem : FixedPhysicsSystem;
-      this.engine.addSystem(new WaitForStartSystem(this.creator), SystemPriorities.preUpdate);
-      this.engine.addSystem(new GameManager(this.creator, this.config), SystemPriorities.preUpdate);
-      this.engine.addSystem(new PhysicsControlSystem(this.keyPoll, this.config), SystemPriorities.update);
-      this.engine.addSystem(new GunControlSystem(this.keyPoll, this.creator), SystemPriorities.update);
-      this.engine.addSystem(new BulletAgeSystem(this.creator, PhysicsSystem), SystemPriorities.update);
-      this.engine.addSystem(new DeathThroesSystem(this.creator, PhysicsSystem), SystemPriorities.update);
-      this.engine.addSystem(this.physics = new PhysicsSystem(this.config, this.world, this.game), SystemPriorities.move);
-      this.engine.addSystem(new CollisionSystem(this.world, this.creator, PhysicsSystem), SystemPriorities.resolveCollisions);
-      this.engine.addSystem(new AnimationSystem(), SystemPriorities.animate);
-      this.engine.addSystem(new HudSystem(), SystemPriorities.animate);
-      this.engine.addSystem(new RenderSystem(), SystemPriorities.render);
-      this.engine.addSystem(new AudioSystem(), SystemPriorities.render);
+      this.controller = this.game.plugins.add(Phaser.Plugin.GameControllerPlugin, {
+        force: false
+      });
+      this.controller.addDPad('left', 60, this.height - 60, {
+        up: {
+          width: '10%',
+          height: '7%'
+        },
+        down: false,
+        left: {
+          width: '7%',
+          height: '10%'
+        },
+        right: {
+          width: '7%',
+          height: '10%'
+        }
+      });
+      this.controller.addButtons('right', this.width - 180, this.height - 80, {
+        1: {
+          title: 'warp',
+          color: 'yellow'
+        },
+        3: {
+          title: 'FIRE',
+          color: 'red'
+        }
+      });
+      this.creator = new EntityCreator(this);
+      this.physics = new PhysicsSystem(this);
+      this.engine.addSystem(this.physics, SystemPriorities.move);
+      this.engine.addSystem(new BulletAgeSystem(this, PhysicsSystem), SystemPriorities.update);
+      this.engine.addSystem(new DeathThroesSystem(this, PhysicsSystem), SystemPriorities.update);
+      this.engine.addSystem(new CollisionSystem(this, PhysicsSystem), SystemPriorities.resolveCollisions);
+      this.engine.addSystem(new AnimationSystem(this), SystemPriorities.animate);
+      this.engine.addSystem(new HudSystem(this), SystemPriorities.animate);
+      this.engine.addSystem(new RenderSystem(this), SystemPriorities.render);
+      this.engine.addSystem(new AudioSystem(this), SystemPriorities.render);
+      this.engine.addSystem(new WaitForStartSystem(this), SystemPriorities.preUpdate);
+      this.engine.addSystem(new GameManager(this), SystemPriorities.preUpdate);
+      this.engine.addSystem(new ShipControlSystem(this), SystemPriorities.update);
+      this.engine.addSystem(new GunControlSystem(this), SystemPriorities.update);
       this.creator.createWaitForClick();
       this.creator.createGame();
     };
@@ -2914,8 +2978,8 @@
       var big, board, button, dialog, label, mmddyyyy, normal, row, title, y, _i, _len, _ref;
       board = this.game.add.group();
       dialog = new Phaser.Sprite(this.game, 0, 0, "dialog-" + this.optBgd);
-      dialog.width = this.config.width;
-      dialog.height = this.config.height;
+      dialog.width = this.width;
+      dialog.height = this.height;
       board.add(dialog);
       big = {
         font: 'bold 30px opendyslexic',
@@ -2925,7 +2989,7 @@
         font: 'bold 20px opendyslexic',
         fill: '#ffffff'
       };
-      title = new Phaser.Text(this.game, this.config.width / 2, 20, 'Asteroids', big);
+      title = new Phaser.Text(this.game, this.width / 2, 20, 'Asteroids', big);
       title.anchor.x = 0.5;
       board.add(title);
       board.add(new Phaser.Text(this.game, 200, 80, 'Date', normal));
@@ -2944,7 +3008,7 @@
         board.add(new Phaser.Text(this.game, 400, y, row.score, normal));
         y += 20;
       }
-      button = new Phaser.Button(this.game, this.config.width / 2, this.config.height - 64, "button-" + this.optBgd, (function(_this) {
+      button = new Phaser.Button(this.game, this.width / 2, this.height - 64, "button-" + this.optBgd, (function(_this) {
         return function() {
           board.destroy();
           board = null;
@@ -2956,7 +3020,7 @@
       label = new Phaser.Text(this.game, 0, button.height / 2, 'continue', big);
       label.anchor.x = 0.5;
       label.anchor.y = 0.5;
-      return button.addChild(label);
+      button.addChild(label);
     };
 
 
