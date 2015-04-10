@@ -45,6 +45,7 @@ class EntityCreator
   engine          : null  # Ash Engine
   world           : null  # Box2D World
   waitEntity      : null
+  rnd             : null
   bulletId        : 0
   asteroidId      : 0
   spaceshipId     : 0
@@ -53,6 +54,7 @@ class EntityCreator
     @game = @parent.game
     @engine = @parent.engine
     @world = @parent.world
+    @rnd = @parent.rnd
 
   destroyEntity: (entity) ->
     @engine.removeEntity entity
@@ -100,11 +102,11 @@ class EntityCreator
     bodyDef.fixedRotation = true
     bodyDef.position.x = x
     bodyDef.position.y = y
-    v1 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius)
-    v2 = (rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius)
+    v1 = (@rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius)
+    v2 = (@rnd.nextDouble() - 0.5) * get('asteroidLinearVelocity') * (50 - radius)
 
     bodyDef.linearVelocity.Set(v1, v2)
-    bodyDef.angularVelocity = rnd.nextDouble() * get('asteroidAngularVelocity') - 1
+    bodyDef.angularVelocity = @rnd.nextDouble() * get('asteroidAngularVelocity') - 1
     bodyDef.linearDamping = get('asteroidDamping')
 
     fixDef = new b2FixtureDef()
@@ -122,13 +124,13 @@ class EntityCreator
     asteroid = new Entity()
     fsm = new EntityStateMachine(asteroid)
 
-    liveView = new AsteroidView(@game, radius)
+    liveView = new AsteroidView(@parent, radius)
     fsm.createState('alive')
     .add(Physics).withInstance(new Physics(body))
     .add(Collision).withInstance(new Collision(radius))
     .add(Display).withInstance(new Display(liveView))
 
-    deathView = new AsteroidDeathView(@game, radius)
+    deathView = new AsteroidDeathView(@parent, radius)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(3))
     .add(Display).withInstance(new Display(deathView))
@@ -149,8 +151,8 @@ class EntityCreator
   ###
   createSpaceship: =>
 
-    x = rnd.nextInt(@parent.width)
-    y = rnd.nextInt(@parent.height)
+    x = @rnd.nextInt(@parent.width)
+    y = @rnd.nextInt(@parent.height)
     ###
      * Spaceship simulation
     ###
@@ -193,7 +195,7 @@ class EntityCreator
     .add(Collision).withInstance(new Collision(9))
     .add(Display).withInstance(new Display(liveView))
 
-    deathView = new SpaceshipDeathView(@game)
+    deathView = new SpaceshipDeathView(@parent)
     fsm.createState('destroyed')
     .add(DeathThroes).withInstance(new DeathThroes(5))
     .add(Display).withInstance(new Display(deathView))

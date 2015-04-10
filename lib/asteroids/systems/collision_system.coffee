@@ -10,12 +10,14 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
   world           : null #  b2World
   creator         : null #  EntityCreator
   games           : null #  NodeList
+  rnd             : null
   collisions      : null #  collision que
   PhysicsSystem   : null
 
   constructor: (parent, @PhysicsSystem) ->
     @world = parent.world
     @creator = parent.creator
+    @rnd = parent.rnd
     @collisions = []
     @world.SetContactListener(this)
 
@@ -34,8 +36,8 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
           radius = b.get(Collision).radius
           position = b.get(Position).position
           if (radius > 10)
-            @creator.createAsteroid(radius - 10, position.x + rnd.nextDouble() * 10 - 5, position.y + rnd.nextDouble() * 10 - 5)
-            @creator.createAsteroid(radius - 10, position.x + rnd.nextDouble() * 10 - 5, position.y + rnd.nextDouble() * 10 - 5)
+            @creator.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
+            @creator.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
           body = b.get(Physics).body
           b.get(Display).graphic.dispose()
           b.get(Asteroid).fsm.changeState('destroyed')

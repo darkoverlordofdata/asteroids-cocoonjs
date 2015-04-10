@@ -14,18 +14,20 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
     0xffff00
   ]
   keyPoll: null # KeyPoll
+  rnd: null
   warping: 0
   kount: 0
   width: 0
   height: 0
 
-  constructor: (@parent) ->
+  constructor: (parent) ->
     super(PhysicsControlNode, @updateNode)
-    @keyPoll = @parent.keyPoll
-    @width = @parent.width
-    @height = @parent.height
-    @game = @parent.game
-    @controller = @parent.controller
+    @keyPoll = parent.keyPoll
+    @rnd = parent.rnd
+    @width = parent.width
+    @height = parent.height
+    @game = parent.game
+    @controller = parent.controller
 
   updateNode: (node, time) =>
 
@@ -34,19 +36,19 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
 
     if @warping
       @warping--
-      x = rnd.nextInt(@width)
-      y = rnd.nextInt(@height)
+      x = @rnd.nextInt(@width)
+      y = @rnd.nextInt(@height)
       body.SetPosition(x:x, y:y)
       if @warping is 0
         node.display.graphic.draw(0xFFFFFF)
       else
-        node.display.graphic.draw(colors[rnd.nextInt(6)])
+        node.display.graphic.draw(colors[@rnd.nextInt(6)])
       return
 
     # Warp outa here!
     if @keyPoll.isDown(control.warp) or @controller?.buttons?.warp
       @controller.warp = false
-      @warping = rnd.nextInt(30)+30
+      @warping = @rnd.nextInt(30)+30
       return
 
     dpad = @controller?.dpad

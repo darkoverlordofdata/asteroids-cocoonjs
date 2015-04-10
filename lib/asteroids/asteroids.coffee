@@ -44,14 +44,17 @@ class Asteroids
    * Create the phaser game component
   ###
   constructor: () ->
+    # initialize the game
     @game = new Phaser.Game(@width * @scale, @height * @scale, Phaser.CANVAS, '',
       init: @init, preload: @preload, create: @create)
 
-    window.rnd = new MersenneTwister()
-    @initializeDb()
-    @optBgd = Db.queryAll('settings', query: name: 'background')[0].value
+    # initialize the prng
+    @rnd = new MersenneTwister()
 
-      # show the web view when it loads
+    # initialize the database
+    @initializeDb()
+
+    # show the web view when it loads
     Cocoon.App.WebView.on "load",
       success : => Cocoon.App.showTheWebView()
       error   : => console.log("Cannot show the Webview: #{JSON.stringify(arguments)}")
@@ -105,6 +108,7 @@ class Asteroids
     @profiler = @game.plugins.add(Phaser.Plugin.PerformanceMonitor, profiler: @get('profiler'))
 
     # set the background
+    @optBgd = Db.queryAll('settings', query: name: 'background')[0].value
     @game.stage.backgroundColor = @bgdColor
     @background = @game.add.sprite(0, 0, 'background')
     @background.width = @width
@@ -121,9 +125,6 @@ class Asteroids
     ShootGun.audio = @game.add.audio('shoot')
     ShootGun.audio.play('', 0, 0)
 
-    useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
-    PhysicsSystem = if useBox2dPlugin then FixedPhysicsSystem else SmoothPhysicsSystem
-
     @keyPoll = new KeyPoll(this)
     @engine = @game.plugins.add(ash.core.PhaserEngine)
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
@@ -133,15 +134,31 @@ class Asteroids
     # Set up a virtual gamepad
     @controller = @game.plugins.add(Phaser.Plugin.GameControllerPlugin, force: true)
 
+    ###
+     * Left Controller is a DPad
+     *
+     * Left   - turn left
+     * Up     - accelerate
+     * Right  - turn right
+    ###
     @controller.addDPad 'left', 60, @height-60,
-      up: width: '7%', height: '7%'
+      up: width: '10%', height: '7%'
+      left: width: '7%', height: '10%'
+      right: width: '7%', height: '10%'
       down: false
-      left: width: '7%', height: '7%'
-      right: width: '7%', height: '7%'
 
+    ###
+     * Right Controller is a Button group
+     *
+     * 1 - engage warp drive
+     * 3 - fire bullets
+    ###
     @controller.addButtons 'right', @width-180, @height-80,
       1: title: 'warp', color: 'yellow'
       3: title: 'FIRE', color: 'red'
+
+    useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
+    PhysicsSystem = if useBox2dPlugin then FixedPhysicsSystem else SmoothPhysicsSystem
 
     @creator = new EntityCreator(this)
     @physics = new PhysicsSystem(this)

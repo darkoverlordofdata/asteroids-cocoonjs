@@ -2,7 +2,7 @@ class GameManager extends ash.core.System
 
   config        : null  # GameConfig
   creator       : null  # EntityCreator
-
+  rnd           : null
   gameNodes     : null  # NodeList of GameNode
   spaceships    : null  # NodeList of SpaceshipNode
   asteroids     : null  # NodeList of AsteroidCollisionNode
@@ -12,6 +12,7 @@ class GameManager extends ash.core.System
 
   constructor: (parent) ->
     @creator = parent.creator
+    @rnd = parent.rnd
     @width = parent.width
     @height = parent.height
 
@@ -74,7 +75,7 @@ class GameManager extends ash.core.System
   
           # check not on top of spaceship
           loop
-            position = new Point(rnd.nextDouble() * @width, rnd.nextDouble() * @height)
+            position = new Point(@rnd.nextDouble() * @width, @rnd.nextDouble() * @height)
             break unless Point.distance(position, spaceship.position.position) <= 80
 
           @creator.createAsteroid 30, position.x, position.y
