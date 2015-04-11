@@ -21,7 +21,7 @@ class ShipControlSystem extends ash.tools.ListIteratingSystem
   height: 0
 
   constructor: (parent) ->
-    super(PhysicsControlNode, @updateNode)
+    super(parent.ash.nodes.PhysicsControlNode, @updateNode)
     @keyPoll = parent.keyPoll
     @rnd = parent.rnd
     @width = parent.width

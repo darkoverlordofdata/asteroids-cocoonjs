@@ -12,32 +12,3 @@
 
 ==================================================> ###
 'use strict'
-
-###
- * Meta helper for ash nodes
- *
- * @param types   hash of node classes
- * @returns the hash
-###
-ash.nodes = (types) ->
-  for name, klass of types
-    klass.components = {}
-    for own property, type of klass::
-      klass.components[property] = type
-      klass::[property] = null
-    klass::entity = null
-    klass::previous = null
-    klass::next = null
-    ash.nodes[name] = klass
-  return types
-
-###
- * Meta helper for ash components
- *
- * @param types   hash of components classes
- * @returns the hash
-###
-ash.components = (types) ->
-  for name, klass of types
-    ash.components[name] = klass
-  return types

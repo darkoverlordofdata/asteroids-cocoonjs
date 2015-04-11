@@ -1,8 +1,8 @@
 class AnimationSystem extends ash.tools.ListIteratingSystem
 
-  constructor: () ->
+  constructor: (parent) ->
 
-    super(AnimationNode, @updateNode)
+    super(parent.ash.nodes.AnimationNode, @updateNode)
 
   updateNode: (node, time) =>
 

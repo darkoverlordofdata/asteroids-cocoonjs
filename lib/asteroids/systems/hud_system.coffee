@@ -1,8 +1,8 @@
 class HudSystem extends ash.tools.ListIteratingSystem
 
-  constructor: () ->
+  constructor: (parent) ->
 
-    super(HudNode, @updateNode)
+    super(parent.ash.nodes.HudNode, @updateNode)
 
   updateNode: (node, time) =>
 

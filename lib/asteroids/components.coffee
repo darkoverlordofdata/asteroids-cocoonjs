@@ -1,7 +1,7 @@
 ###
  * Components
 ###
-ash.components
+Components = do ->
 
   Animation: class Animation
     animation: null

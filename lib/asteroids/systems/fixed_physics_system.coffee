@@ -17,7 +17,7 @@ class FixedPhysicsSystem extends ash.core.System
   handle      : 0     # handle for setInterval
   config      : null  # GameConfig
   world       : null  # Box2D World
-  creator     : null  # EntityCreator
+  entities     : null  # EntityCreator
   nodes       : null  # PhysicsNode
   enabled     : true
   game        : null
@@ -30,9 +30,10 @@ class FixedPhysicsSystem extends ash.core.System
     @game = parent.game
     @width = parent.width
     @height = parent.height
+    @nodes = parent.ash.nodes
 
   addToEngine: (engine) ->
-    @nodes = engine.getNodeList(PhysicsNode)
+    @nodes = engine.getNodeList(@nodes.PhysicsNode)
     @handle = setInterval(@process, TIME_STEP)
     return # Void
 

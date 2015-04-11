@@ -4,10 +4,11 @@ class RenderSystem extends ash.core.System
   renderer  : null
   nodes     : null  # NodeList
 
-  constructor: (@stage) ->
+  constructor: (parent) ->
+    @nodes = parent.ash.nodes
 
   addToEngine: (engine) ->
-    @nodes = engine.getNodeList(RenderNode)
+    @nodes = engine.getNodeList(@nodes.RenderNode)
     node = @nodes.head
 
     while node

@@ -1,70 +1,70 @@
 ###
- * Nodes
+ * Node templates
 ###
-ash.nodes
+Nodes = do ->
 
   AnimationNode: class AnimationNode
-    animation : ash.components.Animation
+    animation   : Components.Animation
 
   AsteroidCollisionNode: class AsteroidCollisionNode
-    asteroid  : ash.components.Asteroid
-    position  : ash.components.Position
-    collision : ash.components.Collision
-    audio     : ash.components.Audio
-    physics   : ash.components.Physics
+    asteroid    : Components.Asteroid
+    position    : Components.Position
+    collision   : Components.Collision
+    audio       : Components.Audio
+    physics     : Components.Physics
 
   AudioNode: class AudioNode
-    audio     : ash.components.Audio
+    audio       : Components.Audio
 
   BulletAgeNode: class BulletAgeNode
-    bullet    : ash.components.Bullet
-    physics   : ash.components.Physics
-    display   : ash.components.Display
+    bullet      : Components.Bullet
+    physics     : Components.Physics
+    display     : Components.Display
 
   BulletCollisionNode: class BulletCollisionNode
-    bullet    : ash.components.Bullet
-    position  : ash.components.Position
-    physics   : ash.components.Physics
+    bullet      : Components.Bullet
+    position    : Components.Position
+    physics     : Components.Physics
 
   DeathThroesNode: class DeathThroesNode
-    dead      : ash.components.DeathThroes
-    display   : ash.components.Display
+    dead        : Components.DeathThroes
+    display     : Components.Display
 
   GameNode: class GameNode
-    state     : ash.components.GameState
+    state       : Components.GameState
 
   GunControlNode: class GunControlNode
-    audio     : ash.components.Audio
-    control   : ash.components.GunControls
-    gun       : ash.components.Gun
-    position  : ash.components.Position
+    audio       : Components.Audio
+    control     : Components.GunControls
+    gun         : Components.Gun
+    position    : Components.Position
 
   HudNode: class HudNode
-    state     : ash.components.GameState
-    hud       : ash.components.Hud
+    state       : Components.GameState
+    hud         : Components.Hud
 
   MovementNode: class MovementNode
-    position  : ash.components.Position
+    position    : Components.Position
 
   PhysicsControlNode: class PhysicsControlNode
-    control   : ash.components.MotionControls
-    physics   : ash.components.Physics
-    display   : ash.components.Display
+    control     : Components.MotionControls
+    physics     : Components.Physics
+    display     : Components.Display
 
   PhysicsNode: class PhysicsNode
-    position  : ash.components.Position
-    physics   : ash.components.Physics
+    position    : Components.Position
+    physics     : Components.Physics
 
   RenderNode: class RenderNode
-    position  : ash.components.Position
-    display   : ash.components.Display
+    position    : Components.Position
+    display     : Components.Display
 
   SpaceshipNode: class SpaceshipNode
-    spaceship : ash.components.Spaceship
-    position  : ash.components.Position
+    spaceship   : Components.Spaceship
+    position    : Components.Position
 
   WaitForStartNode: class WaitForStartNode
-    wait      : ash.components.WaitForStart
+    wait        : Components.WaitForStart
 
 
 

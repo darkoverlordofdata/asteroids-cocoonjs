@@ -29,7 +29,7 @@ lib/asteroids/systems/ship_control_system.coffee
 lib/asteroids/systems/render_system.coffee
 lib/asteroids/systems/system_priorities.coffee
 lib/asteroids/systems/wait_for_start_system.coffee
-lib/asteroids/entity_creator.coffee
+lib/asteroids/entities.coffee
 lib/asteroids/asteroids.coffee
 lib/asteroids/plugins/performance_monitor.coffee
 lib/boot.coffee

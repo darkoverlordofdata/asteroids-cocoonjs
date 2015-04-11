@@ -24,7 +24,7 @@ class Asteroids
   pad               : null  #   On Screen Controller
   profiler          : null  #   performance profiler
   engine            : null  #   Ash Engine
-  creator           : null  #   EntityCreator
+  entities          : null  #   EntityCreator
   keyPoll           : null  #   KeyPoll
   config            : null  #   GameConfig
   world             : null  #   b2World
@@ -100,6 +100,8 @@ class Asteroids
     @pause => @showLeaderboard()
     return
 
+
+
   ###
    * Start the game
   ###
@@ -115,9 +117,11 @@ class Asteroids
     @background.height = @height
     @background.alpha = if @optBgd is 'blue' then 0 else 1
 
+    # settings
     @game.add.button(@width - 50, 50, 'settings', @onSettings)
     @game.add.button(@width - 50, 125, 'leaderboard', @onLeaderboard)
 
+    # Initialize audio
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
     ExplodeAsteroid.audio.play('', 0, 0)
     ExplodeShip.audio = @game.add.audio('ship')
@@ -125,61 +129,54 @@ class Asteroids
     ShootGun.audio = @game.add.audio('shoot')
     ShootGun.audio.play('', 0, 0)
 
+    # keyboard i/o
     @keyPoll = new KeyPoll(this)
-    @engine = @game.plugins.add(ash.core.PhaserEngine)
+
+    # Box2d
     @world = new b2World(new b2Vec2(0 ,0), true) # Zero-G physics
     @world.SetContinuousPhysics(true)
-    #if @game.device.touch
+
+    # Create the Ash engine
+    @ash = @game.plugins.add(ash.core.PhaserEngine, Nodes, Components)
+
+    # Entity Factory
+    @entities = new Entities(this)
 
     # Set up a virtual gamepad
     @controller = @game.plugins.add(Phaser.Plugin.GameControllerPlugin, force: true)
 
-    ###
-     * Left Controller is a DPad
-     *
-     * Left   - turn left
-     * Up     - accelerate
-     * Right  - turn right
-    ###
     @controller.addDPad 'left', 60, @height-60,
-      up: width: '10%', height: '7%'
-      left: width: '7%', height: '10%'
-      right: width: '7%', height: '10%'
-      down: false
+      up    : width: '10%', height: '7%'
+      left  : width: '7%',  height: '10%'
+      right : width: '7%',  height: '10%'
+      down  : false
 
-    ###
-     * Right Controller is a Button group
-     *
-     * 1 - engage warp drive
-     * 3 - fire bullets
-    ###
     @controller.addButtons 'right', @width-180, @height-80,
       1: title: 'warp', color: 'yellow'
       3: title: 'FIRE', color: 'red'
 
+    # check for cocoonjs native box2d
     useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
     PhysicsSystem = if useBox2dPlugin then FixedPhysicsSystem else SmoothPhysicsSystem
-
-    @creator = new EntityCreator(this)
     @physics = new PhysicsSystem(this)
 
-    @engine.addSystem(@physics, SystemPriorities.move)
-    @engine.addSystem(new BulletAgeSystem(this, PhysicsSystem), SystemPriorities.update)
-    @engine.addSystem(new DeathThroesSystem(this, PhysicsSystem), SystemPriorities.update)
-    @engine.addSystem(new CollisionSystem(this, PhysicsSystem), SystemPriorities.resolveCollisions)
+    @ash.addSystem(@physics, SystemPriorities.move)
+    @ash.addSystem(new BulletAgeSystem(this, PhysicsSystem), SystemPriorities.update)
+    @ash.addSystem(new DeathThroesSystem(this, PhysicsSystem), SystemPriorities.update)
+    @ash.addSystem(new CollisionSystem(this, PhysicsSystem), SystemPriorities.resolveCollisions)
 
-    @engine.addSystem(new AnimationSystem(this), SystemPriorities.animate)
-    @engine.addSystem(new HudSystem(this), SystemPriorities.animate)
-    @engine.addSystem(new RenderSystem(this), SystemPriorities.render)
-    @engine.addSystem(new AudioSystem(this), SystemPriorities.render)
+    @ash.addSystem(new AnimationSystem(this), SystemPriorities.animate)
+    @ash.addSystem(new HudSystem(this), SystemPriorities.animate)
+    @ash.addSystem(new RenderSystem(this), SystemPriorities.render)
+    @ash.addSystem(new AudioSystem(this), SystemPriorities.render)
 
-    @engine.addSystem(new WaitForStartSystem(this), SystemPriorities.preUpdate)
-    @engine.addSystem(new GameManager(this), SystemPriorities.preUpdate)
-    @engine.addSystem(new ShipControlSystem(this), SystemPriorities.update)
-    @engine.addSystem(new GunControlSystem(this), SystemPriorities.update)
+    @ash.addSystem(new WaitForStartSystem(this), SystemPriorities.preUpdate)
+    @ash.addSystem(new GameManager(this), SystemPriorities.preUpdate)
+    @ash.addSystem(new ShipControlSystem(this), SystemPriorities.update)
+    @ash.addSystem(new GunControlSystem(this), SystemPriorities.update)
 
-    @creator.createWaitForClick()
-    @creator.createGame()
+    @entities.createWaitForClick()
+    @entities.createGame()
     return
 
 

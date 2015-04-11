@@ -1,34 +1,47 @@
 
 class CollisionSystem extends ash.core.System #implements b2ContactListener
 
-  b2ContactListener         = Box2D.Dynamics.b2ContactListener
+  ###
+   * Imports
+  ###
+  Asteroid            = Components.Asteroid
+  Audio               = Components.Audio
+  Collision           = Components.Collision
+  DeathThroes         = Components.DeathThroes
+  Display             = Components.Display
+  Physics             = Components.Physics
+  Position            = Components.Position
+  Spaceship           = Components.Spaceship
+  b2ContactListener   = Box2D.Dynamics.b2ContactListener
 
-  BulletHitAsteroid = 1
-  AsteroidHitShip = 2
+  BulletHitAsteroid   = 1
+  AsteroidHitShip     = 2
 
 
-  world           : null #  b2World
-  creator         : null #  EntityCreator
-  games           : null #  NodeList
-  rnd             : null
-  collisions      : null #  collision que
-  PhysicsSystem   : null
+  world               : null #  b2World
+  entities             : null #  Entities
+  games               : null #  NodeList
+  rnd                 : null
+  collisions          : null #  collision que
+  PhysicsSystem       : null
 
   constructor: (parent, @PhysicsSystem) ->
     @world = parent.world
-    @creator = parent.creator
+    @entities = parent.entities
     @rnd = parent.rnd
+    @components = parent.ash.components
     @collisions = []
     @world.SetContactListener(this)
 
   update:(time) =>
+
     while @collisions.length
       {type, a, b} = @collisions.pop()
 
       if (type is BulletHitAsteroid)
 
         if (a.get(Physics)?) # already been killed?
-          @creator.destroyEntity a
+          @entities.destroyEntity a
           a.get(Display).graphic.dispose()
           @PhysicsSystem.deadPool.push(a.get(Physics).body)
 
@@ -36,8 +49,8 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
           radius = b.get(Collision).radius
           position = b.get(Position).position
           if (radius > 10)
-            @creator.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
-            @creator.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
+            @entities.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
+            @entities.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
           body = b.get(Physics).body
           b.get(Display).graphic.dispose()
           b.get(Asteroid).fsm.changeState('destroyed')
@@ -61,7 +74,7 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
     return
 
   addToEngine: (engine) ->
-    @games = engine.getNodeList(GameNode)
+    @games = engine.getNodeList(Nodes.GameNode)
     return # Void
 
   removeFromEngine: (engine) ->
@@ -79,18 +92,18 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
     b = contact.GetFixtureB().GetBody().GetUserData()
 
     switch (a.type)
-      when EntityCreator.ASTEROID
+      when Entities.ASTEROID
         switch(b.type)
-          when EntityCreator.BULLET
+          when Entities.BULLET
             @collisions.push(type: BulletHitAsteroid, a: b.entity, b: a.entity)
-          when EntityCreator.SPACESHIP
+          when Entities.SPACESHIP
             @collisions.push(type: AsteroidHitShip, a: a.entity, b: b.entity)
-      when EntityCreator.BULLET
-        if (b.type is EntityCreator.ASTEROID)
+      when Entities.BULLET
+        if (b.type is Entities.ASTEROID)
           @collisions.push(type: BulletHitAsteroid, a: a.entity, b: b.entity)
 
-      when EntityCreator.SPACESHIP
-        if (b.type is EntityCreator.ASTEROID)
+      when Entities.SPACESHIP
+        if (b.type is Entities.ASTEROID)
           @collisions.push(type: AsteroidHitShip, a: b.entity, b: a.entity)
     return
     ###

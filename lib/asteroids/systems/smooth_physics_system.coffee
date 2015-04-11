@@ -23,7 +23,7 @@ class SmoothPhysicsSystem extends ash.core.System
 
   config      : null  # GameConfig
   world       : null  # Box2D World
-  creator     : null  # EntityCreator
+  entities     : null  # EntityCreator
   nodes       : null  # PhysicsNode
   enabled     : true
   game        : null
@@ -37,9 +37,10 @@ class SmoothPhysicsSystem extends ash.core.System
     @height = parent.height
     @world = parent.world
     @game = parent.game
+    @nodes = parent.ash.nodes
 
   addToEngine: (engine) ->
-    @nodes = engine.getNodeList(PhysicsNode)
+    @nodes = engine.getNodeList(@nodes.PhysicsNode)
     return # Void
 
   removeFromEngine: (engine) ->

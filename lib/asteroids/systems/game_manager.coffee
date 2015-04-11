@@ -1,7 +1,7 @@
 class GameManager extends ash.core.System
 
   config        : null  # GameConfig
-  creator       : null  # EntityCreator
+  entities       : null  # EntityCreator
   rnd           : null
   gameNodes     : null  # NodeList of GameNode
   spaceships    : null  # NodeList of SpaceshipNode
@@ -11,16 +11,17 @@ class GameManager extends ash.core.System
   height        : 0
 
   constructor: (parent) ->
-    @creator = parent.creator
+    @entities = parent.entities
     @rnd = parent.rnd
     @width = parent.width
     @height = parent.height
+    @nodes = parent.ash.nodes
 
   addToEngine: (engine) ->
-    @gameNodes  = engine.getNodeList(GameNode)
-    @spaceships = engine.getNodeList(SpaceshipNode)
-    @asteroids  = engine.getNodeList(AsteroidCollisionNode)
-    @bullets    = engine.getNodeList(BulletCollisionNode)
+    @gameNodes  = engine.getNodeList(@nodes.GameNode)
+    @spaceships = engine.getNodeList(@nodes.SpaceshipNode)
+    @asteroids  = engine.getNodeList(@nodes.AsteroidCollisionNode)
+    @bullets    = engine.getNodeList(@nodes.BulletCollisionNode)
     return # Void
 
   update: (time) =>
@@ -37,7 +38,7 @@ class GameManager extends ash.core.System
               break
             asteroid = asteroid.next
           if clearToAddSpaceship
-            @creator.createSpaceship()
+            @entities.createSpaceship()
         else
           node.state.playing = false
 
@@ -61,7 +62,7 @@ class GameManager extends ash.core.System
               return row
 
           Db.commit()
-          @creator.createWaitForClick()
+          @entities.createWaitForClick()
   
       # game over
       if @asteroids.empty and @bullets.empty and not @spaceships.empty
@@ -78,7 +79,7 @@ class GameManager extends ash.core.System
             position = new Point(@rnd.nextDouble() * @width, @rnd.nextDouble() * @height)
             break unless Point.distance(position, spaceship.position.position) <= 80
 
-          @creator.createAsteroid 30, position.x, position.y
+          @entities.createAsteroid 30, position.x, position.y
           ++i
 
     return # Void

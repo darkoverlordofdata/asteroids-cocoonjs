@@ -1,8 +1,8 @@
 class AudioSystem extends ash.tools.ListIteratingSystem
 
-  constructor: () ->
+  constructor: (parent) ->
 
-    super(AudioNode, @updateNode)
+    super(parent.ash.nodes.AudioNode, @updateNode)
 
   updateNode: (node, time) =>
 

@@ -1,19 +1,19 @@
 class WaitForStartSystem extends ash.core.System
 
   engine      : null  # Engine
-  creator     : null  # EntityCreator
+  entities     : null  # EntityCreator
   gameNodes   : null  # NodeList
   waitNodes   : null  # NodeList
   asteroids   : null  # NodeList
 
   constructor: (parent) ->
-    @creator = parent.creator
+    @entities = parent.entities
 
   addToEngine: (engine) ->
-    @engine = engine
-    @waitNodes = engine.getNodeList(WaitForStartNode)
-    @gameNodes = engine.getNodeList(GameNode)
-    @asteroids = engine.getNodeList(AsteroidCollisionNode)
+    @ash = engine
+    @waitNodes = engine.getNodeList(Nodes.WaitForStartNode)
+    @gameNodes = engine.getNodeList(Nodes.GameNode)
+    @asteroids = engine.getNodeList(Nodes.AsteroidCollisionNode)
     return # Void
 
   removeFromEngine: (engine) ->
@@ -34,11 +34,11 @@ class WaitForStartSystem extends ash.core.System
          * Clean up asteroids left from prior game
         ###
         graphic = asteroid.entity.get(Display).graphic
-        @creator.destroyEntity(asteroid.entity)
+        @entities.destroyEntity(asteroid.entity)
         graphic.dispose()
         asteroid = asteroid.next
 
       game.state.setForStart()
       node.wait.startGame = false
-      @engine.removeEntity(node.entity)
+      @ash.removeEntity(node.entity)
     return # Void

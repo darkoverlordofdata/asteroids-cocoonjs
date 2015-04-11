@@ -11,23 +11,43 @@
 #|
 #+--------------------------------------------------------------------+
 #
-# EntityCreator
+# Entities
 #
-class EntityCreator
+class Entities
 
-  @ASTEROID :   1
-  @SPACESHIP:   2
-  @BULLET:      3
+  ###
+   * Imports
+  ###
+  Animation           = Components.Animation
+  Asteroid            = Components.Asteroid
+  Audio               = Components.Audio
+  Bullet              = Components.Bullet
+  Collision           = Components.Collision
+  DeathThroes         = Components.DeathThroes
+  Display             = Components.Display
+  GameState           = Components.GameState
+  Gun                 = Components.Gun
+  GunControls         = Components.GunControls
+  Hud                 = Components.Hud
+  MotionControls      = Components.MotionControls
+  Physics             = Components.Physics
+  Position            = Components.Position
+  Spaceship           = Components.Spaceship
+  WaitForStart        = Components.WaitForStart
+  Entity              = ash.core.Entity
+  EntityStateMachine  = ash.fsm.EntityStateMachine
 
-  LEFT                    : KeyPoll.KEY_LEFT
-  RIGHT                   : KeyPoll.KEY_RIGHT
-  THRUST                  : KeyPoll.KEY_UP
-  FIRE                    : KeyPoll.KEY_Z
-  WARP                    : KeyPoll.KEY_SPACE
+  @ASTEROID           : 1
+  @SPACESHIP          : 2
+  @BULLET             : 3
 
-  Entity                = ash.core.Entity
-  EntityStateMachine    = ash.fsm.EntityStateMachine
-  
+  LEFT                : KeyPoll.KEY_LEFT
+  RIGHT               : KeyPoll.KEY_RIGHT
+  THRUST              : KeyPoll.KEY_UP
+  FIRE                : KeyPoll.KEY_Z
+  WARP                : KeyPoll.KEY_SPACE
+
+
   get = (prop) -> parseFloat(asteroids.get(prop))
      
 
@@ -42,7 +62,7 @@ class EntityCreator
   b2Vec2                = Box2D.Common.Math.b2Vec2
 
   game            : null  # Phaser.io
-  engine          : null  # Ash Engine
+  ash             : null  # Ash Engine
   world           : null  # Box2D World
   waitEntity      : null
   rnd             : null
@@ -52,12 +72,12 @@ class EntityCreator
 
   constructor: (@parent) ->
     @game = @parent.game
-    @engine = @parent.engine
+    @ash = @parent.ash
     @world = @parent.world
     @rnd = @parent.rnd
 
   destroyEntity: (entity) ->
-    @engine.removeEntity entity
+    @ash.removeEntity entity
     return
 
   ###
@@ -70,7 +90,7 @@ class EntityCreator
     .add(new Hud(hud))
     .add(new Display(hud))
     .add(new Position(0, 0, 0, 0))
-    @engine.addEntity gameEntity
+    @ash.addEntity gameEntity
     return gameEntity
 
   ###
@@ -85,7 +105,7 @@ class EntityCreator
     .add(new Position(0, 0, 0, 0))
 
     @waitEntity.get(WaitForStart).startGame = false
-    @engine.addEntity(@waitEntity)
+    @ash.addEntity(@waitEntity)
     return @waitEntity
 
 
@@ -141,9 +161,9 @@ class EntityCreator
     .add(new Position(x, y, 0))
     .add(new Audio())
 
-    body.SetUserData(type: EntityCreator.ASTEROID, entity: asteroid)
+    body.SetUserData(type: Entities.ASTEROID, entity: asteroid)
     fsm.changeState('alive')
-    @engine.addEntity asteroid
+    @ash.addEntity asteroid
     return asteroid
 
   ###
@@ -206,10 +226,11 @@ class EntityCreator
     .add(new Position(x, y, 0))
     .add(new Audio())
 
-    body.SetUserData(type: EntityCreator.SPACESHIP, entity: spaceship)
+    body.SetUserData(type: Entities.SPACESHIP, entity: spaceship)
     fsm.changeState('playing')
-    @engine.addEntity spaceship
+    @ash.addEntity spaceship
 
+    console.log spaceship
     return spaceship
 
 
@@ -257,8 +278,8 @@ class EntityCreator
     .add(new Physics(body))
     .add(new Display(bulletView))
 
-    body.SetUserData(type: EntityCreator.BULLET, entity: bullet)
-    @engine.addEntity(bullet)
+    body.SetUserData(type: Entities.BULLET, entity: bullet)
+    @ash.addEntity(bullet)
 
     return bullet
 
