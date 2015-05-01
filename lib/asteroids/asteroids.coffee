@@ -32,6 +32,10 @@ class Asteroids
   physics           : null  #   physics system
   faderBitmap       : null  #   for screen fade
   faderSprite       : null  #   for screen fade
+  fbAppId           : '887669707958104'
+  fbUserID          : ''
+  fbButton          : null
+  fbStatus          : 0
   bgdColor          : 0x6A5ACD
   height            : window.innerHeight
   width             : window.innerWidth
@@ -39,6 +43,7 @@ class Asteroids
   playMusic         : localStorage.playMusic
   playSfx           : localStorage.playSfx
   optBgd            : localStorage.background || 'blue'
+
 
   ###
    * Create the phaser game component
@@ -60,6 +65,8 @@ class Asteroids
       error   : => console.log("Cannot show the Webview: #{JSON.stringify(arguments)}")
 
 
+
+
   ###
    * Configure Phaser scaling
   ###
@@ -77,6 +84,7 @@ class Asteroids
    * Load assets
   ###
   preload: =>
+    @game.load.image 'fb-login', 'res/fb-login.png'
     @game.load.image 'dialog-blue', 'res/dialog-box.png'
     @game.load.image 'dialog-star', 'res/black-dialog.png'
     @game.load.image 'button-blue', 'res/standard-button-on.png'
@@ -91,16 +99,6 @@ class Asteroids
     @game.load.audio 'ship', [ExplodeShip::src]
     @game.load.audio 'shoot', [ShootGun::src]
     return
-
-  onSettings: =>
-    @pause => Cocoon.App.loadInTheWebView("settings.html")
-    return
-
-  onLeaderboard: =>
-    @pause => @showLeaderboard()
-    return
-
-
 
   ###
    * Start the game
@@ -120,6 +118,22 @@ class Asteroids
     # settings
     @game.add.button(@width - 50, 50, 'settings', @onSettings)
     @game.add.button(@width - 50, 125, 'leaderboard', @onLeaderboard)
+
+    # initialize the facebook connection
+    FB.init
+      appId: @fbAppId
+      status: true
+      xfbml: true
+      version: 'v2.3'
+
+    # check if we should display logon to facebook button
+    FB.getLoginStatus (response) =>
+      @fbUserID = response.userID
+      if response.status is 'connected'
+        @fbStatus = 1
+      else
+        @fbStatus = 0
+        @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
 
     # Initialize audio
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
@@ -143,7 +157,7 @@ class Asteroids
     @entities = new Entities(this)
 
     # Set up a virtual gamepad
-    @controller = @game.plugins.add(Phaser.Plugin.GameControllerPlugin, force: true)
+    @controller = @game.plugins.add(Phaser.Plugin.GameControllerPlugin, force: false)
 
     @controller.addDPad 'left', 60, @height-60,
       up    : width: '10%', height: '7%'
@@ -178,6 +192,7 @@ class Asteroids
     @entities.createWaitForClick()
     @entities.createGame()
     return
+
 
 
   ###
@@ -230,6 +245,14 @@ class Asteroids
    * Create and display a leaderboard
   ###
   showLeaderboard: =>
+    if @fbStatus is 1
+      FB.api 'me/scores', (response) =>
+        @leaderboardImpl(response)
+    else
+      @leaderboardImpl(Db.queryAll('leaderboard', limit: 10, sort: [['score', 'DESC']]))
+    return
+
+  leaderboardImpl: (data) =>
     board = @game.add.group()
 
     dialog = new Phaser.Sprite(@game, 0, 0, "dialog-#{@optBgd}")
@@ -250,7 +273,7 @@ class Asteroids
     board.add(new Phaser.Text(@game, 400, 100, '--------', normal))
 
     y = 120
-    for row in Db.queryAll('leaderboard', limit: 10, sort: [['score', 'DESC']])
+    for row in data
       mmddyyyy = row.date.substr(4,2)+'/'+row.date.substr(6,2)+'/'+row.date.substr(0,4)
       board.add(new Phaser.Text(@game, 200, y, mmddyyyy, normal))
       board.add(new Phaser.Text(@game, 400, y, row.score, normal))
@@ -269,6 +292,33 @@ class Asteroids
     label.anchor.y = 0.5
     button.addChild(label)
     return
+
+  ### ============================================================>
+      B U T T O N  E V E N T S
+  <============================================================ ###
+
+  onSettings: =>
+    @pause => Cocoon.App.loadInTheWebView("settings.html")
+    return
+
+  onLeaderboard: =>
+    @pause => @showLeaderboard()
+    return
+
+  onLogin: => # use FaceBook
+    @pause =>
+      FB.login (response) =>
+        if response.authResponse
+          FB.api '/me', (response) =>
+            @pause()
+            if response.error
+              console.error("login error: " + response.error.message)
+            else
+              console.log("login succeeded")
+              @fbButton.input.enabled = false
+              @fbButton.alpha = 0
+              @fbStatus = 1
+              @fbUserID = response.id
 
   ### ============================================================>
       A S T E R O I D  S E T T I N G S

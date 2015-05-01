@@ -1,7 +1,8 @@
 class GameManager extends ash.core.System
 
+  parent        : null
   config        : null  # GameConfig
-  entities       : null  # EntityCreator
+  entities      : null  # EntityCreator
   rnd           : null
   gameNodes     : null  # NodeList of GameNode
   spaceships    : null  # NodeList of SpaceshipNode
@@ -10,12 +11,12 @@ class GameManager extends ash.core.System
   width         : 0
   height        : 0
 
-  constructor: (parent) ->
-    @entities = parent.entities
-    @rnd = parent.rnd
-    @width = parent.width
-    @height = parent.height
-    @nodes = parent.ash.nodes
+  constructor: (@parent) ->
+    @entities = @parent.entities
+    @rnd = @parent.rnd
+    @width = @parent.width
+    @height = @parent.height
+    @nodes = @parent.ash.nodes
 
   addToEngine: (engine) ->
     @gameNodes  = engine.getNodeList(@nodes.GameNode)
@@ -53,15 +54,37 @@ class GameManager extends ash.core.System
           yyyy = today.getFullYear().toString()
           yyyymmdd = yyyy+mm+dd
 
-          if 0 is Db.queryAll('leaderboard', query: date: yyyymmdd).length
-            Db.insert 'leaderboard', date: yyyymmdd, score: node.state.hits
-          else
-            Db.update 'leaderboard', date: yyyymmdd, (row) ->
-              if node.state.hits > row.score
-                row.score = node.state.hits
-              return row
+          if @parent.fbStatus is 1
+            ###
+             * Post to Facebook via Opa!
+            ###
+            score =
+              appId   : @parent.fbAppId
+              userId  : @parent.fbUserID
+              date    : yyyymmdd
+              score   : node.state.hits
 
-          Db.commit()
+            request = new XMLHttpRequest()
+            request.open('POST', '/score/asteroids')
+            request.setRequestHeader('Content-Type', 'application/json')
+            request.send(JSON.stringify(score))
+
+          else
+            ###
+             * Save in browser storage
+            ###
+            if 0 is Db.queryAll('leaderboard', query: date: yyyymmdd).length
+              Db.insert 'leaderboard', date: yyyymmdd, score: node.state.hits
+            else
+              Db.update 'leaderboard', date: yyyymmdd, (row) ->
+                if node.state.hits > row.score
+                  row.score = node.state.hits
+                return row
+            Db.commit()
+
+          ###
+           * Start a new game?
+          ###
           @entities.createWaitForClick()
   
       # game over

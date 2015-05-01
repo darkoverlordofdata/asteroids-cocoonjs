@@ -97,7 +97,7 @@ class Entities
    * Start...
   ###
   createWaitForClick: () ->
-#    if not @waitEntity
+    #    if not @waitEntity
     waitView = new WaitForStartView(@game, @parent)
     @waitEntity = new Entity('wait')
     .add(new WaitForStart(waitView))

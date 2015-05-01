@@ -1,0 +1,14 @@
+{
+  "name": "asteroids",
+  "main": "asteroids.html",
+  "description": "Classic Asteroids using moder physics",
+  "version": "0.0.1",
+  "window": {
+    "title": "Asteroid Simulator",
+    "icon": "asteroids36.png",
+    "toolbar": true,
+    "resizable": true,
+    "width": 800,
+    "height": 600
+  }
+}
