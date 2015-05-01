@@ -1983,7 +1983,7 @@
                */
               score = {
                 appId: this.parent.fbAppId,
-                userId: this.parent.fbUserId,
+                userId: this.parent.fbUserID,
                 date: yyyymmdd,
                 score: node.state.hits
               };
@@ -2682,6 +2682,8 @@
 
     Asteroids.prototype.fbAppId = '887669707958104';
 
+    Asteroids.prototype.fbUserID = '';
+
     Asteroids.prototype.fbButton = null;
 
     Asteroids.prototype.fbStatus = 0;
@@ -2811,6 +2813,7 @@
       });
       FB.getLoginStatus((function(_this) {
         return function(response) {
+          _this.fbUserID = response.userID;
           if (response.status === 'connected') {
             return _this.fbStatus = 1;
           } else {
@@ -3041,7 +3044,8 @@
                   console.log("login succeeded");
                   _this.fbButton.input.enabled = false;
                   _this.fbButton.alpha = 0;
-                  return _this.fbStatus = 1;
+                  _this.fbStatus = 1;
+                  return _this.fbUserID = response.id;
                 }
               });
             }
