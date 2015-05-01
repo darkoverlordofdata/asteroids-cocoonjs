@@ -1903,6 +1903,8 @@
   GameManager = (function(_super) {
     __extends(GameManager, _super);
 
+    GameManager.prototype.parent = null;
+
     GameManager.prototype.config = null;
 
     GameManager.prototype.entities = null;
@@ -1922,12 +1924,13 @@
     GameManager.prototype.height = 0;
 
     function GameManager(parent) {
+      this.parent = parent;
       this.update = __bind(this.update, this);
-      this.entities = parent.entities;
-      this.rnd = parent.rnd;
-      this.width = parent.width;
-      this.height = parent.height;
-      this.nodes = parent.ash.nodes;
+      this.entities = this.parent.entities;
+      this.rnd = this.parent.rnd;
+      this.width = this.parent.width;
+      this.height = this.parent.height;
+      this.nodes = this.parent.ash.nodes;
     }
 
     GameManager.prototype.addToEngine = function(engine) {
@@ -1938,7 +1941,7 @@
     };
 
     GameManager.prototype.update = function(time) {
-      var asteroid, asteroidCount, clearToAddSpaceship, dd, i, mm, newSpaceshipPosition, node, position, spaceship, today, yyyy, yyyymmdd;
+      var asteroid, asteroidCount, clearToAddSpaceship, dd, i, mm, newSpaceshipPosition, node, position, request, score, spaceship, today, yyyy, yyyymmdd;
       node = this.gameNodes.head;
       if (node && node.state.playing) {
         if (this.spaceships.empty) {
@@ -1973,26 +1976,51 @@
             }
             yyyy = today.getFullYear().toString();
             yyyymmdd = yyyy + mm + dd;
-            if (0 === Db.queryAll('leaderboard', {
-              query: {
-                date: yyyymmdd
-              }
-            }).length) {
-              Db.insert('leaderboard', {
+            if (this.parent.fbStatus === 1) {
+
+              /*
+               * Post to Facebook via Opa!
+               */
+              score = {
+                appId: this.parent.fbAppId,
+                userId: this.parent.fbUserId,
                 date: yyyymmdd,
                 score: node.state.hits
-              });
+              };
+              request = new XMLHttpRequest();
+              request.open('POST', '/score/asteroids');
+              request.setRequestHeader('Content-Type', 'application/json');
+              request.send(JSON.stringify(score));
             } else {
-              Db.update('leaderboard', {
-                date: yyyymmdd
-              }, function(row) {
-                if (node.state.hits > row.score) {
-                  row.score = node.state.hits;
+
+              /*
+               * Save in browser storage
+               */
+              if (0 === Db.queryAll('leaderboard', {
+                query: {
+                  date: yyyymmdd
                 }
-                return row;
-              });
+              }).length) {
+                Db.insert('leaderboard', {
+                  date: yyyymmdd,
+                  score: node.state.hits
+                });
+              } else {
+                Db.update('leaderboard', {
+                  date: yyyymmdd
+                }, function(row) {
+                  if (node.state.hits > row.score) {
+                    row.score = node.state.hits;
+                  }
+                  return row;
+                });
+              }
+              Db.commit();
             }
-            Db.commit();
+
+            /*
+             * Start a new game?
+             */
             this.entities.createWaitForClick();
           }
         }
@@ -2618,9 +2646,7 @@
   })();
 
   Asteroids = (function() {
-    var b2Vec2, b2World, fbAppID, ucfirst;
-
-    fbAppID = '887669707958104';
+    var b2Vec2, b2World, ucfirst;
 
     b2Vec2 = Box2D.Common.Math.b2Vec2;
 
@@ -2654,9 +2680,11 @@
 
     Asteroids.prototype.faderSprite = null;
 
+    Asteroids.prototype.fbAppId = '887669707958104';
+
     Asteroids.prototype.fbButton = null;
 
-    Asteroids.prototype.useFb = false;
+    Asteroids.prototype.fbStatus = 0;
 
     Asteroids.prototype.bgdColor = 0x6A5ACD;
 
@@ -2688,6 +2716,7 @@
       this.onLogin = __bind(this.onLogin, this);
       this.onLeaderboard = __bind(this.onLeaderboard, this);
       this.onSettings = __bind(this.onSettings, this);
+      this.leaderboardImpl = __bind(this.leaderboardImpl, this);
       this.showLeaderboard = __bind(this.showLeaderboard, this);
       this.pause = __bind(this.pause, this);
       this.fade = __bind(this.fade, this);
@@ -2713,10 +2742,6 @@
             return console.log("Cannot show the Webview: " + (JSON.stringify(arguments)));
           };
         })(this)
-      });
-      Cocoon.Social.Facebook.init({
-        appId: fbAppID,
-        channelUrl: "//connect.facebook.net/en_US/all.js"
       });
     }
 
@@ -2762,7 +2787,7 @@
      */
 
     Asteroids.prototype.create = function() {
-      var PhysicsSystem, socialService, useBox2dPlugin;
+      var PhysicsSystem, useBox2dPlugin;
       this.profiler = this.game.plugins.add(Phaser.Plugin.PerformanceMonitor, {
         profiler: this.get('profiler')
       });
@@ -2776,13 +2801,24 @@
       this.background.width = this.width;
       this.background.height = this.height;
       this.background.alpha = this.optBgd === 'blue' ? 0 : 1;
-      console.log(this.background);
       this.game.add.button(this.width - 50, 50, 'settings', this.onSettings);
       this.game.add.button(this.width - 50, 125, 'leaderboard', this.onLeaderboard);
-      socialService = Cocoon.Social.Facebook.getSocialInterface();
-      if (!socialService.isLoggedIn()) {
-        this.fbButton = this.game.add.button((this.width - 195) / 2, 50, 'fb-login', this.onLogin);
-      }
+      FB.init({
+        appId: this.fbAppId,
+        status: true,
+        xfbml: true,
+        version: 'v2.3'
+      });
+      FB.getLoginStatus((function(_this) {
+        return function(response) {
+          if (response.status === 'connected') {
+            return _this.fbStatus = 1;
+          } else {
+            _this.fbStatus = 0;
+            return _this.fbButton = _this.game.add.button((_this.width - 195) / 2, 50, 'fb-login', _this.onLogin);
+          }
+        };
+      })(this));
       ExplodeAsteroid.audio = this.game.add.audio('asteroid');
       ExplodeAsteroid.audio.play('', 0, 0);
       ExplodeShip.audio = this.game.add.audio('ship');
@@ -2795,7 +2831,7 @@
       this.ash = this.game.plugins.add(ash.core.PhaserEngine, Nodes, Components);
       this.entities = new Entities(this);
       this.controller = this.game.plugins.add(Phaser.Plugin.GameControllerPlugin, {
-        force: true
+        force: false
       });
       this.controller.addDPad('left', 60, this.height - 60, {
         up: {
@@ -2911,7 +2947,22 @@
      */
 
     Asteroids.prototype.showLeaderboard = function() {
-      var big, board, button, dialog, label, mmddyyyy, normal, row, title, y, _i, _len, _ref;
+      if (this.fbStatus === 1) {
+        FB.api('me/scores', (function(_this) {
+          return function(response) {
+            return _this.leaderboardImpl(response);
+          };
+        })(this));
+      } else {
+        this.leaderboardImpl(Db.queryAll('leaderboard', {
+          limit: 10,
+          sort: [['score', 'DESC']]
+        }));
+      }
+    };
+
+    Asteroids.prototype.leaderboardImpl = function(data) {
+      var big, board, button, dialog, label, mmddyyyy, normal, row, title, y, _i, _len;
       board = this.game.add.group();
       dialog = new Phaser.Sprite(this.game, 0, 0, "dialog-" + this.optBgd);
       dialog.width = this.width;
@@ -2933,12 +2984,8 @@
       board.add(new Phaser.Text(this.game, 200, 100, '--------', normal));
       board.add(new Phaser.Text(this.game, 400, 100, '--------', normal));
       y = 120;
-      _ref = Db.queryAll('leaderboard', {
-        limit: 10,
-        sort: [['score', 'DESC']]
-      });
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        row = _ref[_i];
+      for (_i = 0, _len = data.length; _i < _len; _i++) {
+        row = data[_i];
         mmddyyyy = row.date.substr(4, 2) + '/' + row.date.substr(6, 2) + '/' + row.date.substr(0, 4);
         board.add(new Phaser.Text(this.game, 200, y, mmddyyyy, normal));
         board.add(new Phaser.Text(this.game, 400, y, row.score, normal));
@@ -2982,22 +3029,21 @@
     };
 
     Asteroids.prototype.onLogin = function() {
-      this.pause((function(_this) {
+      return this.pause((function(_this) {
         return function() {
-          var socialService;
-          _this.fbButton.alpha = 0.5;
-          socialService = Cocoon.Social.Facebook.getSocialInterface();
-          return socialService.login(function(loggedIn, error) {
-            _this.pause();
-            if (error) {
-              return console.error("login error: " + error.message);
-            } else if (loggedIn) {
-              console.log("login succeeded");
-              _this.fbButton.input.enabled = false;
-              _this.fbButton.alpha = 0;
-              return _this.useFb = true;
-            } else {
-              return console.log("login cancelled");
+          return FB.login(function(response) {
+            if (response.authResponse) {
+              return FB.api('/me', function(response) {
+                _this.pause();
+                if (response.error) {
+                  return console.error("login error: " + response.error.message);
+                } else {
+                  console.log("login succeeded");
+                  _this.fbButton.input.enabled = false;
+                  _this.fbButton.alpha = 0;
+                  return _this.fbStatus = 1;
+                }
+              });
             }
           });
         };
