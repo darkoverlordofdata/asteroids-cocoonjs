@@ -42,45 +42,7 @@ class GameManager extends ash.core.System
             @entities.createSpaceship()
         else
           node.state.playing = false
-
-          ###
-           * Save the highest score for today
-          ###
-          today = new Date()
-          mm = (today.getMonth()+1).toString()
-          if mm.length is 1 then mm = '0'+mm
-          dd = today.getDate().toString()
-          if dd.length is 1 then dd = '0'+dd
-          yyyy = today.getFullYear().toString()
-          yyyymmdd = yyyy+mm+dd
-
-          if @parent.fbStatus is 1
-            ###
-             * Post to Facebook via Opa!
-            ###
-            score =
-              appId   : @parent.fbAppId
-              userId  : @parent.fbUserID
-              date    : yyyymmdd
-              score   : node.state.hits
-
-            request = new XMLHttpRequest()
-            request.open('POST', '/score/asteroids')
-            request.setRequestHeader('Content-Type', 'application/json')
-            request.send(JSON.stringify(score))
-
-          else
-            ###
-             * Save in browser storage
-            ###
-            if 0 is Db.queryAll('leaderboard', query: date: yyyymmdd).length
-              Db.insert 'leaderboard', date: yyyymmdd, score: node.state.hits
-            else
-              Db.update 'leaderboard', date: yyyymmdd, (row) ->
-                if node.state.hits > row.score
-                  row.score = node.state.hits
-                return row
-            Db.commit()
+          @parent.score(node.state.hits)
 
           ###
            * Start a new game?

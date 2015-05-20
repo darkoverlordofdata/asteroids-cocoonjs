@@ -32,10 +32,11 @@ class Asteroids
   physics           : null  #   physics system
   faderBitmap       : null  #   for screen fade
   faderSprite       : null  #   for screen fade
+  fb                : null  #   facebook sdk
+  fbButton          : null  #   facebook login button
+  fbUserID          : ''    #   facebook user id
+  fbStatus          : 0     #   facebook status
   fbAppId           : '887669707958104'
-  fbUserID          : ''
-  fbButton          : null
-  fbStatus          : 0
   bgdColor          : 0x6A5ACD
   height            : window.innerHeight
   width             : window.innerWidth
@@ -119,21 +120,25 @@ class Asteroids
     @game.add.button(@width - 50, 50, 'settings', @onSettings)
     @game.add.button(@width - 50, 125, 'leaderboard', @onLeaderboard)
 
+    @fb = Cocoon.Social.Facebook
     # initialize the facebook connection
-    FB.init
+    @fb.init
       appId: @fbAppId
-      status: true
-      xfbml: true
-      version: 'v2.3'
+#      status: true
+#      xfbml: true
+#      version: 'v2.3'
 
     # check if we should display logon to facebook button
-    FB.getLoginStatus (response) =>
+    @fb.getLoginStatus (response) =>
       @fbUserID = response.userID
       if response.status is 'connected'
         @fbStatus = 1
       else
         @fbStatus = 0
         @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
+
+#    @fbStatus = 0
+#    @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
 
     # Initialize audio
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
@@ -151,7 +156,7 @@ class Asteroids
     @world.SetContinuousPhysics(true)
 
     # Create the Ash engine
-    @ash = @game.plugins.add(ash.core.PhaserEngine, Nodes, Components)
+    @ash = @game.plugins.add(ash.ext.PhaserEngine, Nodes, Components)
 
     # Entity Factory
     @entities = new Entities(this)
@@ -194,6 +199,47 @@ class Asteroids
     return
 
 
+  ###
+   * Post to Leaderboard
+   * Save the highest score for today
+  ###
+  score: (score) =>
+    today = new Date()
+    mm = (today.getMonth()+1).toString()
+    if mm.length is 1 then mm = '0'+mm
+    dd = today.getDate().toString()
+    if dd.length is 1 then dd = '0'+dd
+    yyyy = today.getFullYear().toString()
+    yyyymmdd = yyyy+mm+dd
+
+    if @fbStatus is 0 # client leaderboard
+
+      if 0 is Db.queryAll('leaderboard', query: date: yyyymmdd).length
+        Db.insert 'leaderboard', date: yyyymmdd, score: score
+      else
+        Db.update 'leaderboard', date: yyyymmdd, (row) ->
+          if score > row.score
+            row.score = score
+          return row
+      Db.commit()
+
+    else # post to leaderboard server
+
+      form =
+        dt      : Date.now()
+        id      : 'asteroids'
+        title   : 'Asteroid Simulator'
+        appId   : @fbAppId
+        userId  : @fbUserID
+        date    : yyyymmdd
+        score   : score
+
+      xhr = new XMLHttpRequest()
+      xhr.open('post', 'https://games.darkoverlordofdata.com/leaderboard/score', true)
+      xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+      xhr.send(JSON.stringify(form))
+
+    return
 
   ###
    * Get Fader Sprite
@@ -246,7 +292,7 @@ class Asteroids
   ###
   showLeaderboard: =>
     if @fbStatus is 1
-      FB.api 'me/scores', (response) =>
+      @fb.api 'me/scores', (response) =>
         @leaderboardImpl(response)
     else
       @leaderboardImpl(Db.queryAll('leaderboard', limit: 10, sort: [['score', 'DESC']]))
@@ -307,9 +353,9 @@ class Asteroids
 
   onLogin: => # use FaceBook
     @pause =>
-      FB.login (response) =>
+      @fb.login (response) =>
         if response.authResponse
-          FB.api '/me', (response) =>
+          @fb.api '/me', (response) =>
             @pause()
             if response.error
               console.error("login error: " + response.error.message)

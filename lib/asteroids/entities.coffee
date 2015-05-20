@@ -230,7 +230,6 @@ class Entities
     fsm.changeState('playing')
     @ash.addEntity spaceship
 
-    console.log spaceship
     return spaceship
 
 

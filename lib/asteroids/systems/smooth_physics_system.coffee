@@ -39,11 +39,11 @@ class SmoothPhysicsSystem extends ash.core.System
     @game = parent.game
     @nodes = parent.ash.nodes
 
-  addToEngine: (engine) ->
+  addToEngine: (engine) =>
     @nodes = engine.getNodeList(@nodes.PhysicsNode)
     return # Void
 
-  removeFromEngine: (engine) ->
+  removeFromEngine: (engine) =>
     @nodes = null
     return # Void
 
