@@ -25,31 +25,15 @@ g_count = 0;
 HOST = window.location.hostname === 'localhost' ? 'http://bosco.com:3000' : 'https://games.darkoverlordofdata.com';
 
 
-/*
+/* ============================================================>
  * Return to the game
+<============================================================
  */
 
 resumeGame = function() {
   Cocoon.WebView.hide();
   Cocoon.Touch.enable();
-  Cocoon.App.forward("asteroids.pause();");
-};
-
-
-/*
- * Build the key
- */
-
-getKey = function(fbAppId, fbUserId) {
-  var i, j, ref, result;
-  fbAppId = '' + fbAppId;
-  fbUserId = '' + fbUserId;
-  result = [];
-  for (i = j = 0, ref = Math.max(fbAppId.length, fbUserId.length); 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
-    result.push(fbAppId[i]);
-    result.push(fbUserId[i]);
-  }
-  return result.join('');
+  Cocoon.App.forward("asteroids.resume();");
 };
 
 
@@ -177,7 +161,25 @@ setBulletLinearVelocity = function(value) {
 
 
 /*
+ * Build the key
+ */
+
+getKey = function(fbAppId, fbUserId) {
+  var i, j, ref, result;
+  fbAppId = '' + fbAppId;
+  fbUserId = '' + fbUserId;
+  result = [];
+  for (i = j = 0, ref = Math.max(fbAppId.length, fbUserId.length); 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
+    result.push(fbAppId[i]);
+    result.push(fbUserId[i]);
+  }
+  return result.join('');
+};
+
+
+/* ============================================================>
  * Register the player
+<============================================================
  */
 
 registerPlayer = function() {
@@ -207,6 +209,12 @@ registerPlayer = function() {
   return xhr.send(JSON.stringify(data));
 };
 
+
+/* ============================================================>
+ * Set Player on input
+<============================================================
+ */
+
 setPlayer = function(value) {
   var xhr;
   xhr = new XMLHttpRequest();
@@ -227,8 +235,9 @@ setPlayer = function(value) {
 };
 
 
-/*
+/* ============================================================>
  * Display a dialog to enter the player screen name
+<============================================================
  */
 
 enterPlayer = function() {
@@ -241,18 +250,15 @@ enterPlayer = function() {
     text: $("#player").val(),
     type: Cocoon.Dialog.keyboardType.TEXT
   }, {
-
-    /*
-     * Validate the selected name
-     */
     success: setPlayer,
     cancel: function() {}
   });
 };
 
 
-/*
+/* ============================================================>
  * Wait for all values to be ready
+<============================================================
  */
 
 ready = function(leaderboard, player, fbAppId, fbUserID, fbUserName) {
@@ -277,13 +283,7 @@ ready = function(leaderboard, player, fbAppId, fbUserID, fbUserName) {
     g_count++;
   }
   if (g_count === 5) {
-    console.log('g_leaderboard', g_leaderboard);
-    console.log('g_player', g_player);
-    console.log('g_fbAppId', g_fbAppId);
-    console.log('g_fbUserID', g_fbUserID);
-    console.log('g_fbUserName', g_fbUserName);
     if (g_leaderboard === 'on' && (g_player === '' || g_player === g_fbUserName)) {
-      console.log('call enterPlayer');
       if (Cocoon.App.nativeAvailable) {
         return Cocoon.Dialog.prompt({
           title: "Player",
@@ -291,10 +291,6 @@ ready = function(leaderboard, player, fbAppId, fbUserID, fbUserName) {
           text: $("#player").val(),
           type: Cocoon.Dialog.keyboardType.TEXT
         }, {
-
-          /*
-           * Validate the selected name
-           */
           success: setPlayer,
           cancel: function() {}
         });
@@ -306,14 +302,19 @@ ready = function(leaderboard, player, fbAppId, fbUserID, fbUserName) {
 };
 
 
-/*
- * OnLoad
+/* ============================================================>
+    O N L O A D
+<============================================================
  */
 
 window.addEventListener("load", function() {
   var e;
   $("body").css("visibility", "visible");
   try {
+
+    /*
+     * Get all the initial property values
+     */
     Cocoon.App.forwardAsync("asteroids.get('profiler');", function(value) {
       $("#profiler").val(value).slider("refresh");
     });

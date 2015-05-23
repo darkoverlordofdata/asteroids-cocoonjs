@@ -1,7 +1,6 @@
 ###
  * Settings Module
 ###
-
 g_fbAppId = null
 g_fbUserID = null
 g_fbUserName = null
@@ -17,30 +16,14 @@ HOST = if window.location.hostname is 'localhost'
 else
   'https://games.darkoverlordofdata.com'
 
-
-###
+### ============================================================>
  * Return to the game
-###
+<============================================================ ###
 resumeGame = ->
   Cocoon.WebView.hide()
   Cocoon.Touch.enable()
-  Cocoon.App.forward "asteroids.pause();"
+  Cocoon.App.forward "asteroids.resume();"
   return
-
-###
- * Build the key
-###
-getKey = (fbAppId, fbUserId) ->
-
-  fbAppId = ''+fbAppId
-  fbUserId = ''+fbUserId
-
-  result = []
-  for i in [0...Math.max(fbAppId.length, fbUserId.length)]
-    result.push(fbAppId[i])
-    result.push(fbUserId[i])
-
-  return result.join('')
 
 ###
 Game Options
@@ -122,8 +105,23 @@ setBulletLinearVelocity = (value) ->
   value
 
 ###
- * Register the player
+ * Build the key
 ###
+getKey = (fbAppId, fbUserId) ->
+
+  fbAppId = ''+fbAppId
+  fbUserId = ''+fbUserId
+
+  result = []
+  for i in [0...Math.max(fbAppId.length, fbUserId.length)]
+    result.push(fbAppId[i])
+    result.push(fbUserId[i])
+
+  return result.join('')
+
+### ============================================================>
+ * Register the player
+<============================================================ ###
 registerPlayer = () ->
   xhr = new XMLHttpRequest()
   xhr.onreadystatechange = ->
@@ -150,6 +148,9 @@ registerPlayer = () ->
   xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
   xhr.send(JSON.stringify(data))
 
+### ============================================================>
+ * Set Player on input
+<============================================================ ###
 setPlayer = (value) ->
 
   xhr = new XMLHttpRequest()
@@ -166,9 +167,9 @@ setPlayer = (value) ->
   xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
   xhr.send()
 
-###
+### ============================================================>
  * Display a dialog to enter the player screen name
-###
+<============================================================ ###
 enterPlayer = () ->
   return false unless Cocoon.App.nativeAvailable
   Cocoon.Dialog.prompt {
@@ -181,10 +182,12 @@ enterPlayer = () ->
     cancel: () ->
   }
 
-###
+
+### ============================================================>
  * Wait for all values to be ready
-###
+<============================================================ ###
 ready = (leaderboard, player, fbAppId, fbUserID, fbUserName) ->
+
   if leaderboard?
     g_leaderboard = leaderboard
     g_count++
@@ -206,14 +209,7 @@ ready = (leaderboard, player, fbAppId, fbUserID, fbUserName) ->
     g_count++
 
   if g_count is 5 # then we're ready!
-    console.log 'g_leaderboard', g_leaderboard
-    console.log 'g_player', g_player
-    console.log 'g_fbAppId', g_fbAppId
-    console.log 'g_fbUserID', g_fbUserID
-    console.log 'g_fbUserName', g_fbUserName
-
     if g_leaderboard is 'on' and (g_player is '' or g_player is g_fbUserName)
-      console.log 'call enterPlayer'
       if Cocoon.App.nativeAvailable
         Cocoon.Dialog.prompt {
           title   : "Player"
@@ -226,13 +222,17 @@ ready = (leaderboard, player, fbAppId, fbUserID, fbUserName) ->
         }
       else
         setPlayer(prompt("Screen name required"))
-###
- * OnLoad
-###
+
+### ============================================================>
+    O N L O A D
+<============================================================ ###
 window.addEventListener "load", ->
   $("body").css "visibility", "visible"
 
   try
+    ###
+     * Get all the initial property values
+    ###
 
     Cocoon.App.forwardAsync "asteroids.get('profiler');", (value) ->
       $("#profiler").val(value).slider "refresh"
