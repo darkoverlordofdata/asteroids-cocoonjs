@@ -1,5 +1,6 @@
 lib/prolog.coffee
 lib/asteroids/util/mersenne_twister.coffee
+lib/asteroids/util/get_key.coffee
 lib/asteroids/ui/point.coffee
 lib/asteroids/ui/key_poll.coffee
 lib/asteroids/ui/sound.coffee

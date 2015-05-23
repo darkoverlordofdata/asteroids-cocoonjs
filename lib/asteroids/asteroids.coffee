@@ -32,9 +32,11 @@ class Asteroids
   physics           : null  #   physics system
   faderBitmap       : null  #   for screen fade
   faderSprite       : null  #   for screen fade
+  account           : null  #   game account data
   fb                : null  #   facebook sdk
   fbButton          : null  #   facebook login button
   fbUserID          : ''    #   facebook user id
+  fbUserName        : ''    #   facebbok uset name
   fbStatus          : 0     #   facebook status
   fbAppId           : '887669707958104'
   bgdColor          : 0x6A5ACD
@@ -44,6 +46,14 @@ class Asteroids
   playMusic         : localStorage.playMusic
   playSfx           : localStorage.playSfx
   optBgd            : localStorage.background || 'blue'
+
+  ###
+   * location of the leaderboard server
+  ###
+  HOST = if window.location.hostname is 'localhost'
+    'http://bosco.com:3000'
+  else
+    'https://games.darkoverlordofdata.com'
 
 
   ###
@@ -128,17 +138,25 @@ class Asteroids
 #      xfbml: true
 #      version: 'v2.3'
 
-    # check if we should display logon to facebook button
-    @fb.getLoginStatus (response) =>
-      @fbUserID = response.userID
-      if response.status is 'connected'
-        @fbStatus = 1
-      else
-        @fbStatus = 0
-        @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
+    console.log 'player', @get('player')
+    console.log 'userId', @get('userId')
+    console.log 'leaderboard', @get('leaderboard')
+    #
+    # check account preference -
+    # should we display logon to facebook button?
+    if @get('leaderboard') is 'on'
+      # 'silent' login if we're already connected
+      @fb.getLoginStatus (response) =>
+        @fbUserID = response.userID
+        if response.status is 'connected'
+          @fbStatus = 1
 
-#    @fbStatus = 0
-#    @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
+        else
+          @fbStatus = 0
+          @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
+    else
+      @fbStatus = 0
+      @fbButton = @game.add.button((@width-195)/2, 50, 'fb-login', @onLogin)
 
     # Initialize audio
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
@@ -226,6 +244,7 @@ class Asteroids
     else # post to leaderboard server
 
       form =
+        key     : getKey(@fbAppId, @fbUserID)
         dt      : Date.now()
         id      : 'asteroids'
         title   : 'Asteroid Simulator'
@@ -233,9 +252,10 @@ class Asteroids
         userId  : @fbUserID
         date    : yyyymmdd
         score   : score
+        userName: @get('player')
 
       xhr = new XMLHttpRequest()
-      xhr.open('post', 'https://games.darkoverlordofdata.com/leaderboard/score', true)
+      xhr.open('post', HOST+'/leaderboard/score', true)
       xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
       xhr.send(JSON.stringify(form))
 
@@ -292,13 +312,76 @@ class Asteroids
   ###
   showLeaderboard: =>
     if @fbStatus is 1
-      @fb.api 'me/scores', (response) =>
-        @leaderboardImpl(response)
+
+      xhr = new XMLHttpRequest()
+      xhr.onreadystatechange = =>
+        if xhr.readyState is 4 and xhr.status is 200
+          response = JSON.parse(xhr.responseText)
+          @leaderboardServer(response)
+
+      xhr.open('get', HOST+'/leaderboard/asteroids/'+@get('player'), true)
+      xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+      xhr.send()
+
     else
-      @leaderboardImpl(Db.queryAll('leaderboard', limit: 10, sort: [['score', 'DESC']]))
+      @leaderboardLocal(Db.queryAll('leaderboard', limit: 10, sort: [['score', 'DESC']]))
     return
 
-  leaderboardImpl: (data) =>
+  ###
+   * Show leaderboard with server data
+   *  - rank
+   *  - member
+   *  - score
+  ###
+  leaderboardServer: (data) =>
+    board = @game.add.group()
+
+    dialog = new Phaser.Sprite(@game, 0, 0, "dialog-#{@optBgd}")
+    dialog.width = @width
+    dialog.height = @height
+    board.add(dialog)
+
+    big = font: 'bold 30px opendyslexic', fill: '#ffffff'
+    normal = font: 'bold 20px opendyslexic', fill: '#ffffff'
+
+    title = new Phaser.Text(@game, @width/2, 20, 'Asteroids', big)
+    title.anchor.x = 0.5
+    board.add(title)
+
+    board.add(new Phaser.Text(@game, 200, 80, '##', normal))
+    board.add(new Phaser.Text(@game, 300, 80, 'Name', normal))
+    board.add(new Phaser.Text(@game, 500, 80, 'Score', normal))
+    board.add(new Phaser.Text(@game, 200, 100, '--', normal))
+    board.add(new Phaser.Text(@game, 300, 100, '--------', normal))
+    board.add(new Phaser.Text(@game, 500, 100, '--------', normal))
+
+    y = 120
+    for row in data
+      board.add(new Phaser.Text(@game, 200, y, row.rank, normal))
+      board.add(new Phaser.Text(@game, 300, y, row.member, normal))
+      board.add(new Phaser.Text(@game, 500, y, row.score, normal))
+      y+= 20
+
+    button = new Phaser.Button(@game, @width/2, @height-64, "button-#{@optBgd}", =>
+      board.destroy()
+      board = null
+      @pause()
+      return)
+    button.anchor.x = 0.5
+    board.add(button)
+
+    label = new Phaser.Text(@game, 0, button.height/2, 'continue', big)
+    label.anchor.x = 0.5
+    label.anchor.y = 0.5
+    button.addChild(label)
+    return
+
+  ###
+   * Show leaderboard with local storage data
+   *  - date
+   *  - score
+  ###
+  leaderboardLocal: (data) =>
     board = @game.add.group()
 
     dialog = new Phaser.Sprite(@game, 0, 0, "dialog-#{@optBgd}")
@@ -356,6 +439,7 @@ class Asteroids
       @fb.login (response) =>
         if response.authResponse
           @fb.api '/me', (response) =>
+            console.log response
             @pause()
             if response.error
               console.error("login error: " + response.error.message)
@@ -365,11 +449,19 @@ class Asteroids
               @fbButton.alpha = 0
               @fbStatus = 1
               @fbUserID = response.id
+              @fbUserName = response.name
+
+              if @get('player') is '' or @get('player') is @fbUserName
+                @set('player', @fbUserName)
+                @set('userId', @fbUserID)
+                @set('leaderboard', 'on')
+                Cocoon.App.loadInTheWebView("settings.html")
+
+
 
   ### ============================================================>
       A S T E R O I D  S E T T I N G S
   <============================================================ ###
-
   ###
    * Get Asteroid Property
   ###
@@ -389,6 +481,12 @@ class Asteroids
       Db.update('settings', name: prop, (row) -> row.value = value; return row)
       Db.commit()
     return
+
+  getFbAppId: => @fbAppId
+
+  getFbUserID: => @fbUserID
+
+  getFbUserName: => @fbUserName
 
   ###
    * Sgt Asteroid Background
@@ -434,12 +532,15 @@ class Asteroids
 
     if Db.isNew()
 
-      Db.createTable 'leaderboard', ['date','score']
       Db.createTable 'settings', ['name', 'value']
+      Db.createTable 'account', ['name', 'userId', 'leaderboard']
       ###
        * Default Property Settings:
       ###
       Db.insert 'settings', name: 'profiler', value: 'on'
+      Db.insert 'settings', name: 'leaderboard', value: 'off'
+      Db.insert 'settings', name: 'player', value: ''
+      Db.insert 'settings', name: 'userId', value: ''
       Db.insert 'settings', name: 'background', value: 'blue'
       Db.insert 'settings', name: 'playMusic', value: '50'
       Db.insert 'settings', name: 'playSfx', value: '50'
@@ -458,7 +559,6 @@ class Asteroids
       Db.insert 'settings', name: 'bulletRestitution', value: '0.0'
       Db.insert 'settings', name: 'bulletDamping', value: '0.0'
       Db.insert 'settings', name: 'bulletLinearVelocity', value: '150'
-
       Db.commit()
 
     ###
@@ -466,5 +566,14 @@ class Asteroids
     ###
     if Db.queryAll('settings', query: name: 'profiler').length is 0
       Db.insert 'settings', name: 'profiler', value: 'off'
+
+    if Db.queryAll('settings', query: name: 'leaderboard').length is 0
+      Db.insert 'settings', name: 'leaderboard', value: 'off'
+
+    if Db.queryAll('settings', query: name: 'player').length is 0
+      Db.insert 'settings', name: 'player', value: ''
+
+    if Db.queryAll('settings', query: name: 'userId').length is 0
+      Db.insert 'settings', name: 'userId', value: ''
 
     return

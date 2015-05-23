@@ -11,6 +11,10 @@
         body {
             visibility: hidden;
         }
+        .controlgroup-textinput {
+            padding-top: .10em;
+            padding-bottom: .10em;
+        }
     </style>
 </head>
 <body>
@@ -53,6 +57,28 @@
                                     <label for="blueBgd"> Blue Background</label>
                                     <input id="starBgd" name="background" type="radio" onclick="setBackground(1);" />
                                     <label for="starBgd"> Starfield Background</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="leaderboard">Leaderboard</label></td>
+                            <td>
+                                <div data-role="controlgroup" data-type="horizontal" align="left">
+                                    <select name="leaderboard" id="leaderboard" data-role="slider" onchange="setLeaderboard(this.value);">
+                                        <option value="off">Off</option>
+                                        <option value="on">On</option>
+                                    </select>
+
+                                </div>
+                            </td>
+                            <td>
+                                <div data-role="controlgroup" data-type="horizontal" align="right">
+                                    <input type="search" id="player"
+                                           onclick="enterPlayer();"
+                                           onchange="setPlayer(this.value)"
+                                           data-wrapper-class="controlgroup-textinput ui-btn"
+                                           placeholder="Enter Screen Name">
+                                    <button disabled id="registerPlayer" onclick="registerPlayer();">Register</button>
                                 </div>
                             </td>
                         </tr>
