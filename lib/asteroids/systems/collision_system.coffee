@@ -48,6 +48,12 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
         if (b.get(Physics)?) # already been killed?
           radius = b.get(Collision).radius
           position = b.get(Position).position
+          points = switch radius
+            when 30 then 20   # large
+            when 20 then 50   # medium
+            when 10 then 100  # small
+            else 0
+
           if (radius > 10)
             @entities.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
             @entities.createAsteroid(radius - 10, position.x + @rnd.nextDouble() * 10 - 5, position.y + @rnd.nextDouble() * 10 - 5)
@@ -57,7 +63,12 @@ class CollisionSystem extends ash.core.System #implements b2ContactListener
           b.get(DeathThroes).body = body
           b.get(Audio).play(ExplodeAsteroid)
           if (@games.head)
-            @games.head.state.hits++
+            @games.head.state.hits += points
+            @games.head.state.bonus += points
+            while (@games.head.state.bonus > 5000)
+              @games.head.state.lives++
+              @games.head.state.bonus -= 5000
+
 
       else if (type is AsteroidHitShip)
 

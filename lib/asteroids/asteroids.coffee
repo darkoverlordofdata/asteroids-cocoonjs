@@ -11,6 +11,19 @@
 #|
 #+--------------------------------------------------------------------+
 #
+#
+# Points are scored as follows:
+#
+#   large asteroids                20 points
+#   medium asteroids               50 points
+#   small asteroids               100 points
+#   satellites                    200 points *
+#   ufos                         1000 points *
+#   bonus life every             5000 points
+#
+#   * not yet implemented
+#
+#extra life every 5000 pts
 # Asteroids
 #
 class Asteroids extends AbstractGame
@@ -68,7 +81,7 @@ class Asteroids extends AbstractGame
    * @return nothing
   ###
   preload: =>
-#    @game.load.image 'fb-login', 'res/fb-login.png'
+    @game.load.image 'fb-login', 'res/fb-login.png'
     @game.load.image 'dialog-blue', 'res/dialog-box.png'
     @game.load.image 'dialog-star', 'res/black-dialog.png'
     @game.load.image 'button-blue', 'res/standard-button-on.png'
@@ -92,7 +105,7 @@ class Asteroids extends AbstractGame
   create: =>
     useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
 
-  # install the profiler first
+    # install the profiler first
     @profiler = @game.plugins.add(Phaser.Plugin.PerformanceMonitor, profiler: @get('profiler'))
 
     # set the background
@@ -167,10 +180,14 @@ class Asteroids extends AbstractGame
     return
 
   ###
-   * External inteface to unpause the leaderboard
+   * External inteface to unpause the game
   ###
   resume: =>
     @leaderboard.pause()
+    return
+
+  score: (score) =>
+    @leaderboard.score(score)
     return
 
   ### ============================================================>

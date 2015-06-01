@@ -40,6 +40,7 @@ Components = do ->
     lives: 3
     level: 0
     hits: 0
+    bonus: 0
     playing: false
     setForStart: () ->
       @lives = 3
