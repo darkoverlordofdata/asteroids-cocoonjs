@@ -13,10 +13,10 @@
 
 #Asteroids
 
-Using [ash.coffee](https://github.com/darkoverlordofdata/ash.coffee)
-
+Created With [ash.coffee](https://github.com/darkoverlordofdata/ash.coffee),
 Box2D and Phaser.io
 
+The android version uses CocoonJS Canvas+ with Box2D plugin
 # Install
 
 ```bash

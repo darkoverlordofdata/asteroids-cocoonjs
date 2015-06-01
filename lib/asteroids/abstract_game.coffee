@@ -33,7 +33,7 @@ class AbstractGame
    *
    * @return nothing
   ###
-  constructor: () ->
+  constructor: (@name, @properties) ->
     # initialize the game
     @game = new Phaser.Game(@width * @scale, @height * @scale, Phaser.CANVAS, '',
       init: @init, preload: @preload, create: @create)
@@ -42,7 +42,7 @@ class AbstractGame
     @rnd = new MersenneTwister()
 
     # initialize the database
-    @initializeDb(@name)
+    @initializeDb(@name, @properties)
 
 
   ###
@@ -110,11 +110,15 @@ class AbstractGame
    * @param name of database
    * @return true if Db is new
   ###
-  initializeDb: (name) =>
+  initializeDb: (name, properties) =>
     window.Db = new localStorageDB(name, localStorage)
     isNew = Db.isNew()
     if isNew
       Db.createTable 'settings', ['name', 'value']
       Db.createTable 'leaderboard', ['date', 'score']
+      for key, val of properties
+        Db.insert 'settings', name: key, value: val
+      Db.commit()
+
 
     return isNew

@@ -34,6 +34,7 @@ lib/asteroids/entities.coffee
 lib/asteroids/abstract_game.coffee
 lib/asteroids/game_settings.coffee
 lib/asteroids/facebook_leaderboard.coffee
+lib/asteroids/local_leaderboard.coffee
 lib/asteroids/asteroids.coffee
 lib/asteroids/plugins/performance_monitor.coffee
 lib/boot.coffee

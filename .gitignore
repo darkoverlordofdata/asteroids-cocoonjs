@@ -5,4 +5,5 @@ tmp
 packages
 
 /ashteroids
-./sign.sh
+sign.sh
+#Asteroids_release.apk

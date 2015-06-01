@@ -15,32 +15,52 @@
 #
 class Asteroids extends AbstractGame
 
-  b2Vec2            = Box2D.Common.Math.b2Vec2
-  b2World           = Box2D.Dynamics.b2World
+  b2Vec2                    = Box2D.Common.Math.b2Vec2
+  b2World                   = Box2D.Dynamics.b2World
 
-  name              : 'asteroids'
-  title             : 'Asteroid Simulator'
+  pad                       : null    # On Screen Controller
+  profiler                  : null    # performance profiler
+  engine                    : null    # Ash Engine
+  entities                  : null    # EntityCreator
+  keyPoll                   : null    # KeyPoll
+  world                     : null    # b2World
+  physics                   : null    # physics system
+  background                : null    # background image
+  leaderboard               : null    # leaderboard/settings ui
+  bgdColor                  : 0x6A5ACD
+  playMusic                 : true # localStorage.playMusic
+  playSfx                   : true # localStorage.playSfx
+  optBgd                    : 'blue' #localStorage.background || 'blue'
 
-  pad               : null  #   On Screen Controller
-  profiler          : null  #   performance profiler
-  engine            : null  #   Ash Engine
-  entities          : null  #   EntityCreator
-  keyPoll           : null  #   KeyPoll
-  world             : null  #   b2World
-  background        : null  #   background image
-  physics           : null  #   physics system
-  bgdColor          : 0x6A5ACD
-  playMusic         : localStorage.playMusic
-  playSfx           : localStorage.playSfx
-  optBgd            : localStorage.background || 'blue'
+  properties:
+    profiler                : 'on'    # display the profiler
+    leaderboard             : 'off'   # use server leaderboard
+    player                  : ''      # player screen name
+    userId                  : ''      # unique user id
+    background              : 'blue'  # blue | stars
+    playMusic               : '50'    # music volume
+    playSfx                 : '50'    # soundfx volume
+    asteroidDensity         : '1.0'   # asteroid mass
+    asteroidFriction        : '1.0'   # asteroid friction
+    asteroidRestitution     : '0.2'   # asteroid bounce
+    asteroidDamping         : '0.0'   # asteroid entropy
+    asteroidLinearVelocity  : '4.0'   # asteroid speed
+    asteroidAngularVelocity : '2.0'   # asteroid rotation
+    spaceshipDensity        : '1.0'   # spaceship mass
+    spaceshipFriction       : '1.0'   # spaceship friction
+    spaceshipRestitution    : '0.2'   # spaceship bounce
+    spaceshipDamping        : '0.75'  # spaceship enrtopy
+    bulletDensity           : '1.0'   # bullet mass
+    bulletFriction          : '0.0'   # bullet friction
+    bulletRestitution       : '0.0'   # bullet bounce
+    bulletDamping           : '0.0'   # bullet entropy
+    bulletLinearVelocity    : '150'   # bullet  speed
 
   ###
-   * location of the leaderboard server
+   * Initialize game properties
   ###
-  HOST = if window.location.hostname is 'localhost'
-    'http://bosco.com:3000'
-  else
-    'https://games.darkoverlordofdata.com'
+  constructor: ->
+    super('asteroids', @properties)
 
   ###
    * Load assets
@@ -48,7 +68,7 @@ class Asteroids extends AbstractGame
    * @return nothing
   ###
   preload: =>
-    @game.load.image 'fb-login', 'res/fb-login.png'
+#    @game.load.image 'fb-login', 'res/fb-login.png'
     @game.load.image 'dialog-blue', 'res/dialog-box.png'
     @game.load.image 'dialog-star', 'res/black-dialog.png'
     @game.load.image 'button-blue', 'res/standard-button-on.png'
@@ -65,12 +85,14 @@ class Asteroids extends AbstractGame
     return
 
   ###
-   * Start the game
+   * Create the game
    *
    * @return nothing
   ###
   create: =>
-    # install the profiler first
+    useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
+
+  # install the profiler first
     @profiler = @game.plugins.add(Phaser.Plugin.PerformanceMonitor, profiler: @get('profiler'))
 
     # set the background
@@ -81,8 +103,11 @@ class Asteroids extends AbstractGame
     @background.height = @height
     @background.alpha = if @optBgd is 'blue' then 0 else 1
 
-    # Leaderboard
-    @leaderboard = new FacebookLeaderboard(this, '887669707958104', 'asteroids', 'Asteroid Simulator')
+    # Initialize leaderboard
+    if useBox2dPlugin
+      @leaderboard = new LocalLeaderboard(this, 'asteroids', 'Asteroid Simulator')
+    else
+      @leaderboard = new FacebookLeaderboard(this, '887669707958104', 'asteroids', 'Asteroid Simulator')
 
     # Initialize audio
     ExplodeAsteroid.audio = @game.add.audio('asteroid')
@@ -119,7 +144,6 @@ class Asteroids extends AbstractGame
       3     : title: 'FIRE', color: 'red'
 
     # check for cocoonjs native box2d
-    useBox2dPlugin = not(not window.ext || typeof window.ext.IDTK_SRV_BOX2D is 'undefined')
     PhysicsSystem = if useBox2dPlugin then FixedPhysicsSystem else SmoothPhysicsSystem
     @physics = new PhysicsSystem(this)
 
@@ -142,13 +166,15 @@ class Asteroids extends AbstractGame
     @entities.createGame()
     return
 
-
-
+  ###
+   * External inteface to unpause the leaderboard
+  ###
   resume: =>
     @leaderboard.pause()
+    return
 
   ### ============================================================>
-      A S T E R O I D  S E T T I N G S
+      P R O P E R T I E S
   <============================================================ ###
   ###
    * Standard properties
@@ -196,38 +222,3 @@ class Asteroids extends AbstractGame
     Sound.volume = value/100
     return
 
-  ###
-   * Initialize Asteroid Database
-  ###
-  initializeDb: (name) =>
-
-    if super(name)
-
-      ###
-       * Default Property Settings:
-      ###
-      Db.insert 'settings', name: 'profiler', value: 'on'
-      Db.insert 'settings', name: 'leaderboard', value: 'off'
-      Db.insert 'settings', name: 'player', value: ''
-      Db.insert 'settings', name: 'userId', value: ''
-      Db.insert 'settings', name: 'background', value: 'blue'
-      Db.insert 'settings', name: 'playMusic', value: '50'
-      Db.insert 'settings', name: 'playSfx', value: '50'
-      Db.insert 'settings', name: 'asteroidDensity', value: '1.0'
-      Db.insert 'settings', name: 'asteroidFriction', value: '1.0'
-      Db.insert 'settings', name: 'asteroidRestitution', value: '0.2'
-      Db.insert 'settings', name: 'asteroidDamping', value: '0.0'
-      Db.insert 'settings', name: 'asteroidLinearVelocity', value: '4.0'
-      Db.insert 'settings', name: 'asteroidAngularVelocity', value: '2.0'
-      Db.insert 'settings', name: 'spaceshipDensity', value: '1.0'
-      Db.insert 'settings', name: 'spaceshipFriction', value: '1.0'
-      Db.insert 'settings', name: 'spaceshipRestitution', value: '0.2'
-      Db.insert 'settings', name: 'spaceshipDamping', value: '0.75'
-      Db.insert 'settings', name: 'bulletDensity', value: '1.0'
-      Db.insert 'settings', name: 'bulletFriction', value: '0.0'
-      Db.insert 'settings', name: 'bulletRestitution', value: '0.0'
-      Db.insert 'settings', name: 'bulletDamping', value: '0.0'
-      Db.insert 'settings', name: 'bulletLinearVelocity', value: '150'
-      Db.commit()
-
-    return
