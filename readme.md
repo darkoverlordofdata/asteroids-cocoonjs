@@ -17,6 +17,9 @@ Created With [ash.coffee](https://github.com/darkoverlordofdata/ash.coffee),
 Box2D and Phaser.io
 
 The android version uses CocoonJS Canvas+ with Box2D plugin
+
+Play the online demo at [https://darkoverlordofdata.com/asteroids](https://darkoverlordofdata.com/asteroids)
+
 # Install
 
 ```bash
